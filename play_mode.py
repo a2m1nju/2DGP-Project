@@ -40,12 +40,17 @@ def init():
     balls = [Ball(random.randint(300, 1600), 60, 0) for i in range(20)]
     game_world.add_objects(balls, 1)
 
+    for zombie in zombies:
+        game_world.add_collision_pair('zombie:ball', zombie, None)
+
     # 충돌검사가 필요한 페어를 등록
     game_world.add_collision_pair('boy:ball', boy, None) # [[boy],[]]
     for ball in balls:
         game_world.add_collision_pair('boy:ball', None, ball) # [[boy],[ball1, ball2, ...]]
 
-
+    game_world.add_collision_pair('boy:zombie', boy, None)
+    for zombie in zombies:
+        game_world.add_collision_pair('boy:zombie', None, zombie)
 
 
 def update():
