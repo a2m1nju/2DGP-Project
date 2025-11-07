@@ -59,7 +59,7 @@ class Idle:
             self.girl.state_machine.handle_state_event(('TIMEOUT', None))
 
     def draw(self):
-        Idle.image.clip_draw(int(self.girl.frame) * 130, 0, 130, 130, self.girl.x, self.girl.y)
+        Idle.image.clip_draw(int(self.girl.frame) * 130, 0, 130, 130, self.girl.x, self.girl.y, 200, 200)
 
 class Protection:
 
@@ -117,7 +117,7 @@ class Girl:
 
         self.ball_count = 10
 
-        self.x, self.y = 100, 90
+        self.x, self.y = 100, 150
         self.frame = 0
         self.face_dir = 1
         self.dir = 0
