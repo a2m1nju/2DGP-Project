@@ -8,7 +8,7 @@ class Subway:
         pass
 
     def draw(self):
-        self.image1.draw(400, 30)
+        self.image1.draw(800, 300, 1600, 600)
 
     def get_bb(self):
         pass
