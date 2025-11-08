@@ -95,18 +95,27 @@ class Protection:
 
 
 class Walk:
+    image = None
+    sizes = [4, 132, 259, 385 , 513, 642, 772, 902, 1031, 1160, 1287, 1414]
     def __init__(self, girl):
-        pass
+        self.girl = girl
+        if Walk.image == None:
+            Walk.image = load_image('./주인공/Walk.png')
+
     def enter(self, e):
         pass
     def exit(self, e):
         pass
 
     def do(self):
-        pass
+        self.girl.frame = (self.girl.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 12
 
     def draw(self):
-        pass
+        left = Walk.sizes[int(self.girl.frame)]
+        bottom = 0
+        width = 40
+        height = 75
+        Walk.image.clip_draw(left, bottom, width, height, self.girl.x, self.girl.y, 70, 180)
 
 class Attack:
     def __init__(self, girl):
@@ -139,7 +148,7 @@ class Girl:
         self.WALK = Walk(self)
         self.ATTACK = Attack(self)
         self.state_machine = StateMachine(
-            self.IDLE,
+            self.WALK,
             {
                 self.PROTECTION : {},
                 self.IDLE : {space_down: self.PROTECTION},
