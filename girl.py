@@ -67,9 +67,12 @@ class Idle:
         Idle.image.clip_draw(left, bottom, width, height, self.girl.x, self.girl.y, 70, 180)
 
 class Protection:
-
+    image = None
+    sizes = [2, 128, 253, 381]
     def __init__(self, girl):
-        pass
+        self.girl = girl
+        if Protection.image == None:
+            Protection.image = load_image('./주인공/Protection.png')
 
     def enter(self, e):
         pass
@@ -78,13 +81,17 @@ class Protection:
         pass
 
     def do(self):
-        pass
+        self.girl.frame = (self.girl.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 4
 
     def handle_event(self, event):
         pass
 
     def draw(self):
-        pass
+        left = Protection.sizes[int(self.girl.frame)]
+        bottom = 0
+        width = 36
+        height = 70
+        Protection.image.clip_draw(left, bottom, width, height, self.girl.x, self.girl.y, 70, 180)
 
 
 class Walk:
@@ -135,7 +142,7 @@ class Girl:
             self.IDLE,
             {
                 self.PROTECTION : {},
-                self.IDLE : {},
+                self.IDLE : {space_down: self.PROTECTION},
                 self.WALK : {},
                 self.ATTACK : {}
             }
