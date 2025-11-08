@@ -7,7 +7,7 @@ import game_framework
 from book import Book
 from state_machine import StateMachine
 
-def space_down(e): # e is space down ?
+def space_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_SPACE
 
 time_out = lambda e: e[0] == 'TIMEOUT'

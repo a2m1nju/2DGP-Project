@@ -7,8 +7,8 @@ TIME_PER_ACTION = 0.5
 ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 FRAMES_PER_ACTION = 9
 
-PIXEL_PER_METER = (1.0 / 0.03)  # 1pixel = 3cm, 1m = 33.33 pixel
-GRAVITY = 9.8  # 중력 가속도 (m/s²)
+PIXEL_PER_METER = (1.0 / 0.03)
+GRAVITY = 9.8
 
 class Book:
     image = None
