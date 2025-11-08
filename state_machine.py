@@ -25,3 +25,6 @@ class StateMachine:
     def draw(self):
         self.cur_state.draw()
 
+    def get_bb(self):
+        return self.cur_state.get_bb()
+

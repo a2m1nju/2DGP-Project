@@ -1,5 +1,5 @@
 from pico2d import load_image, get_time, load_font, draw_rectangle
-from sdl2 import SDL_KEYDOWN, SDLK_SPACE, SDL_KEYUP, SDLK_LEFT, SDLK_a, SDLK_d
+from sdl2 import SDL_KEYDOWN, SDLK_SPACE, SDL_KEYUP, SDLK_LEFT, SDLK_a, SDLK_d, SDLK_e
 
 import game_world
 import game_framework
@@ -15,17 +15,20 @@ time_out = lambda e: e[0] == 'TIMEOUT'
 def right_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_d
 
-
 def right_up(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_d
-
 
 def left_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_a
 
-
 def left_up(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_a
+
+def e_down(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_e
+
+def e_up(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_e
 
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
 RUN_SPEED_KMPH = 20.0  # Km / Hour
@@ -69,6 +72,9 @@ class Idle:
         else:
             Idle.image.clip_composite_draw(left, bottom, width, height, 0, '', self.girl.x, self.girl.y, 70, 180)
 
+    def get_bb(self):
+        return self.girl.x - 43, self.girl.y - 90, self.girl.x + 43, self.girl.y + 90
+
 
 class Protection:
     image = None
@@ -79,7 +85,7 @@ class Protection:
             Protection.image = load_image('./주인공/Protection.png')
 
     def enter(self, e):
-        pass
+        self.girl.dir = 0
 
     def exit(self, e):
         pass
@@ -95,8 +101,13 @@ class Protection:
         bottom = 0
         width = 36
         height = 70
-        Protection.image.clip_draw(left, bottom, width, height, self.girl.x, self.girl.y, 70, 180)
+        if self.girl.face_dir == -1:
+            Protection.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.girl.x, self.girl.y, 70, 180)
+        else:
+            Protection.image.clip_composite_draw(left, bottom, width, height, 0, '', self.girl.x, self.girl.y, 70, 180)
 
+    def get_bb(self):
+        return self.girl.x - 43, self.girl.y - 90, self.girl.x + 43, self.girl.y + 90
 
 class Walk:
     image = None
@@ -129,6 +140,9 @@ class Walk:
         else:
             Walk.image.clip_composite_draw(left, bottom, width, height, 0, '', self.girl.x, self.girl.y, 70, 180)
 
+    def get_bb(self):
+        return self.girl.x - 40, self.girl.y - 90, self.girl.x + 40, self.girl.y + 90
+
 class Attack:
     image = None
     sizes = [(7, 40), (131, 43), (253, 51), (378, 59), (503, 61), (645, 62), (776, 73), (905, 37)]
@@ -150,7 +164,13 @@ class Attack:
         left, width = Attack.sizes[int(self.girl.frame)]
         bottom = 0
         height = 79
-        Attack.image.clip_draw(left, bottom, width, height, self.girl.x, self.girl.y, 110, 180)
+        if self.girl.face_dir == -1:
+            Attack.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.girl.x, self.girl.y, 110, 190)
+        else:
+            Attack.image.clip_composite_draw(left, bottom, width, height, 0, '', self.girl.x, self.girl.y, 110, 190)
+
+    def get_bb(self):
+        return self.girl.x - 55, self.girl.y - 90, self.girl.x + 55, self.girl.y + 90
 
 class Girl:
     def __init__(self):
@@ -169,12 +189,12 @@ class Girl:
         self.state_machine = StateMachine(
             self.IDLE,
             {
-                self.PROTECTION : {},
+                self.PROTECTION : {e_up: self.IDLE},
                 self.IDLE : {space_down: self.ATTACK, right_down: self.WALK, left_down: self.WALK
-                             , left_up: self.WALK, right_up : self.WALK},
+                             , left_up: self.WALK, right_up : self.WALK , e_down: self.PROTECTION},
                 self.WALK : {space_down: self.ATTACK, right_up: self.IDLE, left_up: self.IDLE,
-                             right_down: self.IDLE, left_down: self.IDLE},
-                self.ATTACK : {space_down: self.IDLE}
+                             right_down: self.IDLE, left_down: self.IDLE, e_down: self.PROTECTION},
+                self.ATTACK : {space_down: self.IDLE, e_down: self.PROTECTION}
             }
         )
 
@@ -191,7 +211,7 @@ class Girl:
         draw_rectangle(*self.get_bb())
 
     def get_bb(self):
-        return self.x - 43, self.y - 90, self.x + 43, self.y + 90
+        return self.state_machine.get_bb()
 
     def handle_collision(self, group, other):
         pass
