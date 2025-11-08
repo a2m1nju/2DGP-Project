@@ -29,10 +29,6 @@ def init():
     subway = Subway()
     game_world.add_object(subway, 0)
 
-    book = Book()
-    game_world.add_object(book, 1)
-
-
 
 def update():
     game_world.update()

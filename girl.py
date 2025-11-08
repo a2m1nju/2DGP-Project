@@ -153,13 +153,19 @@ class Attack:
             Attack.image = load_image('./주인공/Attack.png')
 
     def enter(self, e):
-        pass
+        self.girl.throw_book()
+        self.girl.frame = 0
+        self.girl.dir = 0
 
     def exit(self, e):
         pass
 
     def do(self):
         self.girl.frame = (self.girl.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
+
+        if self.girl.frame >= len(Attack.sizes):
+            self.girl.frame = len(Attack.sizes) - 1
+            self.girl.state_machine.handle_state_event(('TIMEOUT', None))
 
     def draw(self):
         left, width = Attack.sizes[int(self.girl.frame)]
@@ -195,7 +201,7 @@ class Girl:
                              , left_up: self.WALK, right_up : self.WALK , e_down: self.PROTECTION},
                 self.WALK : {space_down: self.ATTACK, right_up: self.IDLE, left_up: self.IDLE,
                              right_down: self.IDLE, left_down: self.IDLE, e_down: self.PROTECTION},
-                self.ATTACK : {space_down: self.IDLE, e_down: self.PROTECTION}
+                self.ATTACK : {time_out: self.IDLE, e_down: self.PROTECTION, space_down: self.ATTACK}
             }
         )
 
@@ -210,7 +216,7 @@ class Girl:
     def throw_book(self):
         if self.ball_count > 0:
             self.ball_count -= 1
-            book = Book(self.x+self.face_dir*40, self.y+100, self.face_dir * 15)
+            book = Book(self.x + self.face_dir*40, self.y+100, self.face_dir * 15, 0)
             game_world.add_object(book, 1)
 
     def draw(self):
