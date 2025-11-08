@@ -88,27 +88,33 @@ class Run:
 
 class Walk:
     image = None
-    sizes = []
+    sizes = [(0, 36), (125, 40), (254, 35), (388, 22), (519, 28),
+             (638, 39), (765, 39), (893, 35), (1028, 23), (1154, 33) ]
     def __init__(self, enemy):
         self.enemy = enemy
         if Walk.image == None:
             Walk.image = load_image('./적/남자1(근)/Walk.png')
 
     def enter(self, e):
-        pass
+        self.enemy.dir = 1
 
     def exit(self, e):
         pass
 
     def do(self):
-        pass
-
+        self.enemy.frame = (self.enemy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 10
 
     def draw(self):
-        pass
+        left, width = Walk.sizes[int(self.enemy.frame)]
+        bottom = 0
+        height = 71
+        if self.enemy.face_dir == -1:
+            Walk.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.enemy.x, self.enemy.y, 100, 180)
+        else:
+            Walk.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 100, 180)
 
     def get_bb(self):
-        pass
+        return self.enemy.x - 35, self.enemy.y - 90, self.enemy.x + 35, self.enemy.y + 90
 
 class Attack:
     image = None
@@ -191,11 +197,13 @@ class Enemy:
 
         self.IDLE = Idle(self)
         self.RUN = Run(self)
+        self.WALK = Walk(self)
         self.state_machine = StateMachine(
-            self.RUN,
+            self.WALK,
             {
                 self.IDLE : {time_out: self.RUN},
-                self.RUN : {time_out: self.IDLE}
+                self.RUN : {time_out: self.IDLE},
+                self.WALK : {time_out: self.IDLE}
             }
         )
 
