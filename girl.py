@@ -1,5 +1,5 @@
 from pico2d import load_image, get_time, load_font, draw_rectangle
-from sdl2 import SDL_KEYDOWN, SDLK_SPACE, SDLK_RIGHT, SDL_KEYUP, SDLK_LEFT
+from sdl2 import SDL_KEYDOWN, SDLK_SPACE, SDL_KEYUP, SDLK_LEFT, SDLK_a, SDLK_d
 
 import game_world
 import game_framework
@@ -13,19 +13,19 @@ def space_down(e): # e is space down ?
 time_out = lambda e: e[0] == 'TIMEOUT'
 
 def right_down(e):
-    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_RIGHT
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_d
 
 
 def right_up(e):
-    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_RIGHT
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_d
 
 
 def left_down(e):
-    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_LEFT
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_a
 
 
 def left_up(e):
-    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_LEFT
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_a
 
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
 RUN_SPEED_KMPH = 20.0  # Km / Hour
@@ -64,7 +64,11 @@ class Idle:
         bottom = 0
         width = 30
         height = 77
-        Idle.image.clip_draw(left, bottom, width, height, self.girl.x, self.girl.y, 70, 180)
+        if self.girl.face_dir == -1:
+            Idle.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.girl.x, self.girl.y, 70, 180)
+        else:
+            Idle.image.clip_composite_draw(left, bottom, width, height, 0, '', self.girl.x, self.girl.y, 70, 180)
+
 
 class Protection:
     image = None
@@ -103,19 +107,27 @@ class Walk:
             Walk.image = load_image('./주인공/Walk.png')
 
     def enter(self, e):
-        pass
+        if right_down(e) or left_up(e):
+            self.girl.dir = self.girl.face_dir = 1
+        elif left_down(e) or right_up(e):
+            self.girl.dir = self.girl.face_dir = -1
+
     def exit(self, e):
-        pass
+        self.girl.face_dir = self.girl.dir
 
     def do(self):
         self.girl.frame = (self.girl.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 12
+        self.girl.x += self.girl.dir * RUN_SPEED_PPS * game_framework.frame_time
 
     def draw(self):
         left = Walk.sizes[int(self.girl.frame)]
         bottom = 0
         width = 40
         height = 75
-        Walk.image.clip_draw(left, bottom, width, height, self.girl.x, self.girl.y, 70, 180)
+        if self.girl.dir == -1:
+            Walk.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.girl.x, self.girl.y, 70, 180)
+        else:
+            Walk.image.clip_composite_draw(left, bottom, width, height, 0, '', self.girl.x, self.girl.y, 70, 180)
 
 class Attack:
     image = None
@@ -158,9 +170,11 @@ class Girl:
             self.IDLE,
             {
                 self.PROTECTION : {},
-                self.IDLE : {space_down: self.ATTACK},
-                self.WALK : {},
-                self.ATTACK : {}
+                self.IDLE : {space_down: self.ATTACK, right_down: self.WALK, left_down: self.WALK
+                             , left_up: self.WALK, right_up : self.WALK},
+                self.WALK : {space_down: self.ATTACK, right_up: self.IDLE, left_up: self.IDLE,
+                             right_down: self.IDLE, left_down: self.IDLE},
+                self.ATTACK : {space_down: self.IDLE}
             }
         )
 
