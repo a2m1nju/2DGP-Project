@@ -188,9 +188,10 @@ class Girl:
 
     def draw(self):
         self.state_machine.draw()
+        draw_rectangle(*self.get_bb())
 
     def get_bb(self):
-        pass
+        return self.x - 43, self.y - 90, self.x + 43, self.y + 90
 
     def handle_collision(self, group, other):
         pass
