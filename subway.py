@@ -1,14 +1,18 @@
 from pico2d import *
+import game_world
 
 class Subway:
-    def __init__(self):
-        self.image1 = load_image('./배경/내부1.png')
+    def __init__(self, image_path, x, y, w, h, depth):
+        self.image = load_image(image_path)
+        self.x, self.y, self.w, self.h = x, y, w, h
+        game_world.add_object(self, depth)
+
 
     def update(self):
         pass
 
     def draw(self):
-        self.image1.draw(800, 300, 1600, 600)
+        self.image.draw(self.x, self.y, self.w, self.h)
 
     def get_bb(self):
         pass

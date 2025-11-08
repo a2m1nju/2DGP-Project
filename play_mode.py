@@ -24,10 +24,23 @@ def init():
     global girl
 
     girl = Girl()
-    game_world.add_object(girl, 1)
+    game_world.add_object(girl, 4)
 
-    subway = Subway()
-    game_world.add_object(subway, 0)
+    Subway('./배경/내부1.png', 800, 300, 1600, 600, 0)
+    Subway('./배경/기둥2.png', 805, 270, 780, 340, 3)
+    Subway('./배경/문1.png', 300, 268, 180, 320, 2)
+    Subway('./배경/문2.png', 1300, 268, 180, 320, 2)
+
+    seat_y = 158
+    seat_w, seat_h = 87, 100
+    for i in range(4):
+        seat_x = 498 + (i * 87)
+        Subway('./배경/좌석.png', seat_x, seat_y, seat_w, seat_h, 2)
+
+    # 오른쪽 4개 좌석 (문2 왼쪽)
+    for i in range(4):
+        seat_x = 846 + (i * 87)
+        Subway('./배경/좌석.png', seat_x, seat_y, seat_w, seat_h, 2)
 
 
 def update():
