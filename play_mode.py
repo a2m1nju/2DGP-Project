@@ -6,6 +6,7 @@ import game_world
 
 from girl import Girl
 from subway import Subway
+from book import Book
 
 girl = None
 
@@ -27,6 +28,10 @@ def init():
 
     subway = Subway()
     game_world.add_object(subway, 0)
+
+    book = Book()
+    game_world.add_object(book, 1)
+
 
 
 def update():

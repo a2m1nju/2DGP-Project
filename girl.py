@@ -4,6 +4,7 @@ from sdl2 import SDL_KEYDOWN, SDLK_SPACE, SDL_KEYUP, SDLK_LEFT, SDLK_a, SDLK_d, 
 import game_world
 import game_framework
 
+from book import Book
 from state_machine import StateMachine
 
 
@@ -205,6 +206,12 @@ class Girl:
     def handle_event(self, event):
         self.state_machine.handle_state_event(('INPUT', event))
         pass
+
+    def throw_book(self):
+        if self.ball_count > 0:
+            self.ball_count -= 1
+            book = Book(self.x+self.face_dir*40, self.y+100, self.face_dir * 15)
+            game_world.add_object(book, 1)
 
     def draw(self):
         self.state_machine.draw()
