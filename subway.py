@@ -1,5 +1,8 @@
 from pico2d import *
 import game_world
+import game_framework
+
+SCROLL_SPEED_PPS = 200
 
 class Subway:
     def __init__(self, image_path, x, y, w, h, depth):

@@ -216,7 +216,7 @@ class Girl:
 
     def throw_book(self):
         book = Book(self.x + self.face_dir*40, self.y+20, self.face_dir * 15, 0)
-        game_world.add_object(book, 1)
+        game_world.add_object(book, 4)
 
     def draw(self):
         self.state_machine.draw()
