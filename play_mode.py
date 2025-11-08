@@ -7,6 +7,7 @@ import game_world
 from girl import Girl
 from subway import Subway
 from book import Book
+from enemy import Enemy
 
 girl = None
 
@@ -29,6 +30,9 @@ def init():
     game_world.add_object(girl, 4)
 
     Subway('./배경/내부2.png', 800, 300, 1600, 600, 0, is_looping=True)
+
+    enemy = Enemy()
+    game_world.add_object(enemy, 4)
 
 def update():
     game_world.update()

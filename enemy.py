@@ -6,28 +6,7 @@ import game_framework
 
 from state_machine import StateMachine
 
-def space_down(e): 
-    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_SPACE
-
 time_out = lambda e: e[0] == 'TIMEOUT'
-
-def right_down(e):
-    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_d
-
-def right_up(e):
-    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_d
-
-def left_down(e):
-    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_a
-
-def left_up(e):
-    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_a
-
-def e_down(e):
-    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_e
-
-def e_up(e):
-    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_e
 
 PIXEL_PER_METER = (10.0 / 0.3) 
 RUN_SPEED_KMPH = 20.0 
@@ -42,54 +21,70 @@ FRAMES_PER_ACTION = 9
 
 class Idle:
     image = None
-    sizes = []
+    sizes = [2, 127, 256, 384, 513, 640]
     def __init__(self, enemy):
         self.enemy = enemy
         if Idle.image == None:
             Idle.image = load_image('./적/남자1(근)/Idle.png')
 
     def enter(self, e):
-        pass
-
+        self.enemy.wait_time = get_time()
+        self.enemy.dir = 0
 
     def exit(self, e):
         pass
 
     def do(self):
-        pass
+        self.enemy.frame = (self.enemy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 6
+        if get_time() - self.enemy.wait_time > 3:
+            self.enemy.state_machine.handle_state_event(('TIMEOUT', None))
 
     def draw(self):
-        pass
+        left = Idle.sizes[int(self.enemy.frame)]
+        bottom = 0
+        width = 30
+        height = 68
+        if self.enemy.face_dir == -1:
+            Idle.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.enemy.x, self.enemy.y, 70, 180)
+        else:
+            Idle.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 70, 180)
 
     def get_bb(self):
-        pass
+        return self.enemy.x - 35, self.enemy.y - 90, self.enemy.x + 35, self.enemy.y + 90
 
 
 class Run:
     image = None
-    sizes = []
+    sizes = [2, 127, 255, 383, 511, 638]
     def __init__(self, enemy):
         self.enemy = enemy
         if Run.image == None:
-            Run.image = load_image('./적/남자1(근)/Run.png')
+            Run.image = load_image('./적/남자1(근)/Idle.png')
 
     def enter(self, e):
-        pass
+        self.enemy.dir = 1
 
     def exit(self, e):
         pass
 
     def do(self):
-        pass
+        self.enemy.frame = (self.enemy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 6
 
     def handle_event(self, event):
         pass
 
     def draw(self):
-        pass
+        left = Run.sizes[int(self.enemy.frame)]
+        bottom = 0
+        width = 30
+        height = 68
+        if self.enemy.face_dir == -1:
+            Run.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.enemy.x, self.enemy.y, 70, 180)
+        else:
+            Run.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 70, 180)
 
     def get_bb(self):
-        pass
+        return self.enemy.x - 35, self.enemy.y - 90, self.enemy.x + 35, self.enemy.y + 90
 
 class Walk:
     image = None
@@ -184,54 +179,31 @@ class Dead:
     def get_bb(self):
         pass
 
-class Enenmy:
+class Enemy:
     def __init__(self):
 
         self.ball_count = 10
 
-        self.x, self.y = 100, 150
+        self.x, self.y = 1000, 150
         self.frame = 0.0
         self.face_dir = 1
         self.dir = 0
 
         self.IDLE = Idle(self)
         self.RUN = Run(self)
-        self.WALK = Walk(self)
-        self.ATTACK = Attack(self)
-        self.HURT = Hurt(self)
-        self.DEAD = Dead(self)
         self.state_machine = StateMachine(
             self.IDLE,
             {
-                self.PROTECTION : {e_up: self.IDLE},
-                self.IDLE : {space_down: self.ATTACK, right_down: self.WALK, left_down: self.WALK
-                             , left_up: self.WALK, right_up : self.WALK , e_down: self.PROTECTION},
-                self.RUN : {},
-                self.WALK : {space_down: self.ATTACK, right_up: self.IDLE, left_up: self.IDLE,
-                             right_down: self.IDLE, left_down: self.IDLE, e_down: self.PROTECTION},
-                self.ATTACK : {time_out: self.IDLE, e_down: self.PROTECTION, space_down: self.ATTACK,
-                               right_down: self.WALK, left_down: self.WALK},
-                self.HURT : {},
-                self.DEAD : {}
+                self.IDLE : {time_out: self.RUN},
+                self.RUN : {time_out: self.IDLE}
             }
         )
 
     def update(self):
         self.state_machine.update()
+        self.x += game_world.scroll_speed * game_framework.frame_time
 
     def handle_event(self, event):
-        if event.type == SDL_KEYDOWN:
-            if event.key == SDLK_a:
-                self.key_a_down = True
-            elif event.key == SDLK_d:
-                self.key_d_down = True
-        elif event.type == SDL_KEYUP:
-            if event.key == SDLK_a:
-                self.key_a_down = False
-            elif event.key == SDLK_d:
-                self.key_d_down = False
-
-        self.state_machine.handle_state_event(('INPUT', event))
         pass
 
 
