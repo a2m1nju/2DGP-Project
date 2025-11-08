@@ -40,6 +40,7 @@ FRAMES_PER_ACTION = 9
 
 class Idle:
     image = None
+    sizes = [2, 130, 258 ,386, 514, 642, 770, 898, 1026]
     def __init__(self, girl):
         self.girl = girl
         if Idle.image == None:
@@ -54,12 +55,16 @@ class Idle:
         pass
 
     def do(self):
-        self.girl.frame = (self.girl.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
+        self.girl.frame = (self.girl.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 9
         if get_time() - self.girl.wait_time > 3:
             self.girl.state_machine.handle_state_event(('TIMEOUT', None))
 
     def draw(self):
-        Idle.image.clip_draw(int(self.girl.frame) * 130, 0, 130, 130, self.girl.x, self.girl.y, 200, 200)
+        left = Idle.sizes[int(self.girl.frame)]
+        bottom = 0
+        width = 30
+        height = 77
+        Idle.image.clip_draw(left, bottom, width, height, self.girl.x, self.girl.y, 70, 180)
 
 class Protection:
 
