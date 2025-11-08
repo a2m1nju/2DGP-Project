@@ -55,11 +55,12 @@ class Idle:
 
 class Run:
     image = None
-    sizes = [2, 127, 255, 383, 511, 638]
+    sizes = [(0, 43), (128, 43), (245, 57), (375, 52), (504, 40), (645, 40),
+             (769, 43), (888, 56), (1017, 55), (1146, 38)]
     def __init__(self, enemy):
         self.enemy = enemy
         if Run.image == None:
-            Run.image = load_image('./적/남자1(근)/Idle.png')
+            Run.image = load_image('./적/남자1(근)/Run.png')
 
     def enter(self, e):
         self.enemy.dir = 1
@@ -68,20 +69,19 @@ class Run:
         pass
 
     def do(self):
-        self.enemy.frame = (self.enemy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 6
+        self.enemy.frame = (self.enemy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 10
 
     def handle_event(self, event):
         pass
 
     def draw(self):
-        left = Run.sizes[int(self.enemy.frame)]
+        left , width = Run.sizes[int(self.enemy.frame)]
         bottom = 0
-        width = 30
-        height = 68
+        height = 73
         if self.enemy.face_dir == -1:
-            Run.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.enemy.x, self.enemy.y, 70, 180)
+            Run.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.enemy.x, self.enemy.y, 100, 180)
         else:
-            Run.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 70, 180)
+            Run.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 100, 180)
 
     def get_bb(self):
         return self.enemy.x - 35, self.enemy.y - 90, self.enemy.x + 35, self.enemy.y + 90
@@ -192,7 +192,7 @@ class Enemy:
         self.IDLE = Idle(self)
         self.RUN = Run(self)
         self.state_machine = StateMachine(
-            self.IDLE,
+            self.RUN,
             {
                 self.IDLE : {time_out: self.RUN},
                 self.RUN : {time_out: self.IDLE}
