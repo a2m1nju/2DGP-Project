@@ -7,7 +7,6 @@ import game_framework
 from book import Book
 from state_machine import StateMachine
 
-
 def space_down(e): # e is space down ?
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_SPACE
 
@@ -53,6 +52,7 @@ class Idle:
     def enter(self, e):
         self.girl.wait_time = get_time()
         self.girl.dir = 0
+        game_world.scroll_speed = 0.0
 
 
     def exit(self, e):
@@ -87,6 +87,7 @@ class Protection:
 
     def enter(self, e):
         self.girl.dir = 0
+        game_world.scroll_speed = 0.0
 
     def exit(self, e):
         pass
@@ -119,24 +120,35 @@ class Walk:
             Walk.image = load_image('./주인공/Walk.png')
 
     def enter(self, e):
-        if right_down(e) or left_up(e):
-            self.girl.dir = self.girl.face_dir = 1
-        elif left_down(e) or right_up(e):
-            self.girl.dir = self.girl.face_dir = -1
+        pass
 
     def exit(self, e):
-        self.girl.face_dir = self.girl.dir
+        pass
 
     def do(self):
+        if self.girl.key_d_down:
+            self.girl.dir = 1
+            self.girl.face_dir = 1
+        elif self.girl.key_a_down:
+            self.girl.dir = -1
+            self.girl.face_dir = -1
+        else:
+            self.girl.dir = 0
+
+        game_world.scroll_speed = -self.girl.dir * RUN_SPEED_PPS
+
         self.girl.frame = (self.girl.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 12
-        self.girl.x += self.girl.dir * RUN_SPEED_PPS * game_framework.frame_time
+
+        if self.girl.dir == 0:
+            self.girl.state_machine.handle_state_event(('ALL_KEYS_UP', None))
+
 
     def draw(self):
         left = Walk.sizes[int(self.girl.frame)]
         bottom = 0
         width = 40
         height = 75
-        if self.girl.dir == -1:
+        if self.girl.face_dir == -1:
             Walk.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.girl.x, self.girl.y, 70, 180)
         else:
             Walk.image.clip_composite_draw(left, bottom, width, height, 0, '', self.girl.x, self.girl.y, 70, 180)
@@ -154,14 +166,15 @@ class Attack:
 
     def enter(self, e):
         self.girl.throw_book()
-        self.girl.frame = 0
+        self.girl.frame = 0.0
         self.girl.dir = 0
+        game_world.scroll_speed = 0.0
 
     def exit(self, e):
         pass
 
     def do(self):
-        self.girl.frame = (self.girl.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
+        self.girl.frame = (self.girl.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time)
 
         if self.girl.frame >= len(Attack.sizes):
             self.girl.frame = len(Attack.sizes) - 1
@@ -185,7 +198,7 @@ class Girl:
         self.ball_count = 10
 
         self.x, self.y = 100, 150
-        self.frame = 0
+        self.frame = 0.0
         self.face_dir = 1
         self.dir = 0
 
@@ -211,6 +224,17 @@ class Girl:
         self.state_machine.update()
 
     def handle_event(self, event):
+        if event.type == SDL_KEYDOWN:
+            if event.key == SDLK_a:
+                self.key_a_down = True
+            elif event.key == SDLK_d:
+                self.key_d_down = True
+        elif event.type == SDL_KEYUP:
+            if event.key == SDLK_a:
+                self.key_a_down = False
+            elif event.key == SDLK_d:
+                self.key_d_down = False
+
         self.state_machine.handle_state_event(('INPUT', event))
         pass
 

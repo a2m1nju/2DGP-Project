@@ -35,9 +35,11 @@ class Book:
         self.x += self.xv * game_framework.frame_time * PIXEL_PER_METER
         self.y += self.yv * game_framework.frame_time * PIXEL_PER_METER
 
+        self.x += game_world.scroll_speed * game_framework.frame_time
+
 
     def get_bb(self):
-        pass
+        return self.x - 20, self.y - 20, self.x + 20, self.y + 20
 
     def handle_collision(self, group, other):
         pass
