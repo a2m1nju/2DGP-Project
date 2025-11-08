@@ -43,7 +43,7 @@ class Idle:
     def __init__(self, girl):
         self.girl = girl
         if Idle.image == None:
-            Idle.image = load_image('Idle.png')
+            Idle.image = load_image('./주인공/Idle.png')
 
     def enter(self, e):
         self.girl.wait_time = get_time()
