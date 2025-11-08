@@ -19,14 +19,14 @@ class Book:
         if Book.image == None:
             Book.image = load_image('./주인공/Book.png')
         self.x, self.y = x, y
-        self.xv = throwin_speed * math.cos(math.radians(throwin_angle))  # m/s
-        self.yv = abs(throwin_speed * math.sin(math.radians(throwin_angle)))   # m/s
+        self.xv = throwin_speed * math.cos(math.radians(throwin_angle))
+        self.yv = abs(throwin_speed * math.sin(math.radians(throwin_angle)))
         self.stopped = True if throwin_speed == 0.0 else False
         self.frame = 0.0
 
     def draw(self):
         left , bottom, height, width= self.sizes[int(self.frame)]
-        Book.image.clip_draw(left, bottom, width, height, self.x, self.y, 50, 50)
+        Book.image.clip_draw(left, bottom, width, height, self.x, self.y, 40, 40)
 
     def update(self):
         self.frame = (self.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % len(self.sizes)
