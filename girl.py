@@ -11,6 +11,9 @@ def space_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_SPACE
 
 time_out = lambda e: e[0] == 'TIMEOUT'
+hit_by_enemy = lambda e: e[0] == 'HIT_BY_ENEMY'
+time_out_to_idle = lambda e: e[0] == 'TIMEOUT_IDLE'
+time_out_to_walk = lambda e: e[0] == 'TIMEOUT_WALK'
 
 def right_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_d
@@ -104,9 +107,9 @@ class Protection:
         width = 36
         height = 70
         if self.girl.face_dir == -1:
-            Protection.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.girl.x, self.girl.y, 70, 180)
+            Protection.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.girl.x, self.girl.y, 80, 160)
         else:
-            Protection.image.clip_composite_draw(left, bottom, width, height, 0, '', self.girl.x, self.girl.y, 70, 180)
+            Protection.image.clip_composite_draw(left, bottom, width, height, 0, '', self.girl.x, self.girl.y, 80, 160)
 
     def get_bb(self):
         return self.girl.x - 43, self.girl.y - 90, self.girl.x + 43, self.girl.y + 90
@@ -192,6 +195,57 @@ class Attack:
     def get_bb(self):
         return self.girl.x - 55, self.girl.y - 90, self.girl.x + 55, self.girl.y + 90
 
+class Hurt:
+    image = None
+    sizes = [(0, 47), (124, 48), (248, 43)]
+    def __init__(self, girl):
+        self.girl = girl
+        if Hurt.image == None:
+            Hurt.image = load_image('./주인공/Hurt.png')
+
+    def enter(self, e):
+        self.girl.frame = 0.0
+
+    def exit(self, e):
+        pass
+
+    def do(self):
+        animation_speed = 6.0
+        self.girl.frame = (self.girl.frame + animation_speed * ACTION_PER_TIME * game_framework.frame_time)
+
+        if self.girl.key_d_down:
+            self.girl.dir = 1
+            self.girl.face_dir = 1
+        elif self.girl.key_a_down:
+            self.girl.dir = -1
+            self.girl.face_dir = -1
+        else:
+            self.girl.dir = 0
+
+        game_world.scroll_speed = -self.girl.dir * RUN_SPEED_PPS
+
+        if self.girl.frame >= len(Hurt.sizes):
+            self.girl.frame = len(Hurt.sizes) - 1
+
+            if self.girl.dir == 0:
+                self.girl.state_machine.handle_state_event(('TIMEOUT_IDLE', None))
+            else:
+                self.girl.state_machine.handle_state_event(('TIMEOUT_WALK', None))
+
+    def draw(self):
+        left, width = Hurt.sizes[int(self.girl.frame)]
+        bottom = 0
+        height = 76
+        if self.girl.face_dir == -1:
+            Hurt.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.girl.x, self.girl.y, 100, 180)
+        else:
+            Hurt.image.clip_composite_draw(left, bottom, width, height, 0, '', self.girl.x, self.girl.y, 100, 180)
+
+    def get_bb(self):
+        return self.girl.x - 55, self.girl.y - 90, self.girl.x + 55, self.girl.y + 90
+
+
+
 class Girl:
     def __init__(self):
 
@@ -209,16 +263,20 @@ class Girl:
         self.PROTECTION = Protection(self)
         self.WALK = Walk(self)
         self.ATTACK = Attack(self)
+        self.HURT = Hurt(self)
         self.state_machine = StateMachine(
             self.IDLE,
             {
-                self.PROTECTION : {e_up: self.IDLE},
+                self.PROTECTION : {e_up: self.IDLE, hit_by_enemy: self.HURT},
                 self.IDLE : {space_down: self.ATTACK, right_down: self.WALK, left_down: self.WALK
-                             , left_up: self.WALK, right_up : self.WALK , e_down: self.PROTECTION},
+                             , left_up: self.WALK, right_up : self.WALK , e_down: self.PROTECTION, hit_by_enemy: self.HURT},
                 self.WALK : {space_down: self.ATTACK, right_up: self.IDLE, left_up: self.IDLE,
-                             right_down: self.IDLE, left_down: self.IDLE, e_down: self.PROTECTION},
+                             right_down: self.IDLE, left_down: self.IDLE, e_down: self.PROTECTION, hit_by_enemy: self.HURT},
                 self.ATTACK : {time_out: self.IDLE, e_down: self.PROTECTION, space_down: self.ATTACK,
-                               right_down: self.WALK, left_down: self.WALK}
+                               right_down: self.WALK, left_down: self.WALK, hit_by_enemy: self.HURT},
+                self.HURT: { time_out_to_idle: self.IDLE, time_out_to_walk: self.WALK, space_down: self.ATTACK,
+                             e_down: self.PROTECTION
+                }
             }
         )
 
@@ -256,6 +314,6 @@ class Girl:
     def handle_collision(self, group, other):
         if group == 'girl:enemy':
             if self.state_machine.cur_state != self.PROTECTION:
-                print("맞음")
+                self.state_machine.handle_state_event(('HIT_BY_ENEMY', None))
             else:
                 print("막음")
