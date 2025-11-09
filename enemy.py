@@ -239,6 +239,9 @@ class Dead:
         self.enemy.frame = 0.0
         game_world.remove_collision_object(self.enemy)
 
+        import play_mode
+        play_mode.enemies_killed_count += 1
+
     def exit(self, e):
         pass
 

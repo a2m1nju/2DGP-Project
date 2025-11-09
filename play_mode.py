@@ -14,7 +14,7 @@ font = None
 spawn_timer = 0.0
 spawn_cooldown = 8.0
 spawn_count = 0
-max_spawn_count = 10
+max_spawn_count = 1
 
 def handle_events():
     event_list = get_events()
@@ -29,6 +29,7 @@ def handle_events():
 
 def init():
     global girl, font, spawn_timer, spawn_count
+    global enemies_killed_count
 
     girl = Girl()
     girl.x = 800
@@ -44,12 +45,21 @@ def init():
     game_world.add_collision_pair('book:enemy', None, enemy)
     game_world.add_collision_pair('girl:enemy', None, enemy)
     spawn_count = 1
-    spawn_timer = get_time()  # (get_time 함수)
+    spawn_timer = get_time()
+
+    enemies_killed_count = 0
 
 def update():
     global spawn_timer, spawn_cooldown, spawn_count, max_spawn_count
+    global enemies_killed_count
+
     game_world.update()
     game_world.handle_collisions()
+
+    if enemies_killed_count >= max_spawn_count:
+        import gameclear_mode
+        game_framework.change_mode(gameclear_mode)
+        return
 
     if spawn_count >= max_spawn_count:
         return
@@ -57,14 +67,11 @@ def update():
     current_time = get_time()
     if current_time - spawn_timer > spawn_cooldown:
         spawn_timer = current_time
-
         enemy = Enemy(girl)
         enemy.x = 1600 + 100
-
         game_world.add_object(enemy, 4)
         game_world.add_collision_pair('book:enemy', None, enemy)
         game_world.add_collision_pair('girl:enemy', None, enemy)
-
         spawn_count += 1
 
 
