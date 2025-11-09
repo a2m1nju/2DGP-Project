@@ -28,12 +28,15 @@ def init():
     girl = Girl()
     girl.x = 800
     game_world.add_object(girl, 4)
+    game_world.add_collision_pair('girl:enemy', girl, None)
+
 
     Subway('./배경/내부2.png', 800, 300, 1600, 600, 0, is_looping=True)
 
     enemy = Enemy(girl)
     game_world.add_object(enemy, 4)
     game_world.add_collision_pair('book:enemy', None, enemy)
+    game_world.add_collision_pair('girl:enemy', None, enemy)
 
 def update():
     game_world.update()

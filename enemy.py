@@ -48,7 +48,7 @@ class Idle:
 
         dist_to_player = abs(self.enemy.x - self.enemy.girl.x)
 
-        if dist_to_player < 150:
+        if dist_to_player < 110:
             self.enemy.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
         elif dist_to_player < 600:
             self.enemy.state_machine.handle_state_event(('PLAYER_IN_SIGHT_RANGE', None))
@@ -98,7 +98,7 @@ class Run:
 
         dist_abs = abs(dist_to_player)
 
-        if dist_abs < 150:
+        if dist_abs < 110:
             self.enemy.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
         elif dist_abs > 600:
             self.enemy.state_machine.handle_state_event(('PLAYER_OUT_OF_RANGE', None))
@@ -328,3 +328,6 @@ class Enemy:
                 self.state_machine.handle_state_event(('HP_IS_ZERO', None))
             else:
                 self.state_machine.handle_state_event(('HIT_BY_BOOK', None))
+
+        elif group == 'girl:enemy':
+            pass

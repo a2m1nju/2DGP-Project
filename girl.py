@@ -254,4 +254,8 @@ class Girl:
         return self.state_machine.get_bb()
 
     def handle_collision(self, group, other):
-        pass
+        if group == 'girl:enemy':
+            if self.state_machine.cur_state != self.PROTECTION:
+                print("맞음")
+            else:
+                print("막음")
