@@ -10,6 +10,7 @@ from book import Book
 from enemy import Enemy
 
 girl = None
+font = None
 
 def handle_events():
     event_list = get_events()
@@ -23,12 +24,14 @@ def handle_events():
 
 
 def init():
-    global girl
+    global girl, font
 
     girl = Girl()
     girl.x = 800
     game_world.add_object(girl, 4)
     game_world.add_collision_pair('girl:enemy', girl, None)
+
+    font = load_font('ENCR10B.TTF', 16)
 
 
     Subway('./배경/내부2.png', 800, 300, 1600, 600, 0, is_looping=True)
@@ -46,6 +49,7 @@ def update():
 def draw():
     clear_canvas()
     game_world.render()
+    font.draw(girl.x - 30, girl.y + 110, f'HP: {girl.hp}', (255, 0, 0))
     update_canvas()
 
 
