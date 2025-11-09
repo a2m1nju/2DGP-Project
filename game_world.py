@@ -45,7 +45,6 @@ def clear():
     for layer in world:
         layer.clear()
 
-# 추가
 def collide(a, b):
     left_a, bottom_a, right_a, top_a = a.get_bb()
     left_b, bottom_b, right_b, top_b = b.get_bb()
@@ -69,8 +68,8 @@ def add_collision_pair(group, a, b):
 
 def handle_collisions():
     for group, pairs in collision_pairs.items():
-        for a in pairs[0]:
-            for b in pairs[1]:
+        for a in pairs[0][:]:
+            for b in pairs[1][:]:
                 if collide(a, b):
                     a.handle_collision(group, b)
                     b.handle_collision(group, a)

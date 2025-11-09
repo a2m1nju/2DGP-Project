@@ -7,6 +7,13 @@ import game_framework
 from state_machine import StateMachine
 
 time_out = lambda e: e[0] == 'TIMEOUT'
+player_in_sight_range = lambda e: e[0] == 'PLAYER_IN_SIGHT_RANGE'
+player_in_attack_range = lambda e: e[0] == 'PLAYER_IN_ATTACK_RANGE'
+player_out_of_range = lambda e: e[0] == 'PLAYER_OUT_OF_RANGE'
+hit_by_book = lambda e: e[0] == 'HIT_BY_BOOK'
+attack_finished = time_out
+hurt_finished = time_out
+dead_finished = time_out
 
 PIXEL_PER_METER = (10.0 / 0.3) 
 RUN_SPEED_KMPH = 20.0 
@@ -36,7 +43,14 @@ class Idle:
 
     def do(self):
         self.enemy.frame = (self.enemy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 6
-        if get_time() - self.enemy.wait_time > 3:
+
+        dist_to_player = abs(self.enemy.x - self.enemy.girl.x)
+
+        if dist_to_player < 150:
+            self.enemy.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
+        elif dist_to_player < 600:
+            self.enemy.state_machine.handle_state_event(('PLAYER_IN_SIGHT_RANGE', None))
+        elif get_time() - self.enemy.wait_time > 3:
             self.enemy.state_machine.handle_state_event(('TIMEOUT', None))
 
     def draw(self):
@@ -131,7 +145,12 @@ class Attack:
         pass
 
     def do(self):
-        self.enemy.frame = (self.enemy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 5
+        self.enemy.frame = (self.enemy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time)
+        total_frames = len(Attack.sizes)
+
+        if self.enemy.frame >= total_frames:
+            self.enemy.frame = total_frames - 1
+            self.enemy.state_machine.handle_state_event(('TIMEOUT', None))
 
     def draw(self):
         left, width = Attack.sizes[int(self.enemy.frame)]
@@ -154,13 +173,19 @@ class Hurt:
             Hurt.image = load_image('./적/남자1(근)/Hurt.png')
 
     def enter(self, e):
-        self.enemy.dir = 1
+        self.enemy.dir = 0
+        self.enemy.frame = 0.0
 
     def exit(self, e):
         pass
 
     def do(self):
-        self.enemy.frame = (self.enemy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 3
+        self.enemy.frame = (self.enemy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time)
+        total_frames = len(Hurt.sizes)
+
+        if self.enemy.frame >= total_frames:
+            self.enemy.frame = total_frames - 1
+            self.enemy.state_machine.handle_state_event(('TIMEOUT', None))
 
     def draw(self):
         left, width = Hurt.sizes[int(self.enemy.frame)]
@@ -184,13 +209,19 @@ class Dead:
             Dead.image = load_image('./적/남자1(근)/Dead.png')
 
     def enter(self, e):
-        self.enemy.dir = 1
+        self.enemy.dir = 0
+        self.enemy.frame = 0.0
 
     def exit(self, e):
         pass
 
     def do(self):
-        self.enemy.frame = (self.enemy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 4
+        self.enemy.frame = (self.enemy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time)
+        total_frames = len(Dead.sizes)
+
+        if self.enemy.frame >= total_frames:
+            self.enemy.frame = total_frames - 1
+            self.enemy.state_machine.handle_state_event(('TIMEOUT', None))
 
     def draw(self):
         left, width = Dead.sizes[int(self.enemy.frame)]
@@ -205,14 +236,12 @@ class Dead:
         return self.enemy.x - 35, self.enemy.y - 90, self.enemy.x + 35, self.enemy.y + 90
 
 class Enemy:
-    def __init__(self):
-
-        self.ball_count = 10
-
+    def __init__(self, girl):
         self.x, self.y = 1000, 150
         self.frame = 0.0
         self.face_dir = 1
         self.dir = 0
+        self.girl = girl
 
         self.IDLE = Idle(self)
         self.RUN = Run(self)
@@ -221,13 +250,13 @@ class Enemy:
         self.HURT = Hurt(self)
         self.DEAD = Dead(self)
         self.state_machine = StateMachine(
-            self.DEAD,
+            self.IDLE,
             {
-                self.IDLE : {time_out: self.RUN},
-                self.RUN : {time_out: self.IDLE},
+                self.IDLE : {player_in_sight_range: self.RUN, player_in_attack_range: self.ATTACK, hit_by_book: self.HURT},
+                self.RUN : {player_in_attack_range: self.ATTACK, player_out_of_range: self.IDLE, hit_by_book: self.HURT},
                 self.WALK : {time_out: self.IDLE},
-                self.ATTACK : {time_out: self.IDLE},
-                self.HURT : {time_out: self.IDLE},
+                self.ATTACK : {attack_finished: self.IDLE, hit_by_book: self.HURT},
+                self.HURT : {hurt_finished: self.IDLE},
                 self.DEAD : {time_out: self.IDLE}
             }
         )
@@ -248,4 +277,7 @@ class Enemy:
         return self.state_machine.get_bb()
 
     def handle_collision(self, group, other):
-        pass
+        if group == 'book:enemy':
+            self.state_machine.handle_state_event(('HIT_BY_BOOK', None))
+            game_world.remove_object(other)
+

@@ -241,6 +241,7 @@ class Girl:
     def throw_book(self):
         book = Book(self.x + self.face_dir*40, self.y+20, self.face_dir * 15, 0)
         game_world.add_object(book, 4)
+        game_world.add_collision_pair('book:enemy', book, None)
 
     def draw(self):
         self.state_machine.draw()

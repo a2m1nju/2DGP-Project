@@ -31,8 +31,9 @@ def init():
 
     Subway('./배경/내부2.png', 800, 300, 1600, 600, 0, is_looping=True)
 
-    enemy = Enemy()
+    enemy = Enemy(girl)
     game_world.add_object(enemy, 4)
+    game_world.add_collision_pair('book:enemy', None, enemy)
 
 def update():
     game_world.update()
