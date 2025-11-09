@@ -172,6 +172,7 @@ class Attack:
         self.girl.frame = 0.0
         self.girl.dir = 0
         game_world.scroll_speed = 0.0
+        self.girl.last_attack_time = get_time()
 
     def exit(self, e):
         pass
@@ -256,6 +257,9 @@ class Girl:
         self.face_dir = 1
         self.dir = 0
 
+        self.last_attack_time = 0.0
+        self.attack_cooldown = 0.5
+
         self.key_a_down = False
         self.key_d_down = False
 
@@ -290,6 +294,12 @@ class Girl:
                 self.key_a_down = True
             elif event.key == SDLK_d:
                 self.key_d_down = True
+
+            elif event.key == SDLK_SPACE:
+                current_time = get_time()
+                if current_time - self.last_attack_time < self.attack_cooldown:
+                    return
+
         elif event.type == SDL_KEYUP:
             if event.key == SDLK_a:
                 self.key_a_down = False
