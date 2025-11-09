@@ -22,17 +22,18 @@ class Subway:
             self.x1 += scroll_amount
             self.x2 += scroll_amount
 
-            if game_world.scroll_speed < 0:  # 왼쪽으로 스크롤
-                if self.x1 + self.w / 2 < 0:
+            if game_world.scroll_speed < 0:
+                if self.x1 <= -self.w / 2:
                     self.x1 = self.x2 + self.w
-                if self.x2 + self.w / 2 < 0:
+                if self.x2 <= -self.w / 2:
                     self.x2 = self.x1 + self.w
 
-            elif game_world.scroll_speed > 0:  # 오른쪽으로 스크롤
-                if self.x1 - self.w / 2 > canvas_width:
+            elif game_world.scroll_speed > 0:
+                if self.x1 >= canvas_width + self.w / 2:
                     self.x1 = self.x2 - self.w
-                if self.x2 - self.w / 2 > canvas_width:
+                if self.x2 >= canvas_width + self.w / 2:
                     self.x2 = self.x1 - self.w
+
         else:
             self.x += scroll_amount
             if game_world.scroll_speed < 0 and self.x + self.w / 2 < 0:

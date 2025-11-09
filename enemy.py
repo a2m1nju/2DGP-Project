@@ -16,7 +16,7 @@ hurt_finished = time_out
 dead_finished = time_out
 
 PIXEL_PER_METER = (10.0 / 0.3) 
-RUN_SPEED_KMPH = 20.0 
+RUN_SPEED_KMPH = 15.0
 RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
 RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
 RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
@@ -37,6 +37,7 @@ class Idle:
     def enter(self, e):
         self.enemy.wait_time = get_time()
         self.enemy.dir = 0
+        self.enemy.frame = 0.0
 
     def exit(self, e):
         pass
@@ -77,12 +78,30 @@ class Run:
             Run.image = load_image('./적/남자1(근)/Run.png')
 
     def enter(self, e):
-        self.enemy.dir = 1
+        self.enemy.frame = 0.0
 
     def exit(self, e):
         pass
 
     def do(self):
+        dist_to_player = self.enemy.girl.x - self.enemy.x
+
+        if dist_to_player > 0:
+            self.enemy.dir = 1
+            self.enemy.face_dir = 1
+        elif dist_to_player < 0:
+            self.enemy.dir = -1
+            self.enemy.face_dir = -1
+        else:  # 정확히 같은 위치
+            self.enemy.dir = 0
+
+        dist_abs = abs(dist_to_player)
+
+        if dist_abs < 150:
+            self.enemy.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
+        elif dist_abs > 600:
+            self.enemy.state_machine.handle_state_event(('PLAYER_OUT_OF_RANGE', None))
+
         self.enemy.frame = (self.enemy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 10
 
     def handle_event(self, event):
@@ -98,7 +117,7 @@ class Run:
             Run.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 100, 180)
 
     def get_bb(self):
-        return self.enemy.x - 35, self.enemy.y - 90, self.enemy.x + 35, self.enemy.y + 90
+        return self.enemy.x - 45, self.enemy.y - 90, self.enemy.x + 45, self.enemy.y + 90
 
 class Walk:
     image = None
@@ -111,6 +130,7 @@ class Walk:
 
     def enter(self, e):
         self.enemy.dir = 1
+        self.enemy.frame = 0.0
 
     def exit(self, e):
         pass
@@ -139,7 +159,8 @@ class Attack:
             Attack.image = load_image('./적/남자1(근)/Attack.png')
 
     def enter(self, e):
-        self.enemy.dir = 1
+        self.enemy.dir = 0
+        self.enemy.frame = 0.0
 
     def exit(self, e):
         pass
@@ -162,7 +183,7 @@ class Attack:
             Attack.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 120, 180)
 
     def get_bb(self):
-        return self.enemy.x - 35, self.enemy.y - 90, self.enemy.x + 35, self.enemy.y + 90
+        return self.enemy.x - 60, self.enemy.y - 90, self.enemy.x + 60, self.enemy.y + 90
 
 class Hurt:
     image = None
@@ -264,6 +285,7 @@ class Enemy:
     def update(self):
         self.state_machine.update()
         self.x += game_world.scroll_speed * game_framework.frame_time
+        self.x += self.dir * RUN_SPEED_PPS * game_framework.frame_time
 
     def handle_event(self, event):
         pass
