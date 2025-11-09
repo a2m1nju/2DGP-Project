@@ -212,7 +212,7 @@ class Hurt:
         pass
 
     def do(self):
-        animation_speed = 6.0
+        animation_speed = 5.0
         self.girl.frame = (self.girl.frame + animation_speed * ACTION_PER_TIME * game_framework.frame_time)
 
         if self.girl.key_d_down:
@@ -292,7 +292,7 @@ class Girl:
         self.face_dir = 1
         self.dir = 0
 
-        self.hp = 10000
+        self.hp = 100
 
         self.last_attack_time = 0.0
         self.attack_cooldown = 0.5
@@ -364,12 +364,16 @@ class Girl:
 
     def handle_collision(self, group, other):
         if group == 'girl:enemy':
+            if self.state_machine.cur_state == self.HURT:
+                return
+
             if self.state_machine.cur_state == self.PROTECTION:
                 print("막음")
                 return
 
             if self.state_machine.cur_state == self.DEAD:
                 return
+
 
             self.hp -= 10
 
