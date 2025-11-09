@@ -178,13 +178,16 @@ class Attack:
         left, width = Attack.sizes[int(self.enemy.frame)]
         bottom = 0
         height = 72
+
+        draw_y = self.enemy.y + 10
+
         if self.enemy.face_dir == -1:
-            Attack.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.enemy.x, self.enemy.y, 160, 220)
+            Attack.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.enemy.x, draw_y, 160, 200)
         else:
-            Attack.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 160, 220)
+            Attack.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, draw_y, 160, 200)
 
     def get_bb(self):
-        return self.enemy.x - 80, self.enemy.y - 110, self.enemy.x + 80, self.enemy.y + 110
+        return self.enemy.x - 80, self.enemy.y - 100, self.enemy.x + 80, self.enemy.y + 100
 
 class Hurt:
     image = None
