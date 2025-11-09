@@ -263,6 +263,7 @@ class Dead:
         return self.enemy.x - 35, self.enemy.y - 90, self.enemy.x + 35, self.enemy.y + 90
 
 class Enemy:
+    font = None
     def __init__(self, girl):
         self.x, self.y = 1000, 150
         self.frame = 0.0
@@ -270,6 +271,9 @@ class Enemy:
         self.dir = 0
         self.girl = girl
         self.hp = 10
+
+        if Enemy.font is None:
+            Enemy.font = load_font('ENCR10B.TTF', 16)
 
         self.IDLE = Idle(self)
         self.RUN = Run(self)
@@ -312,6 +316,9 @@ class Enemy:
     def draw(self):
         self.state_machine.draw()
         draw_rectangle(*self.get_bb())
+
+        if self.state_machine.cur_state != self.DEAD:
+            Enemy.font.draw(self.x - 30, self.y + 110, f'HP: {self.hp}', (255, 0, 0))
 
     def get_bb(self):
         return self.state_machine.get_bb()
