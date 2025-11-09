@@ -14,6 +14,7 @@ time_out = lambda e: e[0] == 'TIMEOUT'
 hit_by_enemy = lambda e: e[0] == 'HIT_BY_ENEMY'
 time_out_to_idle = lambda e: e[0] == 'TIMEOUT_IDLE'
 time_out_to_walk = lambda e: e[0] == 'TIMEOUT_WALK'
+hp_is_zero = lambda e: e[0] == 'HP_IS_ZERO'
 
 def right_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_d
@@ -245,17 +246,53 @@ class Hurt:
     def get_bb(self):
         return self.girl.x - 55, self.girl.y - 90, self.girl.x + 55, self.girl.y + 90
 
+class Dead:
+    image = None
+    sizes = [(0, 30), (127, 31), (258, 57), (387, 70), (515, 70)]
+
+    def __init__(self, girl):
+        self.girl = girl
+        if Dead.image == None:
+            Dead.image = load_image('./주인공/Dead.png')
+
+    def enter(self, e):
+        self.girl.frame = 0.0
+        self.girl.dir = 0
+        game_world.scroll_speed = 0.0
+        game_world.remove_collision_object(self.girl)
+
+    def exit(self, e):
+        pass
+
+    def do(self):
+        animation_speed = 4.0
+        self.girl.frame = (self.girl.frame + animation_speed * ACTION_PER_TIME * game_framework.frame_time)
+        total_frames = len(Dead.sizes)
+
+        if self.girl.frame >= total_frames:
+            self.girl.frame = total_frames - 1
+
+    def draw(self):
+        left, width = Dead.sizes[int(self.girl.frame)]
+        bottom = 0
+        height = 80
+        if self.girl.face_dir == -1:
+            Dead.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.girl.x, self.girl.y, 100, 180)
+        else:
+            Dead.image.clip_composite_draw(left, bottom, width, height, 0, '', self.girl.x, self.girl.y, 100, 180)
+
+    def get_bb(self):
+        return 0, 0, 0, 0
 
 
 class Girl:
     def __init__(self):
-
-        self.ball_count = 10
-
         self.x, self.y = 100, 150
         self.frame = 0.0
         self.face_dir = 1
         self.dir = 0
+
+        self.hp = 10000
 
         self.last_attack_time = 0.0
         self.attack_cooldown = 0.5
@@ -268,19 +305,23 @@ class Girl:
         self.WALK = Walk(self)
         self.ATTACK = Attack(self)
         self.HURT = Hurt(self)
+        self.DEAD = Dead(self)
         self.state_machine = StateMachine(
             self.IDLE,
             {
-                self.PROTECTION : {e_up: self.IDLE, hit_by_enemy: self.HURT},
+                self.PROTECTION : {e_up: self.IDLE, hit_by_enemy: self.HURT, hp_is_zero: self.DEAD},
                 self.IDLE : {space_down: self.ATTACK, right_down: self.WALK, left_down: self.WALK
-                             , left_up: self.WALK, right_up : self.WALK , e_down: self.PROTECTION, hit_by_enemy: self.HURT},
+                             , left_up: self.WALK, right_up : self.WALK , e_down: self.PROTECTION, hit_by_enemy: self.HURT,
+                             hp_is_zero: self.DEAD},
                 self.WALK : {space_down: self.ATTACK, right_up: self.IDLE, left_up: self.IDLE,
-                             right_down: self.IDLE, left_down: self.IDLE, e_down: self.PROTECTION, hit_by_enemy: self.HURT},
+                             right_down: self.IDLE, left_down: self.IDLE, e_down: self.PROTECTION, hit_by_enemy: self.HURT,
+                             hp_is_zero: self.DEAD},
                 self.ATTACK : {time_out: self.IDLE, e_down: self.PROTECTION, space_down: self.ATTACK,
-                               right_down: self.WALK, left_down: self.WALK, hit_by_enemy: self.HURT},
+                               right_down: self.WALK, left_down: self.WALK, hit_by_enemy: self.HURT,
+                               hp_is_zero: self.DEAD},
                 self.HURT: { time_out_to_idle: self.IDLE, time_out_to_walk: self.WALK, space_down: self.ATTACK,
-                             e_down: self.PROTECTION
-                }
+                             e_down: self.PROTECTION, hp_is_zero: self.DEAD},
+                self.DEAD : {}
             }
         )
 
@@ -323,7 +364,17 @@ class Girl:
 
     def handle_collision(self, group, other):
         if group == 'girl:enemy':
-            if self.state_machine.cur_state != self.PROTECTION:
-                self.state_machine.handle_state_event(('HIT_BY_ENEMY', None))
-            else:
+            if self.state_machine.cur_state == self.PROTECTION:
                 print("막음")
+                return
+
+            if self.state_machine.cur_state == self.DEAD:
+                return
+
+            self.hp -= 10
+
+            if self.hp <= 0:
+                self.hp = 0
+                self.state_machine.handle_state_event(('HP_IS_ZERO', None))
+            else:
+                self.state_machine.handle_state_event(('HIT_BY_ENEMY', None))
