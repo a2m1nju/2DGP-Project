@@ -307,6 +307,8 @@ class Girl:
 
         self.last_attack_time = 0.0
         self.attack_cooldown = 0.5
+        self.last_hit_time = 0.0
+        self.hit_cooldown = 0.5
 
         self.key_a_down = False
         self.key_d_down = False
@@ -375,18 +377,24 @@ class Girl:
 
     def handle_collision(self, group, other):
         if group == 'girl:enemy':
-            if self.state_machine.cur_state == self.HURT:
+            current_time = get_time()
+            if current_time - self.last_hit_time < self.hit_cooldown:
                 return
-
             if self.state_machine.cur_state == self.PROTECTION:
-                print("막음")
+                self.hp -= 1
+                self.last_hit_time = current_time
+
+                if self.hp <= 0:
+                    self.hp = 0
+                    self.state_machine.handle_state_event(('HP_IS_ZERO', None))
                 return
 
             if self.state_machine.cur_state == self.DEAD:
                 return
 
+            self.hp -= 10  # 일반 데미지
 
-            self.hp -= 10
+            self.last_hit_time = current_time
 
             if self.hp <= 0:
                 self.hp = 0
