@@ -202,6 +202,9 @@ class Girl:
         self.face_dir = 1
         self.dir = 0
 
+        self.key_a_down = False
+        self.key_d_down = False
+
         self.IDLE = Idle(self)
         self.PROTECTION = Protection(self)
         self.WALK = Walk(self)

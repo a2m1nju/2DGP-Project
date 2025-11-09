@@ -60,7 +60,7 @@ class Idle:
         width = 30
         height = 68
         if self.enemy.face_dir == -1:
-            Idle.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.enemy.x, self.enemy.y, 70, 180)
+            Idle.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.enemy.x, self.enemy.y, 100, 200)
         else:
             Idle.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 70, 180)
 
@@ -112,9 +112,9 @@ class Run:
         bottom = 0
         height = 73
         if self.enemy.face_dir == -1:
-            Run.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.enemy.x, self.enemy.y, 100, 180)
+            Run.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.enemy.x, self.enemy.y, 120, 200)
         else:
-            Run.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 100, 180)
+            Run.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 120, 200)
 
     def get_bb(self):
         return self.enemy.x - 45, self.enemy.y - 90, self.enemy.x + 45, self.enemy.y + 90
@@ -178,12 +178,12 @@ class Attack:
         bottom = 0
         height = 72
         if self.enemy.face_dir == -1:
-            Attack.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.enemy.x, self.enemy.y, 120, 180)
+            Attack.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.enemy.x, self.enemy.y, 160, 220)
         else:
-            Attack.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 120, 180)
+            Attack.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 160, 220)
 
     def get_bb(self):
-        return self.enemy.x - 60, self.enemy.y - 90, self.enemy.x + 60, self.enemy.y + 90
+        return self.enemy.x - 80, self.enemy.y - 110, self.enemy.x + 80, self.enemy.y + 110
 
 class Hurt:
     image = None
@@ -284,8 +284,17 @@ class Enemy:
 
     def update(self):
         self.state_machine.update()
+
         self.x += game_world.scroll_speed * game_framework.frame_time
         self.x += self.dir * RUN_SPEED_PPS * game_framework.frame_time
+
+        canvas_width = 1600
+        buffer = canvas_width / 2
+
+        if self.x < (0 - buffer):
+            game_world.remove_object(self)
+        elif self.x > (canvas_width + buffer):
+            game_world.remove_object(self)
 
     def handle_event(self, event):
         pass
