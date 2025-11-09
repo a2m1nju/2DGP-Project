@@ -9,6 +9,7 @@ FRAMES_PER_ACTION = 9
 
 PIXEL_PER_METER = (1.0 / 0.03)
 GRAVITY = 9.8
+MAX_RANGE_PIXELS = 450.0
 
 class Book:
     image = None
@@ -23,6 +24,7 @@ class Book:
         self.yv = abs(throwin_speed * math.sin(math.radians(throwin_angle)))
         self.stopped = True if throwin_speed == 0.0 else False
         self.frame = 0.0
+        self.traveled_distance = 0.0
 
     def draw(self):
         left , bottom, height, width= self.sizes[int(self.frame)]
@@ -31,12 +33,21 @@ class Book:
 
     def update(self):
         self.frame = (self.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % len(self.sizes)
+
         if self.stopped:
             return
-        self.x += self.xv * game_framework.frame_time * PIXEL_PER_METER
-        self.y += self.yv * game_framework.frame_time * PIXEL_PER_METER
 
+        distance_this_frame_x = self.xv * game_framework.frame_time * PIXEL_PER_METER
+        distance_this_frame_y = self.yv * game_framework.frame_time * PIXEL_PER_METER
+
+        self.x += distance_this_frame_x
+        self.y += distance_this_frame_y
         self.x += game_world.scroll_speed * game_framework.frame_time
+
+        self.traveled_distance += math.sqrt(distance_this_frame_x ** 2 + distance_this_frame_y ** 2)
+
+        if self.traveled_distance > MAX_RANGE_PIXELS:
+            game_world.remove_object(self)
 
 
     def get_bb(self):
