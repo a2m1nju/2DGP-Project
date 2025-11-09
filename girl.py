@@ -255,11 +255,14 @@ class Dead:
         if Dead.image == None:
             Dead.image = load_image('./주인공/Dead.png')
 
+        self.gameover_timer = 0.0
+
     def enter(self, e):
         self.girl.frame = 0.0
         self.girl.dir = 0
         game_world.scroll_speed = 0.0
         game_world.remove_collision_object(self.girl)
+        self.gameover_timer = 0.0
 
     def exit(self, e):
         pass
@@ -270,7 +273,15 @@ class Dead:
         total_frames = len(Dead.sizes)
 
         if self.girl.frame >= total_frames:
-            self.girl.frame = total_frames - 1
+            self.girl.frame = total_frames - 1 
+
+            if self.gameover_timer == 0.0:
+                self.gameover_timer = get_time()
+
+
+            if get_time() - self.gameover_timer > 0.5:
+                import gameover_mode # 순환 참조 방지를 위해 여기서 import
+                game_framework.change_mode(gameover_mode)
 
     def draw(self):
         left, width = Dead.sizes[int(self.girl.frame)]
