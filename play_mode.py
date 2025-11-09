@@ -12,7 +12,7 @@ from enemy import Enemy
 girl = None
 font = None
 spawn_timer = 0.0
-spawn_cooldown = 10.0
+spawn_cooldown = 8.0
 spawn_count = 0
 max_spawn_count = 10
 
