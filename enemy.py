@@ -11,6 +11,7 @@ player_in_sight_range = lambda e: e[0] == 'PLAYER_IN_SIGHT_RANGE'
 player_in_attack_range = lambda e: e[0] == 'PLAYER_IN_ATTACK_RANGE'
 player_out_of_range = lambda e: e[0] == 'PLAYER_OUT_OF_RANGE'
 hit_by_book = lambda e: e[0] == 'HIT_BY_BOOK'
+hp_is_zero = lambda e: e[0] == 'HP_IS_ZERO'
 attack_finished = time_out
 hurt_finished = time_out
 dead_finished = time_out
@@ -232,17 +233,18 @@ class Dead:
     def enter(self, e):
         self.enemy.dir = 0
         self.enemy.frame = 0.0
+        game_world.remove_collision_object(self.enemy)
 
     def exit(self, e):
         pass
 
     def do(self):
-        self.enemy.frame = (self.enemy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time)
+        animation_speed = 4.0
+        self.enemy.frame = (self.enemy.frame + animation_speed * ACTION_PER_TIME * game_framework.frame_time)
         total_frames = len(Dead.sizes)
 
         if self.enemy.frame >= total_frames:
             self.enemy.frame = total_frames - 1
-            self.enemy.state_machine.handle_state_event(('TIMEOUT', None))
 
     def draw(self):
         left, width = Dead.sizes[int(self.enemy.frame)]
@@ -263,6 +265,7 @@ class Enemy:
         self.face_dir = 1
         self.dir = 0
         self.girl = girl
+        self.hp = 10
 
         self.IDLE = Idle(self)
         self.RUN = Run(self)
@@ -273,12 +276,14 @@ class Enemy:
         self.state_machine = StateMachine(
             self.IDLE,
             {
-                self.IDLE : {player_in_sight_range: self.RUN, player_in_attack_range: self.ATTACK, hit_by_book: self.HURT},
-                self.RUN : {player_in_attack_range: self.ATTACK, player_out_of_range: self.IDLE, hit_by_book: self.HURT},
+                self.IDLE : {player_in_sight_range: self.RUN, player_in_attack_range: self.ATTACK,
+                             hit_by_book: self.HURT, hp_is_zero: self.DEAD},
+                self.RUN : {player_in_attack_range: self.ATTACK, player_out_of_range: self.IDLE,
+                            hit_by_book: self.HURT, hp_is_zero: self.DEAD},
                 self.WALK : {time_out: self.IDLE},
-                self.ATTACK : {attack_finished: self.IDLE, hit_by_book: self.HURT},
-                self.HURT : {hurt_finished: self.IDLE},
-                self.DEAD : {time_out: self.IDLE}
+                self.ATTACK : {attack_finished: self.IDLE, hit_by_book: self.HURT, hp_is_zero: self.DEAD},
+                self.HURT : {hurt_finished: self.IDLE, hp_is_zero: self.DEAD},
+                self.DEAD : {}
             }
         )
 
@@ -309,6 +314,13 @@ class Enemy:
 
     def handle_collision(self, group, other):
         if group == 'book:enemy':
-            self.state_machine.handle_state_event(('HIT_BY_BOOK', None))
+            if self.state_machine.cur_state == self.DEAD:
+                return
+
             game_world.remove_object(other)
 
+            self.hp -= 1
+            if self.hp <= 0:
+                self.state_machine.handle_state_event(('HP_IS_ZERO', None))
+            else:
+                self.state_machine.handle_state_event(('HIT_BY_BOOK', None))
