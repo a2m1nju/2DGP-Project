@@ -434,3 +434,9 @@ class Girl:
         elif group == 'girl:coin':
             import play_mode
             play_mode.coin_count += other.value
+
+        elif group == 'girl:food':
+            self.hp += other.value
+
+            if self.hp > 100:
+                self.hp = 100

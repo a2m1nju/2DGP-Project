@@ -39,6 +39,7 @@ def init():
     game_world.add_collision_pair('girl:enemy', girl, None)
     game_world.add_collision_pair('fire:girl', None, girl)
     game_world.add_collision_pair('girl:coin', girl, None)
+    game_world.add_collision_pair('girl:food', girl, None)
 
     font = load_font('ENCR10B.TTF', 16)
 

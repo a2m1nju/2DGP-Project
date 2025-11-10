@@ -7,6 +7,7 @@ import random
 from state_machine import StateMachine
 from fire import Fire
 from coin import Coin
+from food import Food
 
 time_out = lambda e: e[0] == 'TIMEOUT'
 player_in_sight_range = lambda e: e[0] == 'PLAYER_IN_SIGHT_RANGE'
@@ -222,10 +223,15 @@ class Dead:
         import play_mode
         play_mode.enemies_killed_count += 1
 
-        coin_value = random.choice([10, 20, 30])
-        coin = Coin(self.enemy.x, self.enemy.y + 30, coin_value)
-        game_world.add_object(coin, 3)
-        game_world.add_collision_pair('girl:coin', None, coin)
+        if random.random() < 0.6:
+            coin_value = random.choice([10, 20, 30])
+            coin = Coin(self.enemy.x, self.enemy.y + 30, coin_value)
+            game_world.add_object(coin, 3)
+            game_world.add_collision_pair('girl:coin', None, coin)
+        else:
+            food_item = Food(self.enemy.x, self.enemy.y + 30)
+            game_world.add_object(food_item, 3)
+            game_world.add_collision_pair('girl:food', None, food_item)
 
     def exit(self, e):
         pass
