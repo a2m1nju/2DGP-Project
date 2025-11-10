@@ -93,6 +93,7 @@ def draw():
     clear_canvas()
     game_world.render()
     font.draw(girl.x - 30, girl.y + 110, f'HP: {girl.hp}', (255, 0, 0))
+    font.draw(50, 550, f'KILLS: {enemies_killed_count}', (255, 255, 255))
     update_canvas()
 
 
