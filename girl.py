@@ -401,3 +401,21 @@ class Girl:
                 self.state_machine.handle_state_event(('HP_IS_ZERO', None))
             else:
                 self.state_machine.handle_state_event(('HIT_BY_ENEMY', None))
+
+        elif group == 'fire:girl':
+            current_time = get_time()
+            if current_time - self.last_hit_time < self.hit_cooldown:
+                return
+
+            if self.state_machine.cur_state == self.PROTECTION:
+                self.hp -= 1  # 방어 시 데미지 1
+                self.last_hit_time = current_time
+            elif self.state_machine.cur_state != self.DEAD:
+                self.hp -= 5  # 원거리 공격 데미지 5
+                self.last_hit_time = current_time
+
+            if self.hp <= 0:
+                self.hp = 0
+                self.state_machine.handle_state_event(('HP_IS_ZERO', None))
+            elif self.state_machine.cur_state != self.PROTECTION:
+                self.state_machine.handle_state_event(('HIT_BY_ENEMY', None))

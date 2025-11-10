@@ -8,13 +8,14 @@ from girl import Girl
 from subway import Subway
 from book import Book
 from enemy import Enemy
+from enemy_R import Enemy_R
 
 girl = None
 font = None
 spawn_timer = 0.0
 spawn_cooldown = 8.0
 spawn_count = 0
-max_spawn_count = 1
+max_spawn_count = 2
 
 def handle_events():
     event_list = get_events()
@@ -36,6 +37,8 @@ def init():
     game_world.add_object(girl, 4)
     game_world.add_collision_pair('girl:enemy', girl, None)
 
+    game_world.add_collision_pair('fire:girl', None, girl)
+
     font = load_font('ENCR10B.TTF', 16)
 
     Subway('./배경/내부2.png', 800, 300, 1600, 600, 0, is_looping=True)
@@ -44,9 +47,15 @@ def init():
     game_world.add_object(enemy, 4)
     game_world.add_collision_pair('book:enemy', None, enemy)
     game_world.add_collision_pair('girl:enemy', None, enemy)
-    spawn_count = 1
-    spawn_timer = get_time()
 
+    enemy_r = Enemy_R(girl)
+    enemy_r.x = 1300
+    game_world.add_object(enemy_r, 4)
+    game_world.add_collision_pair('book:enemy', None, enemy_r)
+    game_world.add_collision_pair('girl:enemy', None, enemy_r)
+
+    spawn_count = 2
+    spawn_timer = get_time()
     enemies_killed_count = 0
 
 def update():
