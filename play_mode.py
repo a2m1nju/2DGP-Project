@@ -6,7 +6,6 @@ import game_world
 
 from girl import Girl
 from subway import Subway
-from book import Book
 from enemy import Enemy
 from enemy_R import Enemy_R
 
@@ -16,6 +15,7 @@ spawn_timer = 0.0
 spawn_cooldown = 8.0
 max_spawn_count = 3
 max_enemies_on_screen = 3
+coin_count = 0
 
 def handle_events():
     event_list = get_events()
@@ -29,8 +29,9 @@ def handle_events():
 
 
 def init():
-    global girl, font, spawn_timer
+    global girl, font, spawn_timer, coin_count
     global enemies_killed_count
+
 
     girl = Girl()
     girl.x = 800
@@ -56,6 +57,7 @@ def init():
 
     spawn_timer = get_time()
     enemies_killed_count = 0
+    coin_count = 0
 
 def update():
     global spawn_timer, spawn_cooldown, spawn_count, max_spawn_count
@@ -96,6 +98,7 @@ def draw():
     game_world.render()
     font.draw(girl.x - 30, girl.y + 110, f'HP: {girl.hp}', (255, 0, 0))
     font.draw(50, 550, f'KILLS: {enemies_killed_count}', (255, 255, 255))
+    font.draw(50, 520, f'COINS: {coin_count}', (255, 255, 255))
     update_canvas()
 
 

@@ -432,4 +432,5 @@ class Girl:
                 self.state_machine.handle_state_event(('HIT_BY_ENEMY', None))
 
         elif group == 'girl:coin':
-            pass
+            import play_mode
+            play_mode.coin_count += 10
