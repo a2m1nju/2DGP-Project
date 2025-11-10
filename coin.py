@@ -12,13 +12,23 @@ PIXEL_PER_METER = (1.0 / 0.03)
 GRAVITY = 9.8
 
 class Coin:
-    image = None
+    image_10 = None
+    image_20 = None
+    image_30 = None
 
-    def __init__(self, x, y):
-        if Coin.image is None:
-            Coin.image = load_image('./코인/코인_드랍1.png')
+    def __init__(self, x, y, value = 10):
+        if Coin.image_10 is None:
+            Coin.image_10 = load_image('./코인/코인1.png')
+
+        if Coin.image_20 is None:
+            Coin.image_20 = load_image('./코인/코인2.png')
+
+        if Coin.image_30 is None:
+            Coin.image_30 = load_image('./코인/코인3.png')
+
         self.x, self.y = x, y
         self.yv = FALL_SPEED_PPS
+        self.value = value
 
     def update(self):
         self.x += game_world.scroll_speed * game_framework.frame_time
@@ -32,7 +42,12 @@ class Coin:
             self.yv = 0
 
     def draw(self):
-        self.image.draw(self.x, self.y, 24, 24)
+        if self.value == 30:
+            self.image_30.draw(self.x, self.y, 24, 24)
+        elif self.value == 20:
+            self.image_20.draw(self.x, self.y, 24, 24)
+        else:
+            self.image_10.draw(self.x, self.y, 24, 24)
         draw_rectangle(*self.get_bb())
 
     def get_bb(self):

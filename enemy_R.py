@@ -2,6 +2,7 @@ from pico2d import load_image, get_time, load_font, draw_rectangle
 
 import game_world
 import game_framework
+import random
 
 from state_machine import StateMachine
 from fire import Fire
@@ -221,7 +222,8 @@ class Dead:
         import play_mode
         play_mode.enemies_killed_count += 1
 
-        coin = Coin(self.enemy.x, self.enemy.y + 30)
+        coin_value = random.choice([10, 20, 30])
+        coin = Coin(self.enemy.x, self.enemy.y + 30, coin_value)
         game_world.add_object(coin, 3)
         game_world.add_collision_pair('girl:coin', None, coin)
 

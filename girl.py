@@ -433,4 +433,4 @@ class Girl:
 
         elif group == 'girl:coin':
             import play_mode
-            play_mode.coin_count += 10
+            play_mode.coin_count += other.value
