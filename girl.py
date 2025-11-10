@@ -430,3 +430,6 @@ class Girl:
 
             elif not block_successful:
                 self.state_machine.handle_state_event(('HIT_BY_ENEMY', None))
+
+        elif group == 'girl:coin':
+            pass

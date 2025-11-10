@@ -14,7 +14,7 @@ girl = None
 font = None
 spawn_timer = 0.0
 spawn_cooldown = 8.0
-max_spawn_count = 2
+max_spawn_count = 3
 max_enemies_on_screen = 3
 
 def handle_events():
@@ -36,8 +36,8 @@ def init():
     girl.x = 800
     game_world.add_object(girl, 4)
     game_world.add_collision_pair('girl:enemy', girl, None)
-
     game_world.add_collision_pair('fire:girl', None, girl)
+    game_world.add_collision_pair('girl:coin', girl, None)
 
     font = load_font('ENCR10B.TTF', 16)
 

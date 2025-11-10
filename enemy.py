@@ -4,6 +4,7 @@ import game_world
 import game_framework
 
 from state_machine import StateMachine
+from coin import Coin
 
 time_out = lambda e: e[0] == 'TIMEOUT'
 player_in_sight_range = lambda e: e[0] == 'PLAYER_IN_SIGHT_RANGE'
@@ -239,6 +240,10 @@ class Dead:
 
         import play_mode
         play_mode.enemies_killed_count += 1
+
+        coin = Coin(self.enemy.x, self.enemy.y + 30)
+        game_world.add_object(coin, 3)
+        game_world.add_collision_pair('girl:coin', None, coin)
 
     def exit(self, e):
         pass
