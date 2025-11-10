@@ -54,7 +54,8 @@ class Book:
         return self.x - 20, self.y - 20, self.x + 20, self.y + 20
 
     def handle_collision(self, group, other):
-        pass
+        if group == 'book:enemy':
+            game_world.remove_object(self)
 
 
 

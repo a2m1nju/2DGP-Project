@@ -322,7 +322,8 @@ class Girl:
         self.state_machine = StateMachine(
             self.IDLE,
             {
-                self.PROTECTION : {e_up: self.IDLE, hit_by_enemy: self.HURT, hp_is_zero: self.DEAD},
+                self.PROTECTION : {e_up: self.IDLE, hit_by_enemy: self.HURT, hp_is_zero: self.DEAD,
+                                   left_down: self.WALK, right_down: self.WALK, space_down: self.ATTACK},
                 self.IDLE : {space_down: self.ATTACK, right_down: self.WALK, left_down: self.WALK
                              , left_up: self.WALK, right_up : self.WALK , e_down: self.PROTECTION, hit_by_enemy: self.HURT,
                              hp_is_zero: self.DEAD},
@@ -333,7 +334,7 @@ class Girl:
                                right_down: self.WALK, left_down: self.WALK, hit_by_enemy: self.HURT,
                                hp_is_zero: self.DEAD},
                 self.HURT: { time_out_to_idle: self.IDLE, time_out_to_walk: self.WALK, space_down: self.ATTACK,
-                             e_down: self.PROTECTION, hp_is_zero: self.DEAD},
+                             e_down: self.PROTECTION, hp_is_zero: self.DEAD, right_down: self.WALK, left_down: self.WALK},
                 self.DEAD : {}
             }
         )

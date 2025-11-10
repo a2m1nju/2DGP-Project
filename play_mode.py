@@ -14,8 +14,8 @@ girl = None
 font = None
 spawn_timer = 0.0
 spawn_cooldown = 8.0
-spawn_count = 0
-max_spawn_count = 5
+max_spawn_count = 2
+max_enemies_on_screen = 3
 
 def handle_events():
     event_list = get_events()
@@ -29,7 +29,7 @@ def handle_events():
 
 
 def init():
-    global girl, font, spawn_timer, spawn_count
+    global girl, font, spawn_timer
     global enemies_killed_count
 
     girl = Girl()
@@ -44,7 +44,6 @@ def init():
     Subway('./배경/내부2.png', 800, 300, 1600, 600, 0, is_looping=True)
 
     for i in range(0,1):
-        # 50% 확률로 근거리 또는 원거리 적 선택
         if random.choice([True, False]):
             e = Enemy(girl)
         else:
@@ -55,13 +54,13 @@ def init():
         game_world.add_collision_pair('book:enemy', None, e)
         game_world.add_collision_pair('girl:enemy', None, e)
 
-    spawn_count = 1
     spawn_timer = get_time()
     enemies_killed_count = 0
 
 def update():
     global spawn_timer, spawn_cooldown, spawn_count, max_spawn_count
     global enemies_killed_count
+    global max_enemies_on_screen
 
     game_world.update()
     game_world.handle_collisions()
@@ -71,7 +70,11 @@ def update():
         game_framework.change_mode(gameclear_mode)
         return
 
-    if spawn_count >= max_spawn_count:
+    current_enemy_count = 0
+    if 'girl:enemy' in game_world.collision_pairs:
+        current_enemy_count = len(game_world.collision_pairs['girl:enemy'][1])
+
+    if current_enemy_count >= max_enemies_on_screen:
         return
 
     current_time = get_time()
@@ -86,7 +89,6 @@ def update():
         game_world.add_object(e, 4)
         game_world.add_collision_pair('book:enemy', None, e)
         game_world.add_collision_pair('girl:enemy', None, e)
-        spawn_count += 1
 
 
 def draw():

@@ -312,8 +312,6 @@ class Enemy_R:
             if self.state_machine.cur_state == self.DEAD:
                 return
 
-            game_world.remove_object(other)  # Book 제거
-
             self.hp -= 1
             if self.hp <= 0:
                 self.state_machine.handle_state_event(('HP_IS_ZERO', None))
