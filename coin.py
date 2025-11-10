@@ -18,13 +18,13 @@ class Coin:
 
     def __init__(self, x, y, value = 10):
         if Coin.image_10 is None:
-            Coin.image_10 = load_image('./코인/코인1.png')
+            Coin.image_10 = load_image('./아이템/코인/코인1.png')
 
         if Coin.image_20 is None:
-            Coin.image_20 = load_image('./코인/코인2.png')
+            Coin.image_20 = load_image('./아이템/코인/코인2.png')
 
         if Coin.image_30 is None:
-            Coin.image_30 = load_image('./코인/코인3.png')
+            Coin.image_30 = load_image('./아이템/코인/코인3.png')
 
         self.x, self.y = x, y
         self.yv = FALL_SPEED_PPS
