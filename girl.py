@@ -199,7 +199,7 @@ class Attack:
 
 class Hurt:
     image = None
-    sizes = [(0, 47), (124, 48), (248, 43)]
+    sizes = [(0, 51), (123, 61), (254, 65)]
     def __init__(self, girl):
         self.girl = girl
         if Hurt.image == None:
@@ -237,11 +237,11 @@ class Hurt:
     def draw(self):
         left, width = Hurt.sizes[int(self.girl.frame)]
         bottom = 0
-        height = 76
+        height = 90
         if self.girl.face_dir == -1:
-            Hurt.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.girl.x, self.girl.y, 100, 180)
+            Hurt.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.girl.x, self.girl.y, 65, 180)
         else:
-            Hurt.image.clip_composite_draw(left, bottom, width, height, 0, '', self.girl.x, self.girl.y, 100, 180)
+            Hurt.image.clip_composite_draw(left, bottom, width, height, 0, '', self.girl.x, self.girl.y, 65, 180)
 
     def get_bb(self):
         return self.girl.x - 55, self.girl.y - 90, self.girl.x + 55, self.girl.y + 90
@@ -381,18 +381,21 @@ class Girl:
             if current_time - self.last_hit_time < self.hit_cooldown:
                 return
             if self.state_machine.cur_state == self.PROTECTION:
-                self.hp -= 1
-                self.last_hit_time = current_time
+                is_blocking_wrong_way = (other.x > self.x and self.face_dir == -1) or \
+                                        (other.x < self.x and self.face_dir == 1)
+                if not is_blocking_wrong_way:
+                    self.hp -= 1
+                    self.last_hit_time = current_time
 
-                if self.hp <= 0:
-                    self.hp = 0
-                    self.state_machine.handle_state_event(('HP_IS_ZERO', None))
-                return
+                    if self.hp <= 0:
+                        self.hp = 0
+                        self.state_machine.handle_state_event(('HP_IS_ZERO', None))
+                    return
 
             if self.state_machine.cur_state == self.DEAD:
                 return
 
-            self.hp -= 10  # 일반 데미지
+            self.hp -= 10
 
             self.last_hit_time = current_time
 
@@ -406,16 +409,23 @@ class Girl:
             current_time = get_time()
             if current_time - self.last_hit_time < self.hit_cooldown:
                 return
+            if self.state_machine.cur_state == self.DEAD:
+                return
 
-            if self.state_machine.cur_state == self.PROTECTION:
-                self.hp -= 1  # 방어 시 데미지 1
+            is_blocking_wrong_way = (other.x > self.x and self.face_dir == -1) or \
+                                    (other.x < self.x and self.face_dir == 1)
+            block_successful = (self.state_machine.cur_state == self.PROTECTION and not is_blocking_wrong_way)
+
+            if block_successful:
+                self.hp -= 1
                 self.last_hit_time = current_time
-            elif self.state_machine.cur_state != self.DEAD:
-                self.hp -= 5  # 원거리 공격 데미지 5
+            else:
+                self.hp -= 5
                 self.last_hit_time = current_time
 
             if self.hp <= 0:
                 self.hp = 0
                 self.state_machine.handle_state_event(('HP_IS_ZERO', None))
-            elif self.state_machine.cur_state != self.PROTECTION:
+
+            elif not block_successful:
                 self.state_machine.handle_state_event(('HIT_BY_ENEMY', None))
