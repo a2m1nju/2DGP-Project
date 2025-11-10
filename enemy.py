@@ -1,5 +1,4 @@
 from pico2d import load_image, get_time, load_font, draw_rectangle
-from sdl2 import SDL_KEYDOWN, SDLK_SPACE, SDL_KEYUP, SDLK_LEFT, SDLK_a, SDLK_d, SDLK_e
 
 import game_world
 import game_framework
@@ -25,7 +24,6 @@ RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
 TIME_PER_ACTION = 0.5
 ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 FRAMES_PER_ACTION = 9
-
 
 class Idle:
     image = None
