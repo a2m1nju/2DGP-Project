@@ -261,7 +261,7 @@ class Dead:
             Dead.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 120, 180)
 
     def get_bb(self):
-        return self.enemy.x - 35, self.enemy.y - 90, self.enemy.x + 35, self.enemy.y + 90
+        return 0,0,0,0
 
 class Enemy:
     font = None
