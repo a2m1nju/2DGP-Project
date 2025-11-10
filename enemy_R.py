@@ -114,16 +114,17 @@ class Walk:
         height = 106
 
         if self.enemy.face_dir == -1:
-            Walk.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.enemy.x, self.enemy.y,70,180)
+            Walk.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.enemy.x, self.enemy.y,90,180)
         else:
-            Walk.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 70,180)
+            Walk.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 90,180)
     def get_bb(self):
         return self.enemy.x - 35, self.enemy.y - 90, self.enemy.x + 35, self.enemy.y + 90
 
 class Attack:
     image = None
-    sizes = [(0, 50),(257, 47),(518, 48),(773, 90),(1029, 116),
-             (1286, 122),(1541, 129),(1797, 137),(2053,140),(2309,140)]
+    #sizes = [(0, 50),(257, 47),(518, 48),(773, 90),(1029, 116),
+             #(1286, 122),(1541, 129),(1797, 137),(2053,140),(2309,140)]
+    sizes = [0, 257, 518, 773, 1029, 1286, 1541, 1797, 2053, 2309]
     def __init__(self, enemy):
         self.enemy = enemy
         if Attack.image == None:
@@ -146,14 +147,15 @@ class Attack:
             self.enemy.state_machine.handle_state_event(('TIMEOUT', None))
 
     def draw(self):
-        left, width = self.sizes[int(self.enemy.frame)]
+        left = self.sizes[int(self.enemy.frame)]
         bottom = 0
+        width = 140
         height = 100
 
         if self.enemy.face_dir == -1:
-            Attack.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.enemy.x, self.enemy.y, 70, 180)
+            Attack.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.enemy.x, self.enemy.y, 180, 180)
         else:
-            Attack.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 70, 180)
+            Attack.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 180, 180)
 
     def get_bb(self):
         return self.enemy.x - 35, self.enemy.y - 90, self.enemy.x + 35, self.enemy.y + 90
@@ -229,9 +231,9 @@ class Dead:
         height = 112
 
         if self.enemy.face_dir == -1:
-            Dead.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.enemy.x, self.enemy.y, 70, 180)
+            Dead.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.enemy.x, self.enemy.y, 100, 180)
         else:
-            Dead.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 70, 180)
+            Dead.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 100 , 180)
 
     def get_bb(self):
         return self.enemy.x - 35, self.enemy.y - 90, self.enemy.x + 35, self.enemy.y + 90
@@ -244,7 +246,7 @@ class Enemy_R:
         self.face_dir = 1
         self.dir = 0
         self.girl = girl
-        self.hp = 8
+        self.hp = 5
 
         if Enemy_R.font is None:
             Enemy_R.font = load_font('ENCR10B.TTF', 16)
@@ -280,7 +282,7 @@ class Enemy_R:
             game_world.remove_object(self)
 
     def throw_fire(self):
-        fire = Fire(self.x + self.face_dir * 40, self.y + 20, self.face_dir * 10)
+        fire = Fire(self.x + self.face_dir * 40, self.y + 45, self.face_dir * 10)
         game_world.add_object(fire, 4)
         game_world.add_collision_pair('fire:girl', fire, None)
 

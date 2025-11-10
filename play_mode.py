@@ -15,7 +15,7 @@ font = None
 spawn_timer = 0.0
 spawn_cooldown = 8.0
 spawn_count = 0
-max_spawn_count = 2
+max_spawn_count = 3
 
 def handle_events():
     event_list = get_events()
@@ -43,10 +43,10 @@ def init():
 
     Subway('./배경/내부2.png', 800, 300, 1600, 600, 0, is_looping=True)
 
-    enemy = Enemy(girl)
-    game_world.add_object(enemy, 4)
-    game_world.add_collision_pair('book:enemy', None, enemy)
-    game_world.add_collision_pair('girl:enemy', None, enemy)
+    #enemy = Enemy(girl)
+    #game_world.add_object(enemy, 4)
+    #game_world.add_collision_pair('book:enemy', None, enemy)
+    #game_world.add_collision_pair('girl:enemy', None, enemy)
 
     enemy_r = Enemy_R(girl)
     enemy_r.x = 1300
@@ -76,12 +76,12 @@ def update():
     current_time = get_time()
     if current_time - spawn_timer > spawn_cooldown:
         spawn_timer = current_time
-        enemy = Enemy(girl)
-        enemy.x = 1600 + 100
-        game_world.add_object(enemy, 4)
-        game_world.add_collision_pair('book:enemy', None, enemy)
-        game_world.add_collision_pair('girl:enemy', None, enemy)
-        spawn_count += 1
+        #enemy = Enemy(girl)
+        #enemy.x = 1600 + 100
+        #game_world.add_object(enemy, 4)
+        #game_world.add_collision_pair('book:enemy', None, enemy)
+        #game_world.add_collision_pair('girl:enemy', None, enemy)
+        #spawn_count += 1
 
 
 def draw():
