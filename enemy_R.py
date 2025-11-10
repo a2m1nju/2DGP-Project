@@ -18,6 +18,7 @@ dead_finished = time_out
 
 ATTACK_RANGE_PIXELS = 400
 SIGHT_RANGE_PIXELS = 600
+#MAX_RANGE_PIXELS = 400
 
 PIXEL_PER_METER = (10.0 / 0.3)
 RUN_SPEED_KMPH = 15.0
@@ -49,8 +50,10 @@ class Idle:
         self.enemy.frame = (self.enemy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % len(
             self.sizes)
         dist_to_player = abs(self.enemy.x - self.enemy.girl.x)
+        current_time = get_time()
 
-        if dist_to_player < ATTACK_RANGE_PIXELS:
+        if dist_to_player < ATTACK_RANGE_PIXELS and \
+                current_time - self.enemy.last_attack_time > self.enemy.attack_cooldown:
             self.enemy.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
         elif dist_to_player < SIGHT_RANGE_PIXELS:
             self.enemy.state_machine.handle_state_event(('PLAYER_IN_SIGHT_RANGE', None))
@@ -85,6 +88,7 @@ class Walk:
 
     def do(self):
         dist_to_player = self.enemy.girl.x - self.enemy.x
+        current_time = get_time()
 
         if dist_to_player > 0:
             self.enemy.dir = 1
@@ -97,7 +101,8 @@ class Walk:
 
         dist_abs = abs(dist_to_player)
 
-        if dist_abs < ATTACK_RANGE_PIXELS:
+        if dist_abs < ATTACK_RANGE_PIXELS and \
+                current_time - self.enemy.last_attack_time > self.enemy.attack_cooldown:
             self.enemy.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
         elif dist_abs > SIGHT_RANGE_PIXELS:
             self.enemy.state_machine.handle_state_event(('PLAYER_OUT_OF_RANGE', None))
@@ -134,6 +139,7 @@ class Attack:
         self.enemy.dir = 0
         self.enemy.frame = 0.0
         self.enemy.throw_fire()
+        self.enemy.last_attack_time = get_time()
 
     def exit(self, e):
         pass
@@ -158,7 +164,7 @@ class Attack:
             Attack.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 180, 180)
 
     def get_bb(self):
-        return self.enemy.x - 35, self.enemy.y - 90, self.enemy.x + 35, self.enemy.y + 90
+        return self.enemy.x, self.enemy.y - 90, self.enemy.x + 90, self.enemy.y + 90
 
 class Hurt:
     image = None
@@ -200,7 +206,7 @@ class Hurt:
 class Dead:
     image = None
     sizes =  [(0, 60),(237, 65),(463,89),(751,59),(1005, 67),
-              (1239,72),(1454, 100),(1711,91),(1986, 93)]
+              (1239,72),(1454, 100),(1711,91),(1966, 115)]
     def __init__(self, enemy):
         self.enemy = enemy
         if Dead.image == None:
@@ -236,7 +242,7 @@ class Dead:
             Dead.image.clip_composite_draw(left, bottom, width, height, 0, '', self.enemy.x, self.enemy.y, 100 , 180)
 
     def get_bb(self):
-        return self.enemy.x - 35, self.enemy.y - 90, self.enemy.x + 35, self.enemy.y + 90
+        return 0,0,0,0
 
 class Enemy_R:
     font = None
@@ -247,6 +253,8 @@ class Enemy_R:
         self.dir = 0
         self.girl = girl
         self.hp = 5
+        self.last_attack_time = 0.0
+        self.attack_cooldown = 2.0
 
         if Enemy_R.font is None:
             Enemy_R.font = load_font('ENCR10B.TTF', 16)

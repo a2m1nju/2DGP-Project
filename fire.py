@@ -9,7 +9,6 @@ FRAMES_PER_ACTION = 9
 
 PIXEL_PER_METER = (1.0 / 0.03)
 GRAVITY = 9.8
-MAX_RANGE_PIXELS = 450.0
 
 class Fire:
     image = None
@@ -41,7 +40,7 @@ class Fire:
 
         self.traveled_distance += abs(distance_this_frame_x)
 
-        if self.traveled_distance > 400:  # 최대 사거리
+        if self.traveled_distance > 350:
             game_world.remove_object(self)
 
     def get_bb(self):
