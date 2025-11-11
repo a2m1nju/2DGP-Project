@@ -1,5 +1,6 @@
 world = [[] for _ in range(6)]
 scroll_speed = 0.0
+collision_pairs = {}
 
 def add_object(o, depth = 0):
     world[depth].append(o)
@@ -44,6 +45,8 @@ def clear():
 
     for layer in world:
         layer.clear()
+
+    collision_pairs.clear()
 
 def all_objects():
     for layer in world:

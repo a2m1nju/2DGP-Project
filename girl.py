@@ -499,13 +499,24 @@ class Girl:
     def handle_collision(self, group, other):
         current_time = get_time()
 
+        if group == 'girl:coin':
+            import play_mode
+            play_mode.coin_count += other.value
+            return
+
+        elif group == 'girl:food':
+            self.hp += other.value
+            if self.hp > 100:
+                self.hp = 100
+            return
+
         if current_time < self.buff_end_time:
             return
 
-        if group == 'girl:enemy':
-            if current_time - self.last_hit_time < self.hit_cooldown:
-                return
+        if current_time - self.last_hit_time < self.hit_cooldown:
+            return
 
+        if group == 'girl:enemy':
             if self.state_machine.cur_state == self.DEAD:
                 return
 
@@ -519,25 +530,14 @@ class Girl:
                 self.state_machine.handle_state_event(('HIT_BY_ENEMY', None))
 
         elif group == 'fire:girl':
-            current_time = get_time()
-            if current_time - self.last_hit_time < self.hit_cooldown:
-                return
-
             if self.state_machine.cur_state == self.DEAD:
                 return
+
+            self.hp -= 10
+            self.last_hit_time = current_time
 
             if self.hp <= 0:
                 self.hp = 0
                 self.state_machine.handle_state_event(('HP_IS_ZERO', None))
             else:
                 self.state_machine.handle_state_event(('HIT_BY_ENEMY', None))
-
-        elif group == 'girl:coin':
-            import play_mode
-            play_mode.coin_count += other.value
-
-        elif group == 'girl:food':
-            self.hp += other.value
-
-            if self.hp > 100:
-                self.hp = 100
