@@ -7,6 +7,7 @@ import random
 
 from book import Book
 from lightning import Lightning
+from shield import Shield
 from state_machine import StateMachine
 
 def space_down(e):
@@ -96,16 +97,27 @@ class Protection:
         self.girl = girl
         if Protection.image == None:
             Protection.image = load_image('./주인공/Protection.png')
+        self.shield_object = None
 
     def enter(self, e):
         self.girl.dir = 0
         game_world.scroll_speed = 0.0
 
+        if self.shield_object is None:
+            self.shield_object = Shield(self.girl.x, self.girl.y)
+            game_world.add_object(self.shield_object, 5)
+
     def exit(self, e):
-        pass
+        if self.shield_object:
+            self.shield_object.deactivate()
+            self.shield_object = None
 
     def do(self):
         self.girl.frame = (self.girl.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 4
+
+        if self.shield_object:
+            self.shield_object.x = self.girl.x - 15
+            self.shield_object.y = self.girl.y
 
     def handle_event(self, event):
         pass

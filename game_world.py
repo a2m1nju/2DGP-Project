@@ -1,4 +1,4 @@
-world = [[] for _ in range(5)]
+world = [[] for _ in range(6)]
 scroll_speed = 0.0
 
 def add_object(o, depth = 0):
