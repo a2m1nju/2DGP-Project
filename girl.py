@@ -338,7 +338,6 @@ class Skill:
     def get_bb(self):
         return self.girl.x - 65, self.girl.y - 85, self.girl.x + 65, self.girl.y + 85
 
-
 class Girl:
     def __init__(self):
         self.x, self.y = 100, 150
