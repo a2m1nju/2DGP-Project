@@ -137,16 +137,22 @@ def draw():
         icon_w, icon_h = 50, 50
 
         current_time = get_time()
+
         elapsed_time = current_time - girl.last_skill_e_time
         cooldown = girl.skill_e_cooldown
 
         clip_l, clip_b, clip_w, clip_h = 0, 0, 32, 32
 
-        if elapsed_time < cooldown:
-            skill_e_icon_bw.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
+        if current_time < girl.buff_end_time:
+            skill_e_icon.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
+            remaining_buff_time = girl.buff_end_time - current_time
+            font.draw(icon_x - 5, icon_y - 40, f'{remaining_buff_time:.1f}', (255, 255, 255))
 
+        elif elapsed_time < cooldown:
+            skill_e_icon_bw.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
             remaining_time = cooldown - elapsed_time
             font.draw(icon_x - 5, icon_y - 40, f'{remaining_time:.1f}', (255, 255, 255))
+
         else:
             skill_e_icon.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
 

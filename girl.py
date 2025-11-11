@@ -103,7 +103,6 @@ class Protection:
         self.girl.dir = 0
         game_world.scroll_speed = 0.0
 
-        self.girl.last_skill_e_time = get_time()
         self.girl.buff_end_time = get_time() + 5.0
 
         if self.girl.shield_object is None:
@@ -447,6 +446,8 @@ class Girl:
             if current_time > self.buff_end_time:
                 self.shield_object.deactivate()
                 self.shield_object = None
+
+                self.last_skill_e_time = current_time
             else:
                 if self.state_machine.cur_state != self.PROTECTION:
                     self.shield_object.x = self.x
