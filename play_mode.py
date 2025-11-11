@@ -11,8 +11,11 @@ from enemy_R import Enemy_R
 
 girl = None
 font = None
+
 skill_q_icon = None
 skill_q_icon_bw = None
+skill_e_icon = None
+skill_e_icon_bw = None
 
 spawn_timer = 0.0
 spawn_cooldown = 8.0
@@ -33,7 +36,7 @@ def handle_events():
 
 def init():
     global girl, font, spawn_timer, coin_count, skill_q_icon, skill_q_icon_bw
-    global enemies_killed_count
+    global enemies_killed_count, skill_e_icon, skill_e_icon_bw
 
 
     girl = Girl()
@@ -48,6 +51,9 @@ def init():
 
     skill_q_icon = load_image('./이펙트/스킬/Q.png')
     skill_q_icon_bw = load_image('./이펙트/스킬/Q_b.png')
+
+    skill_e_icon = load_image('./이펙트/스킬/E.png')
+    skill_e_icon_bw = load_image('./이펙트/스킬/E_b.png')
 
     Subway('./배경/내부2.png', 800, 300, 1600, 600, 0, is_looping=True)
 
@@ -109,7 +115,7 @@ def draw():
     font.draw(50, 520, f'COINS: {coin_count}', (255, 255, 255))
 
     if skill_q_icon and skill_q_icon_bw:
-        icon_x, icon_y = 75, 480
+        icon_x, icon_y = 75, 475
         icon_w, icon_h = 50, 50
 
         current_time = get_time()
@@ -126,13 +132,33 @@ def draw():
         else:
             skill_q_icon.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
 
+    if skill_e_icon and skill_e_icon_bw:
+        icon_x, icon_y = 140, 475
+        icon_w, icon_h = 50, 50
+
+        current_time = get_time()
+        elapsed_time = current_time - girl.last_skill_e_time
+        cooldown = girl.skill_e_cooldown
+
+        clip_l, clip_b, clip_w, clip_h = 0, 0, 32, 32
+
+        if elapsed_time < cooldown:
+            skill_e_icon_bw.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
+
+            remaining_time = cooldown - elapsed_time
+            font.draw(icon_x - 5, icon_y - 40, f'{remaining_time:.1f}', (255, 255, 255))
+        else:
+            skill_e_icon.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
+
     update_canvas()
 
 def finish():
-    global skill_q_icon
+    global skill_q_icon, skill_q_icon_bw, skill_e_icon, skill_e_icon_bw
     game_world.clear()
     skill_q_icon = None
     skill_q_icon_bw = None
+    skill_e_icon = None
+    skill_e_icon_bw = None
 
 def pause(): pass
 def resume(): pass
