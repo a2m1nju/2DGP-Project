@@ -11,6 +11,9 @@ from enemy_R import Enemy_R
 
 girl = None
 font = None
+skill_q_icon = None
+skill_q_icon_bw = None
+
 spawn_timer = 0.0
 spawn_cooldown = 8.0
 max_spawn_count = 3
@@ -29,7 +32,7 @@ def handle_events():
 
 
 def init():
-    global girl, font, spawn_timer, coin_count
+    global girl, font, spawn_timer, coin_count, skill_q_icon, skill_q_icon_bw
     global enemies_killed_count
 
 
@@ -42,6 +45,9 @@ def init():
     game_world.add_collision_pair('girl:food', girl, None)
 
     font = load_font('ENCR10B.TTF', 16)
+
+    skill_q_icon = load_image('./이펙트/스킬/Q.png')
+    skill_q_icon_bw = load_image('./이펙트/스킬/Q_b.png')
 
     Subway('./배경/내부2.png', 800, 300, 1600, 600, 0, is_looping=True)
 
@@ -97,14 +103,36 @@ def update():
 def draw():
     clear_canvas()
     game_world.render()
+
     font.draw(girl.x - 30, girl.y + 110, f'HP: {girl.hp}', (255, 0, 0))
     font.draw(50, 550, f'KILLS: {enemies_killed_count}', (255, 255, 255))
     font.draw(50, 520, f'COINS: {coin_count}', (255, 255, 255))
+
+    if skill_q_icon and skill_q_icon_bw:
+        icon_x, icon_y = 75, 480
+        icon_w, icon_h = 50, 50
+
+        current_time = get_time()
+        elapsed_time = current_time - girl.last_skill_time
+        cooldown = girl.skill_cooldown
+
+        clip_l, clip_b, clip_w, clip_h = 0, 0, 32, 32
+
+        if elapsed_time < cooldown:
+            skill_q_icon_bw.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
+
+            remaining_time = cooldown - elapsed_time
+            font.draw(icon_x - 5, icon_y - 40, f'{remaining_time:.1f}', (255, 255, 255))
+        else:
+            skill_q_icon.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
+
     update_canvas()
 
-
 def finish():
+    global skill_q_icon
     game_world.clear()
+    skill_q_icon = None
+    skill_q_icon_bw = None
 
 def pause(): pass
 def resume(): pass
