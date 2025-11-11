@@ -15,7 +15,7 @@ class Lightning:
 
     def __init__(self, x, y):
         if Lightning.image is None:
-            Lightning.image = load_image('./이펙트/번개.png')
+            Lightning.image = load_image('./이펙트/번개/번개.png')
 
         self.x, self.y = x, y
         self.frame = 0.0
