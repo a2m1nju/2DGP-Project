@@ -3,8 +3,10 @@ from sdl2 import SDL_KEYDOWN, SDLK_SPACE, SDL_KEYUP, SDLK_LEFT, SDLK_a, SDLK_d, 
 
 import game_world
 import game_framework
+import random
 
 from book import Book
+from lightning import Lightning
 from state_machine import StateMachine
 
 def space_down(e):
@@ -313,6 +315,13 @@ class Skill:
     def enter(self, e):
         self.girl.frame = 0.0
         game_world.scroll_speed = 0.0
+        base_y = 230
+
+        for _ in range(4):
+            offset_x = self.girl.face_dir * random.randint(100, 400)
+            thunder_x = self.girl.x + offset_x
+            lightning = Lightning(thunder_x, base_y)
+            game_world.add_object(lightning, 4)
 
     def exit(self, e):
         pass
