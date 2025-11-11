@@ -103,14 +103,15 @@ class Protection:
         self.girl.dir = 0
         game_world.scroll_speed = 0.0
 
-        if self.shield_object is None:
-            self.shield_object = Shield(self.girl.x, self.girl.y)
-            game_world.add_object(self.shield_object, 5)
+        self.girl.last_skill_e_time = get_time()
+        self.girl.buff_end_time = get_time() + 5.0
+
+        if self.girl.shield_object is None:
+            self.girl.shield_object = Shield(self.girl.x, self.girl.y)
+            game_world.add_object(self.girl.shield_object, 5)
 
     def exit(self, e):
-        if self.shield_object:
-            self.shield_object.deactivate()
-            self.shield_object = None
+        pass
 
     def do(self):
         self.girl.frame = (self.girl.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 4
@@ -118,6 +119,10 @@ class Protection:
         if self.shield_object:
             self.shield_object.x = self.girl.x - 15
             self.shield_object.y = self.girl.y
+
+        if self.girl.frame >= len(Protection.sizes):
+            self.girl.frame = len(Protection.sizes) - 1
+            self.girl.state_machine.handle_state_event(('TIMEOUT', None))
 
     def handle_event(self, event):
         pass
@@ -397,6 +402,11 @@ class Girl:
         self.skill_cooldown = 5.0
         self.last_skill_time = -self.skill_cooldown
 
+        self.skill_e_cooldown = 10.0
+        self.last_skill_e_time = -self.skill_e_cooldown
+        self.buff_end_time = 0.0
+        self.shield_object = None
+
         self.IDLE = Idle(self)
         self.PROTECTION = Protection(self)
         self.WALK = Walk(self)
@@ -431,6 +441,17 @@ class Girl:
     def update(self):
         self.state_machine.update()
 
+        current_time = get_time()
+
+        if self.shield_object:
+            if current_time > self.buff_end_time:
+                self.shield_object.deactivate()
+                self.shield_object = None
+            else:
+                if self.state_machine.cur_state != self.PROTECTION:
+                    self.shield_object.x = self.x
+                    self.shield_object.y = self.y
+
     def handle_event(self, event):
         if event.type == SDL_KEYDOWN:
             if event.key == SDLK_a:
@@ -446,6 +467,11 @@ class Girl:
             elif event.key == SDLK_q:
                 current_time = get_time()
                 if current_time - self.last_skill_time < self.skill_cooldown:
+                    return
+
+            elif event.key == SDLK_e:
+                current_time = get_time()
+                if current_time - self.last_skill_e_time < self.skill_e_cooldown:
                     return
 
         elif event.type == SDL_KEYUP:
@@ -470,27 +496,19 @@ class Girl:
         return self.state_machine.get_bb()
 
     def handle_collision(self, group, other):
+        current_time = get_time()
+
+        if current_time < self.buff_end_time:
+            return
+
         if group == 'girl:enemy':
-            current_time = get_time()
             if current_time - self.last_hit_time < self.hit_cooldown:
                 return
-            if self.state_machine.cur_state == self.PROTECTION:
-                is_blocking_wrong_way = (other.x > self.x and self.face_dir == -1) or \
-                                        (other.x < self.x and self.face_dir == 1)
-                if not is_blocking_wrong_way:
-                    self.hp -= 1
-                    self.last_hit_time = current_time
-
-                    if self.hp <= 0:
-                        self.hp = 0
-                        self.state_machine.handle_state_event(('HP_IS_ZERO', None))
-                    return
 
             if self.state_machine.cur_state == self.DEAD:
                 return
 
             self.hp -= 10
-
             self.last_hit_time = current_time
 
             if self.hp <= 0:
@@ -503,25 +521,14 @@ class Girl:
             current_time = get_time()
             if current_time - self.last_hit_time < self.hit_cooldown:
                 return
+
             if self.state_machine.cur_state == self.DEAD:
                 return
-
-            is_blocking_wrong_way = (other.x > self.x and self.face_dir == -1) or \
-                                    (other.x < self.x and self.face_dir == 1)
-            block_successful = (self.state_machine.cur_state == self.PROTECTION and not is_blocking_wrong_way)
-
-            if block_successful:
-                self.hp -= 1
-                self.last_hit_time = current_time
-            else:
-                self.hp -= 5
-                self.last_hit_time = current_time
 
             if self.hp <= 0:
                 self.hp = 0
                 self.state_machine.handle_state_event(('HP_IS_ZERO', None))
-
-            elif not block_successful:
+            else:
                 self.state_machine.handle_state_event(('HIT_BY_ENEMY', None))
 
         elif group == 'girl:coin':
