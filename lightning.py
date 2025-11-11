@@ -47,7 +47,7 @@ class Lightning:
         draw_rectangle(*self.get_bb())
 
     def get_bb(self):
-        return self.x - 15, self.y - 60, self.x + 15, self.y + 60
+        return self.x - 15, self.y - 180, self.x + 15, self.y + 180
 
     def apply_damage_to_enemies_in_range(self):
         for o in game_world.all_objects():

@@ -316,11 +316,28 @@ class Skill:
         self.girl.frame = 0.0
         game_world.scroll_speed = 0.0
         base_y = 230
+        min_distance = 20
 
+        offsets = []
         for _ in range(4):
-            offset_x = self.girl.face_dir * random.randint(100, 400)
-            thunder_x = self.girl.x + offset_x
-            lightning = Lightning(thunder_x, base_y)
+            offsets.append(random.randint(100, 400))
+        offsets.sort()
+
+        final_x_positions = []
+        last_x = None
+
+        for offset in offsets:
+            current_x = self.girl.x + (offset * self.girl.face_dir)
+
+            if last_x is not None:
+                if abs(current_x - last_x) < min_distance:
+                    current_x = last_x + (min_distance * self.girl.face_dir)
+
+            final_x_positions.append(current_x)
+            last_x = current_x
+
+        for x_pos in final_x_positions:
+            lightning = Lightning(x_pos, base_y)
             game_world.add_object(lightning, 4)
 
     def exit(self, e):
