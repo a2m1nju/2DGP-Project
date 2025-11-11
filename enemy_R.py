@@ -185,7 +185,8 @@ class Hurt:
         pass
 
     def do(self):
-        self.enemy.frame = (self.enemy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time)
+        animation_speed = 7.0
+        self.enemy.frame = (self.enemy.frame + animation_speed * ACTION_PER_TIME * game_framework.frame_time)
         total_frames = len(self.sizes)
 
         if self.enemy.frame >= total_frames:
