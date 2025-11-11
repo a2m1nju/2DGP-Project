@@ -280,7 +280,7 @@ class Dead:
 
 
             if get_time() - self.gameover_timer > 0.5:
-                import gameover_mode # 순환 참조 방지를 위해 여기서 import
+                import gameover_mode
                 game_framework.change_mode(gameover_mode)
 
     def draw(self):
@@ -291,6 +291,30 @@ class Dead:
             Dead.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.girl.x, self.girl.y, 100, 180)
         else:
             Dead.image.clip_composite_draw(left, bottom, width, height, 0, '', self.girl.x, self.girl.y, 100, 180)
+
+    def get_bb(self):
+        return 0, 0, 0, 0
+
+class Skill:
+    image = None
+    sizes = []
+
+    def __init__(self, girl):
+        self.girl = girl
+        if Skill.image == None:
+            Skill.image = load_image('./주인공/Skill.png')
+
+    def enter(self, e):
+        pass
+
+    def exit(self, e):
+        pass
+
+    def do(self):
+        pass
+
+    def draw(self):
+        pass
 
     def get_bb(self):
         return 0, 0, 0, 0
