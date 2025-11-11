@@ -313,6 +313,7 @@ class Skill:
             Skill.image = load_image('./주인공/Skill.png')
 
     def enter(self, e):
+        self.girl.last_skill_time = get_time()
         self.girl.frame = 0.0
         game_world.scroll_speed = 0.0
         base_y = 230
@@ -381,6 +382,9 @@ class Girl:
         self.key_a_down = False
         self.key_d_down = False
 
+        self.skill_cooldown = 5.0
+        self.last_skill_time = -self.skill_cooldown
+
         self.IDLE = Idle(self)
         self.PROTECTION = Protection(self)
         self.WALK = Walk(self)
@@ -425,6 +429,11 @@ class Girl:
             elif event.key == SDLK_SPACE:
                 current_time = get_time()
                 if current_time - self.last_attack_time < self.attack_cooldown:
+                    return
+
+            elif event.key == SDLK_q:
+                current_time = get_time()
+                if current_time - self.last_skill_time < self.skill_cooldown:
                     return
 
         elif event.type == SDL_KEYUP:

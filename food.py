@@ -13,8 +13,6 @@ FOOD_IMAGE_PATHS = [
     './아이템/음식/샌드위치.png',
     './아이템/음식/토마토.png'
 ]
-
-
 class Food:
     image_cache = {}
 

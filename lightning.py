@@ -53,7 +53,14 @@ class Lightning:
         for o in game_world.all_objects():
             if 'Enemy' in o.__class__.__name__ and o not in self.hit_enemies:
                 if game_world.collide(self, o):
-                    o.state_machine.handle_state_event(('HIT_BY_BOOK', None))
+                    if o.state_machine.cur_state == o.DEAD:
+                        continue
+                    o.hp -= 1
+
+                    if o.hp <= 0:
+                        o.state_machine.handle_state_event(('HP_IS_ZERO', None))
+                    else:
+                        o.state_machine.handle_state_event(('HIT_BY_BOOK', None))
                     self.hit_enemies.add(o)
 
     def handle_collision(self, group, other):
