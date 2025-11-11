@@ -1,5 +1,5 @@
 from pico2d import load_image, get_time, load_font, draw_rectangle
-from sdl2 import SDL_KEYDOWN, SDLK_SPACE, SDL_KEYUP, SDLK_LEFT, SDLK_a, SDLK_d, SDLK_e
+from sdl2 import SDL_KEYDOWN, SDLK_SPACE, SDL_KEYUP, SDLK_LEFT, SDLK_a, SDLK_d, SDLK_e, SDLK_q
 
 import game_world
 import game_framework
@@ -33,6 +33,12 @@ def e_down(e):
 
 def e_up(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_e
+
+def q_down(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_q
+
+def q_up(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_q
 
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
 RUN_SPEED_KMPH = 30.0  # Km / Hour
@@ -297,7 +303,7 @@ class Dead:
 
 class Skill:
     image = None
-    sizes = []
+    sizes = [0, 91, 181, 269]
 
     def __init__(self, girl):
         self.girl = girl
@@ -305,19 +311,32 @@ class Skill:
             Skill.image = load_image('./주인공/Skill.png')
 
     def enter(self, e):
-        pass
+        self.girl.frame = 0.0
+        game_world.scroll_speed = 0.0
 
     def exit(self, e):
         pass
 
     def do(self):
-        pass
+        animation_speed = 5.0
+        self.girl.frame = (self.girl.frame + animation_speed * ACTION_PER_TIME * game_framework.frame_time)
+
+        if self.girl.frame >= len(Skill.sizes):
+            self.girl.frame = len(Skill.sizes) - 1
+            self.girl.state_machine.handle_state_event(('TIMEOUT', None))
 
     def draw(self):
-        pass
+        left = Skill.sizes[int(self.girl.frame)]
+        bottom = 0
+        width = 61
+        height = 68
+        if self.girl.face_dir == -1:
+            Skill.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.girl.x, self.girl.y, 130, 170)
+        else:
+            Skill.image.clip_composite_draw(left, bottom, width, height, 0, '', self.girl.x, self.girl.y, 130, 170)
 
     def get_bb(self):
-        return 0, 0, 0, 0
+        return self.girl.x - 65, self.girl.y - 85, self.girl.x + 65, self.girl.y + 85
 
 
 class Girl:
@@ -343,23 +362,27 @@ class Girl:
         self.ATTACK = Attack(self)
         self.HURT = Hurt(self)
         self.DEAD = Dead(self)
+        self.SKILL = Skill(self)
         self.state_machine = StateMachine(
             self.IDLE,
             {
                 self.PROTECTION : {e_up: self.IDLE, hit_by_enemy: self.HURT, hp_is_zero: self.DEAD,
-                                   left_down: self.WALK, right_down: self.WALK, space_down: self.ATTACK},
+                                   left_down: self.WALK, right_down: self.WALK, space_down: self.ATTACK, q_down : self.SKILL},
                 self.IDLE : {space_down: self.ATTACK, right_down: self.WALK, left_down: self.WALK
                              , left_up: self.WALK, right_up : self.WALK , e_down: self.PROTECTION, hit_by_enemy: self.HURT,
-                             hp_is_zero: self.DEAD},
+                             hp_is_zero: self.DEAD, q_down : self.SKILL},
                 self.WALK : {space_down: self.ATTACK, right_up: self.IDLE, left_up: self.IDLE,
                              right_down: self.IDLE, left_down: self.IDLE, e_down: self.PROTECTION, hit_by_enemy: self.HURT,
-                             hp_is_zero: self.DEAD},
+                             hp_is_zero: self.DEAD, q_down : self.SKILL},
                 self.ATTACK : {time_out: self.IDLE, e_down: self.PROTECTION, space_down: self.ATTACK,
                                right_down: self.WALK, left_down: self.WALK, hit_by_enemy: self.HURT,
-                               hp_is_zero: self.DEAD},
+                               hp_is_zero: self.DEAD, q_down : self.SKILL},
                 self.HURT: { time_out_to_idle: self.IDLE, time_out_to_walk: self.WALK, space_down: self.ATTACK,
-                             e_down: self.PROTECTION, hp_is_zero: self.DEAD, right_down: self.WALK, left_down: self.WALK},
-                self.DEAD : {}
+                             e_down: self.PROTECTION, hp_is_zero: self.DEAD, right_down: self.WALK, left_down: self.WALK, q_down : self.SKILL},
+                self.DEAD : {},
+                self.SKILL : {hit_by_enemy: self.HURT, hp_is_zero: self.DEAD, left_down: self.WALK, right_down: self.WALK,
+                                space_down: self.ATTACK, time_out: self.IDLE,  e_down: self.PROTECTION}
+
             }
         )
 
