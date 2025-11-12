@@ -18,6 +18,8 @@ hit_by_enemy = lambda e: e[0] == 'HIT_BY_ENEMY'
 time_out_to_idle = lambda e: e[0] == 'TIMEOUT_IDLE'
 time_out_to_walk = lambda e: e[0] == 'TIMEOUT_WALK'
 hp_is_zero = lambda e: e[0] == 'HP_IS_ZERO'
+land_to_idle = lambda e: e[0] == 'LAND_TO_IDLE'
+land_to_walk = lambda e: e[0] == 'LAND_TO_WALK'
 
 def right_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_d
@@ -56,7 +58,7 @@ RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
 RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
 
 GRAVITY = 9.8
-JUMP_SPEED_MPS = 15.0
+JUMP_SPEED_MPS = 10.0
 JUMP_SPEED_PPS = (JUMP_SPEED_MPS * PIXEL_PER_METER)
 
 TIME_PER_ACTION = 0.5
@@ -395,7 +397,7 @@ class Skill:
 
 class Jump:
     image = None
-    sizes = []
+    sizes = [0, 88, 180, 275, 362, 457, 557, 650 ]
 
     def __init__(self, girl):
         self.girl = girl
@@ -403,19 +405,52 @@ class Jump:
             Jump.image = load_image('./주인공/Jump.png')
 
     def enter(self, e):
-        pass
+        self.girl.frame = 0.0
+        self.girl.y_velocity = JUMP_SPEED_PPS
 
     def exit(self, e):
-        pass
+        self.girl.y_velocity = 0
 
     def do(self):
-        pass
+        animation_speed = 3.0
+        self.girl.y_velocity -= GRAVITY * PIXEL_PER_METER * game_framework.frame_time
+        self.girl.y += self.girl.y_velocity * game_framework.frame_time
+
+        if self.girl.key_d_down:
+            self.girl.dir = 1
+            self.girl.face_dir = 1
+        elif self.girl.key_a_down:
+            self.girl.dir = -1
+            self.girl.face_dir = -1
+        else:
+            self.girl.dir = 0
+
+        game_world.scroll_speed = -self.girl.dir * RUN_SPEED_PPS
+
+        self.girl.frame = (self.girl.frame + animation_speed * ACTION_PER_TIME * game_framework.frame_time) % 8
+
+        if self.girl.y <= 150:
+            self.girl.y = 150
+            self.girl.y_velocity = 0
+
+            if self.girl.dir == 0:
+                self.girl.state_machine.handle_state_event(('LAND_TO_IDLE', None))
+            else:
+                self.girl.state_machine.handle_state_event(('LAND_TO_WALK', None))
 
     def draw(self):
-        pass
+        left = Jump.sizes[int(self.girl.frame)]
+        width = 50
+        bottom = 0
+        height = 102
+
+        if self.girl.face_dir == -1:
+            Jump.image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.girl.x, self.girl.y, 100, 200)
+        else:
+            Jump.image.clip_composite_draw(left, bottom, width, height, 0, '', self.girl.x, self.girl.y, 100, 200)
 
     def get_bb(self):
-        return 0,0,0,0
+        return self.girl.x - 50, self.girl.y - 80, self.girl.x + 50, self.girl.y + 80
 
 class Girl:
     def __init__(self):
@@ -423,6 +458,7 @@ class Girl:
         self.frame = 0.0
         self.face_dir = 1
         self.dir = 0
+        self.y_velocity = 0.0
 
         self.hp = 100
 
@@ -449,32 +485,40 @@ class Girl:
         self.HURT = Hurt(self)
         self.DEAD = Dead(self)
         self.SKILL = Skill(self)
+        self.JUMP = Jump(self)
         self.state_machine = StateMachine(
             self.IDLE,
             {
-                self.PROTECTION : {e_up: self.IDLE, hit_by_enemy: self.HURT, hp_is_zero: self.DEAD,
+                self.PROTECTION : {e_up: self.IDLE, hit_by_enemy: self.HURT, hp_is_zero: self.DEAD,w_down: self.JUMP,
                                    left_down: self.WALK, right_down: self.WALK, space_down: self.ATTACK, q_down : self.SKILL},
-                self.IDLE : {space_down: self.ATTACK, right_down: self.WALK, left_down: self.WALK
+                self.IDLE : {space_down: self.ATTACK, right_down: self.WALK, left_down: self.WALK, w_down: self.JUMP
                              , left_up: self.WALK, right_up : self.WALK , e_down: self.PROTECTION, hit_by_enemy: self.HURT,
                              hp_is_zero: self.DEAD, q_down : self.SKILL},
-                self.WALK : {space_down: self.ATTACK, right_up: self.IDLE, left_up: self.IDLE,
+                self.WALK : {space_down: self.ATTACK, right_up: self.IDLE, left_up: self.IDLE, w_down: self.JUMP,
                              right_down: self.IDLE, left_down: self.IDLE, e_down: self.PROTECTION, hit_by_enemy: self.HURT,
                              hp_is_zero: self.DEAD, q_down : self.SKILL},
-                self.ATTACK : {time_out: self.IDLE, e_down: self.PROTECTION, space_down: self.ATTACK,
+                self.ATTACK : {time_out: self.IDLE, e_down: self.PROTECTION, space_down: self.ATTACK, w_down: self.JUMP,
                                right_down: self.WALK, left_down: self.WALK, hit_by_enemy: self.HURT,
                                hp_is_zero: self.DEAD, q_down : self.SKILL},
-                self.HURT: { time_out_to_idle: self.IDLE, time_out_to_walk: self.WALK, space_down: self.ATTACK,
+                self.HURT: { time_out_to_idle: self.IDLE, time_out_to_walk: self.WALK, space_down: self.ATTACK, w_down: self.JUMP,
                              e_down: self.PROTECTION, hp_is_zero: self.DEAD, right_down: self.WALK, left_down: self.WALK, q_down : self.SKILL},
                 self.DEAD : {},
                 self.SKILL : {hit_by_enemy: self.HURT, hp_is_zero: self.DEAD, left_down: self.WALK, right_down: self.WALK,
-                                space_down: self.ATTACK, time_out: self.IDLE,  e_down: self.PROTECTION}
-
+                                space_down: self.ATTACK, time_out: self.IDLE,  e_down: self.PROTECTION, w_down: self.JUMP},
+                self.JUMP : {land_to_idle: self.IDLE, land_to_walk: self.WALK, hit_by_enemy: self.HURT,
+                              hp_is_zero: self.DEAD, space_down: self.ATTACK, q_down: self.SKILL, e_down: self.PROTECTION}
             }
         )
 
-
     def update(self):
         self.state_machine.update()
+
+        if self.y > 150:
+            self.y_velocity -= GRAVITY * PIXEL_PER_METER * game_framework.frame_time
+            self.y += self.y_velocity * game_framework.frame_time
+        if self.state_machine.cur_state != self.JUMP and self.y <= 150:
+            self.y = 150
+            self.y_velocity = 0
 
         current_time = get_time()
 
@@ -510,6 +554,9 @@ class Girl:
                 current_time = get_time()
                 if current_time - self.last_skill_e_time < self.skill_e_cooldown:
                     return
+
+            elif event.key == SDLK_w:
+                pass
 
         elif event.type == SDL_KEYUP:
             if event.key == SDLK_a:

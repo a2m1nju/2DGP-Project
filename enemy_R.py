@@ -21,7 +21,7 @@ dead_finished = time_out
 
 ATTACK_RANGE_PIXELS = 400
 SIGHT_RANGE_PIXELS = 600
-#MAX_RANGE_PIXELS = 400
+SAFE_RANGE_PIXELS = 100
 
 PIXEL_PER_METER = (10.0 / 0.3)
 RUN_SPEED_KMPH = 15.0
@@ -55,9 +55,11 @@ class Idle:
         dist_to_player = abs(self.enemy.x - self.enemy.girl.x)
         current_time = get_time()
 
-        if dist_to_player < ATTACK_RANGE_PIXELS and \
-                current_time - self.enemy.last_attack_time > self.enemy.attack_cooldown:
+        if (dist_to_player > SAFE_RANGE_PIXELS and dist_to_player < ATTACK_RANGE_PIXELS) and \
+                (current_time - self.enemy.last_attack_time > self.enemy.attack_cooldown):
             self.enemy.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
+
+
         elif dist_to_player < SIGHT_RANGE_PIXELS:
             self.enemy.state_machine.handle_state_event(('PLAYER_IN_SIGHT_RANGE', None))
 
@@ -92,25 +94,34 @@ class Walk:
     def do(self):
         dist_to_player = self.enemy.girl.x - self.enemy.x
         current_time = get_time()
+        dist_abs = abs(dist_to_player)
 
-        if dist_to_player > 0:
-            self.enemy.dir = 1
-            self.enemy.face_dir = 1
-        elif dist_to_player < 0:
-            self.enemy.dir = -1
-            self.enemy.face_dir = -1
+        if dist_abs > SIGHT_RANGE_PIXELS:
+            self.enemy.state_machine.handle_state_event(('PLAYER_OUT_OF_RANGE', None))
+            return
+
+        if (SAFE_RANGE_PIXELS < dist_abs < ATTACK_RANGE_PIXELS) and \
+                (current_time - self.enemy.last_attack_time > self.enemy.attack_cooldown):
+            self.enemy.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
+            return
+
+        if dist_abs < SAFE_RANGE_PIXELS:
+            # [너무 가까움] (10 미만) -> 뒤로 물러남
+            self.enemy.dir = -1 if dist_to_player > 0 else 1
+
+        elif dist_abs > SAFE_RANGE_PIXELS:
+            self.enemy.dir = 1 if dist_to_player > 0 else -1
+
         else:
             self.enemy.dir = 0
 
-        dist_abs = abs(dist_to_player)
+        if dist_to_player > 0:
+            self.enemy.face_dir = 1
+        elif dist_to_player < 0:
+            self.enemy.face_dir = -1
 
-        if dist_abs < ATTACK_RANGE_PIXELS and \
-                current_time - self.enemy.last_attack_time > self.enemy.attack_cooldown:
-            self.enemy.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
-        elif dist_abs > SIGHT_RANGE_PIXELS:
-            self.enemy.state_machine.handle_state_event(('PLAYER_OUT_OF_RANGE', None))
-
-        self.enemy.frame = (self.enemy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % len(self.sizes)
+        self.enemy.frame = (self.enemy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % len(
+            self.sizes)
 
     def handle_event(self, event):
         pass
@@ -130,8 +141,6 @@ class Walk:
 
 class Attack:
     image = None
-    #sizes = [(0, 50),(257, 47),(518, 48),(773, 90),(1029, 116),
-             #(1286, 122),(1541, 129),(1797, 137),(2053,140),(2309,140)]
     sizes = [0, 257, 518, 773, 1029, 1286, 1541, 1797, 2053, 2309]
     def __init__(self, enemy):
         self.enemy = enemy
