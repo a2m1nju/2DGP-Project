@@ -21,6 +21,7 @@ hp_is_zero = lambda e: e[0] == 'HP_IS_ZERO'
 land_to_idle = lambda e: e[0] == 'LAND_TO_IDLE'
 land_to_walk = lambda e: e[0] == 'LAND_TO_WALK'
 
+
 def right_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_d
 
