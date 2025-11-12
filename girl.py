@@ -1,5 +1,5 @@
 from pico2d import load_image, get_time, load_font, draw_rectangle
-from sdl2 import SDL_KEYDOWN, SDLK_SPACE, SDL_KEYUP, SDLK_LEFT, SDLK_a, SDLK_d, SDLK_e, SDLK_q
+from sdl2 import SDL_KEYDOWN, SDLK_SPACE, SDL_KEYUP, SDLK_a, SDLK_d, SDLK_e, SDLK_q, SDLK_w
 
 import game_world
 import game_framework
@@ -43,15 +43,26 @@ def q_down(e):
 def q_up(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_q
 
+def w_up(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_w
+
+def w_down(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_w
+
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
 RUN_SPEED_KMPH = 30.0  # Km / Hour
 RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
 RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
 RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
 
+GRAVITY = 9.8
+JUMP_SPEED_MPS = 15.0
+JUMP_SPEED_PPS = (JUMP_SPEED_MPS * PIXEL_PER_METER)
+
 TIME_PER_ACTION = 0.5
 ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 FRAMES_PER_ACTION = 9
+
 
 
 class Idle:
@@ -380,6 +391,31 @@ class Skill:
 
     def get_bb(self):
         return self.girl.x - 65, self.girl.y - 85, self.girl.x + 65, self.girl.y + 85
+
+
+class Jump:
+    image = None
+    sizes = []
+
+    def __init__(self, girl):
+        self.girl = girl
+        if Jump.image == None:
+            Jump.image = load_image('./주인공/Jump.png')
+
+    def enter(self, e):
+        pass
+
+    def exit(self, e):
+        pass
+
+    def do(self):
+        pass
+
+    def draw(self):
+        pass
+
+    def get_bb(self):
+        return 0,0,0,0
 
 class Girl:
     def __init__(self):
