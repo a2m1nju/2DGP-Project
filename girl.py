@@ -21,6 +21,7 @@ hp_is_zero = lambda e: e[0] == 'HP_IS_ZERO'
 land_to_idle = lambda e: e[0] == 'LAND_TO_IDLE'
 land_to_walk = lambda e: e[0] == 'LAND_TO_WALK'
 land_to_run = lambda e: e[0] == 'LAND_TO_RUN'
+all_keys_up = lambda e: e[0] == 'ALL_KEYS_UP'
 
 
 def right_down(e):
@@ -223,9 +224,6 @@ class Run:
 
     def do(self):
         animation_speed = 7.0
-        if not self.girl.key_shift_down:
-            self.girl.state_machine.handle_state_event(('SHIFT_UP', None))
-            return
 
         if self.girl.key_d_down:
             self.girl.dir = 1
@@ -239,9 +237,6 @@ class Run:
         game_world.scroll_speed = -self.girl.dir * DASH_SPEED_PPS
 
         self.girl.frame = (self.girl.frame + animation_speed * ACTION_PER_TIME * game_framework.frame_time) %6
-
-        if self.girl.dir == 0:
-            self.girl.state_machine.handle_state_event(('ALL_KEYS_UP', None))
 
     def draw(self):
         left, width = Run.sizes[int(self.girl.frame)]
@@ -556,9 +551,9 @@ class Girl:
                 self.IDLE : {space_down: self.ATTACK, right_down: self.WALK, left_down: self.WALK, w_down: self.JUMP
                              , left_up: self.WALK, right_up : self.WALK , e_down: self.PROTECTION, hit_by_enemy: self.HURT,
                              hp_is_zero: self.DEAD, q_down : self.SKILL, shift_down: self.IDLE},
-                self.WALK : {space_down: self.ATTACK, right_up: self.IDLE, left_up: self.IDLE, w_down: self.JUMP,
-                             right_down: self.IDLE, left_down: self.IDLE, e_down: self.PROTECTION, hit_by_enemy: self.HURT,
-                             hp_is_zero: self.DEAD, q_down : self.SKILL, shift_down: self.RUN},
+                self.WALK : {space_down: self.ATTACK, w_down: self.JUMP, e_down: self.PROTECTION, hit_by_enemy: self.HURT,
+                             hp_is_zero: self.DEAD, q_down : self.SKILL, shift_down: self.RUN, all_keys_up: self.IDLE,
+                             right_up: self.WALK,left_up: self.WALK,right_down: self.WALK, left_down: self.WALK},
                 self.ATTACK : {time_out: self.IDLE, e_down: self.PROTECTION, space_down: self.ATTACK, w_down: self.JUMP,
                                right_down: self.WALK, left_down: self.WALK, hit_by_enemy: self.HURT,
                                hp_is_zero: self.DEAD, q_down : self.SKILL, shift_down: self.RUN},
@@ -572,9 +567,9 @@ class Girl:
                 self.JUMP : {land_to_idle: self.IDLE, land_to_walk: self.WALK, hit_by_enemy: self.HURT, shift_down: self.JUMP,
                               hp_is_zero: self.DEAD, space_down: self.ATTACK, q_down: self.SKILL, e_down: self.PROTECTION,
                              land_to_run: self.RUN},
-                self.RUN : { shift_up: self.WALK, right_up: self.IDLE, left_up: self.IDLE, space_down: self.ATTACK,
-                             w_down: self.JUMP, e_down: self.PROTECTION, hit_by_enemy: self.HURT, hp_is_zero: self.DEAD,
-                             q_down : self.SKILL}
+                self.RUN : { shift_up: self.WALK, space_down: self.ATTACK,w_down: self.JUMP, e_down: self.PROTECTION,
+                             hit_by_enemy: self.HURT, hp_is_zero: self.DEAD, q_down : self.SKILL, right_up: self.RUN,
+                             left_up: self.RUN, all_keys_up: self.IDLE}
             }
         )
 
@@ -628,6 +623,9 @@ class Girl:
             elif event.key == SDLK_w:
                 pass
 
+            self.state_machine.handle_state_event(('INPUT', event))
+            pass
+
         elif event.type == SDL_KEYUP:
             if event.key == SDLK_a:
                 self.key_a_down = False
@@ -636,8 +634,15 @@ class Girl:
             elif event.key == SDLK_LSHIFT:
                 self.key_shift_down = False
 
-        self.state_machine.handle_state_event(('INPUT', event))
-        pass
+            if (event.key == SDLK_a or event.key == SDLK_d):
+                if not self.key_a_down and not self.key_d_down:
+                    self.state_machine.handle_state_event(('ALL_KEYS_UP', None))
+                else:
+                    self.state_machine.handle_state_event(('INPUT', event))
+            else:
+                self.state_machine.handle_state_event(('INPUT', event))
+
+            pass
 
     def throw_book(self):
         book = Book(self.x + self.face_dir*40, self.y+20, self.face_dir * 15, 0)
