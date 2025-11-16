@@ -198,6 +198,29 @@ class Walk:
     def get_bb(self):
         return self.girl.x - 40, self.girl.y - 90, self.girl.x + 40, self.girl.y + 90
 
+class Run:
+    image = None
+    sizes = []
+    def __init__(self, girl):
+        self.girl = girl
+        if Walk.image == None:
+            Walk.image = load_image('./주인공/Run.png')
+
+    def enter(self, e):
+        pass
+
+    def exit(self, e):
+        pass
+
+    def do(self):
+        pass
+
+    def draw(self):
+       pass
+
+    def get_bb(self):
+        return 0,0,0,0
+
 class Attack:
     image = None
     sizes = [(7, 40), (131, 43), (253, 51), (378, 59), (503, 61), (645, 62), (776, 73), (905, 37)]
