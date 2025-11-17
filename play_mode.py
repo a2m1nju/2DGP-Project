@@ -3,6 +3,8 @@ from pico2d import *
 
 import game_framework
 import game_world
+import server
+import platform_mode
 
 from girl import Girl
 from subway import Subway
@@ -18,8 +20,8 @@ skill_e_icon = None
 skill_e_icon_bw = None
 
 spawn_timer = 0.0
-spawn_cooldown = 8.0
-max_spawn_count = 3
+spawn_cooldown = 5.0
+max_spawn_count = 1
 max_enemies_on_screen = 3
 coin_count = 0
 
@@ -38,10 +40,14 @@ def init():
     global girl, font, spawn_timer, coin_count, skill_q_icon, skill_q_icon_bw
     global enemies_killed_count, skill_e_icon, skill_e_icon_bw
 
+    if server.girl is None:
+        server.girl = Girl()
 
-    girl = Girl()
+    server.girl.bg_scrolling = True
+
+    girl = server.girl
     girl.x = 800
-    game_world.add_object(girl, 4)
+    game_world.add_object(server.girl, 4)
     game_world.add_collision_pair('girl:enemy', girl, None)
     game_world.add_collision_pair('fire:girl', None, girl)
     game_world.add_collision_pair('girl:coin', girl, None)
@@ -70,7 +76,7 @@ def init():
 
     spawn_timer = get_time()
     enemies_killed_count = 0
-    coin_count = 0
+    coin_count = server.coin_count
 
 def update():
     global spawn_timer, spawn_cooldown, spawn_count, max_spawn_count
@@ -155,6 +161,11 @@ def draw():
 
         else:
             skill_e_icon.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
+
+    if enemies_killed_count >= max_spawn_count:
+        server.coin_count = coin_count
+        game_framework.change_mode(platform_mode)
+        return
 
     update_canvas()
 

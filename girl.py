@@ -1,4 +1,4 @@
-from pico2d import load_image, get_time, load_font, draw_rectangle
+from pico2d import load_image, get_time, load_font, draw_rectangle, clamp
 from sdl2 import SDL_KEYDOWN, SDLK_SPACE, SDL_KEYUP, SDLK_a, SDLK_d, SDLK_e, SDLK_q, SDLK_w, SDLK_LSHIFT
 
 import game_world
@@ -190,7 +190,12 @@ class Walk:
         else:
             self.girl.dir = 0
 
-        game_world.scroll_speed = -self.girl.dir * RUN_SPEED_PPS
+        if self.girl.bg_scrolling:
+            game_world.scroll_speed = -self.girl.dir * RUN_SPEED_PPS
+        else:
+            game_world.scroll_speed = 0
+            self.girl.x += self.girl.dir * RUN_SPEED_PPS * game_framework.frame_time
+            self.girl.x = clamp(25, self.girl.x, 1600 - 25)
 
         self.girl.frame = (self.girl.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 12
 
@@ -234,9 +239,14 @@ class Run:
         else:
             self.girl.dir = 0
 
-        game_world.scroll_speed = -self.girl.dir * DASH_SPEED_PPS
+        if self.girl.bg_scrolling:
+            game_world.scroll_speed = -self.girl.dir * DASH_SPEED_PPS
+        else:
+            game_world.scroll_speed = 0
+            self.girl.x += self.girl.dir * DASH_SPEED_PPS * game_framework.frame_time
+            self.girl.x = clamp(25, self.girl.x, 1600 - 25)
 
-        self.girl.frame = (self.girl.frame + animation_speed * ACTION_PER_TIME * game_framework.frame_time) %6
+        self.girl.frame = (self.girl.frame + animation_speed * ACTION_PER_TIME * game_framework.frame_time) % 6
 
     def draw(self):
         left, width = Run.sizes[int(self.girl.frame)]
@@ -510,6 +520,7 @@ class Jump:
 class Girl:
     def __init__(self):
         self.x, self.y = 100, 150
+        self.ground_y = 150
         self.frame = 0.0
         self.face_dir = 1
         self.dir = 0
@@ -532,6 +543,8 @@ class Girl:
         self.last_skill_e_time = -self.skill_e_cooldown
         self.buff_end_time = 0.0
         self.shield_object = None
+
+        self.bg_scrolling = True
 
         self.IDLE = Idle(self)
         self.PROTECTION = Protection(self)
@@ -576,11 +589,11 @@ class Girl:
     def update(self):
         self.state_machine.update()
 
-        if self.y > 150:
+        if self.y > self.ground_y:
             self.y_velocity -= GRAVITY * PIXEL_PER_METER * game_framework.frame_time
             self.y += self.y_velocity * game_framework.frame_time
         if self.state_machine.cur_state != self.JUMP and self.y <= 150:
-            self.y = 150
+            self.y = self.ground_y
             self.y_velocity = 0
 
         current_time = get_time()
