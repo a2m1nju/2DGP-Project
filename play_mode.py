@@ -69,6 +69,8 @@ def init():
 
     girl = server.girl
     girl.x = 800
+    girl.ground_y = 150
+    girl.y = girl.ground_y
     game_world.add_object(server.girl, 4)
     game_world.add_collision_pair('girl:enemy', girl, None)
     game_world.add_collision_pair('fire:girl', None, girl)
