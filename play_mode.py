@@ -21,7 +21,7 @@ skill_e_icon_bw = None
 
 spawn_timer = 0.0
 spawn_cooldown = 5.0
-max_spawn_count = 10
+max_spawn_count = 1
 max_enemies_on_screen = 3
 coin_count = 0
 

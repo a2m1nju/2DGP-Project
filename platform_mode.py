@@ -6,8 +6,17 @@ from subway import Subway
 from merchant import Merchant
 
 font = None
+shop_ui = None
+shop_active = False
 
 def init():
+    global font, shop_ui, shop_active
+
+    if shop_ui is None:
+        shop_ui = load_image('./UI/상점1.png')
+
+    shop_active = False
+
     server.subway = Subway('./배경/플랫폼.png', 800, 300, 1600, 600, 0, is_looping=False)
 
     if server.girl:
@@ -40,37 +49,74 @@ def update():
     game_world.update()
     game_world.handle_collisions()
 
+    if shop_active: return
+
     if server.girl.x > 1550:
         import play_mode
         game_framework.change_mode(play_mode)
 
 def draw():
+    global font
+
     clear_canvas()
     game_world.render()
 
-    if font:
-        font.draw(50, 520, f'COINS: {server.coin_count}', (255, 255, 255))
-        font.draw(server.girl.x - 30, server.girl.y + 110, f'HP: {server.girl.hp}', (255, 0, 0))
+    if font is None:
+        from pico2d import load_font
+        font = load_font('ENCR10B.TTF', 16)
+
+    if shop_active:
+        shop_ui.draw(800, 300, 357, 453)
 
     update_canvas()
 
+
 def handle_events():
+    global shop_active
     events = get_events()
     for event in events:
         if event.type == SDL_QUIT:
             game_framework.quit()
+
         elif event.type == SDL_KEYDOWN:
             if event.key == SDLK_ESCAPE:
-                game_framework.quit()
-            elif event.key == SDLK_SPACE:
-                for merchant in game_world.all_objects():
-                    if isinstance(merchant, Merchant):
-                        if game_world.collide(server.girl, merchant):
-                            merchant.try_buy()
+                if shop_active:
+                    shop_active = False
+                else:
+                    game_framework.quit()
+
+            elif event.key == SDLK_v:
+                near_merchant = False
+                for obj in game_world.all_objects():
+                    if isinstance(obj, Merchant):
+                        if game_world.collide(server.girl, obj):
+                            near_merchant = True
+                            break
+
+                if near_merchant:
+                    shop_active = not shop_active
+                elif shop_active:
+                    shop_active = False
+
             else:
-                server.girl.handle_event(event)
+                if not shop_active:
+                    server.girl.handle_event(event)
+
+        elif event.type == SDL_MOUSEBUTTONDOWN:
+            if shop_active:
+                mx, my = event.x, 600 - 1 - event.y
+                handle_shop_click(mx, my)
         else:
-            server.girl.handle_event(event)
+            if not shop_active:
+                server.girl.handle_event(event)
+
+
+def handle_shop_click(mx, my):
+    pass
+
+
+def buy_item(item_type, price):
+    pass
 
 
 def pause(): pass

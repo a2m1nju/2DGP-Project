@@ -541,6 +541,8 @@ class Girl:
         self.key_a_down = False
         self.key_d_down = False
 
+        self.key_shift_down = False
+
         self.skill_cooldown = 5.0
         self.last_skill_time = -self.skill_cooldown
 
@@ -699,7 +701,7 @@ class Girl:
         elif group == 'girl:food':
             self.hp += other.value
             if self.hp > 100:
-                self.hp = 100
+                self.hp = self.max_hp
             return
 
         if current_time < self.buff_end_time:
