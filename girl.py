@@ -526,11 +526,12 @@ class Girl:
         self.dir = 0
         self.y_velocity = 0.0
 
-        self.hp = 100
         self.level = 1
         self.exp = 0
         self.max_exp = 100
-
+        self.max_hp = 100
+        self.hp = self.max_hp
+        self.damage = 1
 
         self.last_attack_time = 0.0
         self.attack_cooldown = 0.5
@@ -592,13 +593,17 @@ class Girl:
 
     def gain_exp(self, amount):
         self.exp += amount
-        print(f"EXP Gained: {amount}. Current: {self.exp}/{self.max_exp}")
+        print(f"Exp: {self.exp}/{self.max_exp}")
 
         while self.exp >= self.max_exp:
             self.exp -= self.max_exp
             self.level += 1
             self.max_exp = int(self.max_exp * 1.5)
-            print(f"Level Up! Current Level: {self.level}")
+
+            self.max_hp += 20
+            self.hp = self.max_hp
+            self.damage += 5
+            print(f"Level Up! Lv.{self.level} HP:{self.max_hp} Dmg:{self.damage}")
 
     def update(self):
         self.state_machine.update()
@@ -672,7 +677,7 @@ class Girl:
             pass
 
     def throw_book(self):
-        book = Book(self.x + self.face_dir*40, self.y+20, self.face_dir * 15, 0)
+        book = Book(self.x + self.face_dir*40, self.y+20, self.face_dir * 15, 0, self.damage)
         game_world.add_object(book, 4)
         game_world.add_collision_pair('book:enemy', book, None)
 

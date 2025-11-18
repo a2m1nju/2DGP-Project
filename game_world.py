@@ -67,7 +67,7 @@ def collide(a, b):
 collision_pairs = {}
 def add_collision_pair(group, a, b):
     if group not in collision_pairs:
-        print(f'새로운 그룹 추가')
+        #print(f'새로운 그룹 추가')
         collision_pairs[group] = ([], [])
     if a:
         collision_pairs[group][0].append(a)

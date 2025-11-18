@@ -106,7 +106,6 @@ class Walk:
             return
 
         if dist_abs < SAFE_RANGE_PIXELS:
-            # [너무 가까움] (10 미만) -> 뒤로 물러남
             self.enemy.dir = -1 if dist_to_player > 0 else 1
 
         elif dist_abs > SAFE_RANGE_PIXELS:
@@ -337,7 +336,7 @@ class Enemy_R:
             if self.state_machine.cur_state == self.DEAD:
                 return
 
-            self.hp -= 1
+            self.hp -= other.damage
             if self.hp <= 0:
                 self.state_machine.handle_state_event(('HP_IS_ZERO', None))
             else:

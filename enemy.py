@@ -344,7 +344,7 @@ class Enemy:
             if self.state_machine.cur_state == self.DEAD:
                 return
 
-            self.hp -= 1
+            self.hp -= other.damage
             if self.hp <= 0:
                 self.state_machine.handle_state_event(('HP_IS_ZERO', None))
             else:
