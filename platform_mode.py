@@ -4,18 +4,56 @@ import game_world
 import server
 from subway import Subway
 from merchant import Merchant
+import random
+import os
 
 font = None
 shop_ui = None
 shop_active = False
 
+item_database = {
+    'hp': [],
+    'power': [],
+    'speed': []
+}
+
+shop_items = []
+item_slots = []
+
 def init():
-    global font, shop_ui, shop_active
+    global font, shop_ui, shop_active, item_database, item_slots
 
     if shop_ui is None:
         shop_ui = load_image('./UI/상점1.png')
 
     shop_active = False
+
+    folder_map = {
+        'hp': './아이템/상인1',
+        'power': './아이템/상인2',
+        'speed': './아이템/상인3'
+    }
+
+    for m_type, folder_path in folder_map.items():
+        item_database[m_type] = [] # 리스트 초기화
+        if os.path.exists(folder_path):
+            for filename in os.listdir(folder_path):
+                if filename.endswith('.png'):
+                    full_path = os.path.join(folder_path, filename)
+                    image = load_image(full_path)
+                    item_database[m_type].append(image)
+        else:
+            print(f"Warning: Folder not found - {folder_path}")
+
+    start_x = 700
+    start_y = 448
+    gap_x = 97
+    gap_y = 175
+
+    item_slots = [
+        (start_x, start_y), (start_x + gap_x, start_y), (start_x + gap_x * 2, start_y),
+        (start_x, start_y - gap_y), (start_x + gap_x, start_y - gap_y), (start_x + gap_x * 2, start_y - gap_y)
+    ]
 
     server.subway = Subway('./배경/플랫폼.png', 800, 300, 1600, 600, 0, is_looping=False)
 
@@ -41,9 +79,11 @@ def init():
     game_world.add_collision_pair('girl:merchant', server.girl, m2)
     game_world.add_collision_pair('girl:merchant', server.girl, m3)
 
-
 def finish():
     game_world.clear()
+
+    global shop_items
+    shop_items = []
 
 def update():
     game_world.update()
@@ -68,8 +108,31 @@ def draw():
     if shop_active:
         shop_ui.draw(800, 300, 357, 453)
 
+        for i, item_image in enumerate(shop_items):
+            if i < len(item_slots):
+                x, y = item_slots[i]
+                item_image.draw(x, y, 50, 50)
+
     update_canvas()
 
+
+def update_shop_items(merchant):
+    global shop_items
+
+    if not hasattr(merchant, 'inventory'):
+        merchant.inventory = []
+
+        pool = item_database.get(merchant.item_type, [])
+
+        if pool:
+            count = min(len(pool), 6)
+            merchant.inventory = random.sample(pool, count)
+
+            while len(merchant.inventory) < 6:
+                merchant.inventory.append(random.choice(pool))
+
+    # 전역 shop_items 변수가 현재 상인의 인벤토리를 가리키게 함
+    shop_items = merchant.inventory
 
 def handle_events():
     global shop_active
@@ -85,23 +148,25 @@ def handle_events():
                 else:
                     game_framework.quit()
 
+
             elif event.key == SDLK_v:
-                near_merchant = False
+                target_merchant = None
+
                 for obj in game_world.all_objects():
                     if isinstance(obj, Merchant):
                         if game_world.collide(server.girl, obj):
-                            near_merchant = True
+                            target_merchant = obj
                             break
 
-                if near_merchant:
+                if target_merchant:
                     shop_active = not shop_active
 
                     if shop_active:
+                        update_shop_items(target_merchant)
                         server.girl.key_a_down = False
                         server.girl.key_d_down = False
                         server.girl.key_shift_down = False
                         server.girl.dir = 0
-
                         server.girl.state_machine.cur_state.exit(None)
                         server.girl.state_machine.cur_state = server.girl.IDLE
                         server.girl.state_machine.cur_state.enter(None)
