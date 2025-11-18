@@ -103,7 +103,7 @@ def draw():
 
     if font is None:
         from pico2d import load_font
-        font = load_font('ENCR10B.TTF', 16)
+        font = load_font('ENCR10B.TTF', 25)
 
     if shop_active:
         shop_ui.draw(800, 300, 357, 453)
@@ -112,6 +112,8 @@ def draw():
             if i < len(item_slots):
                 x, y = item_slots[i]
                 item_image.draw(x, y, 50, 50)
+
+        font.draw(705, 117, f'{server.coin_count}', (0, 0, 0))
 
     update_canvas()
 
