@@ -24,7 +24,7 @@ inventory_active = False
 
 spawn_timer = 0.0
 spawn_cooldown = 5.0
-max_spawn_count = 1
+max_spawn_count = 5
 max_enemies_on_screen = 3
 coin_count = 0
 

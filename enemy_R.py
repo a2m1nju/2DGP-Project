@@ -234,7 +234,7 @@ class Dead:
 
         self.enemy.girl.gain_exp(20)
 
-        if random.random() < 0.6:
+        if random.random() < 0.9:
             coin_value = random.choice([10, 20, 30])
             coin = Coin(self.enemy.x, self.enemy.y + 30, coin_value)
             game_world.add_object(coin, 3)

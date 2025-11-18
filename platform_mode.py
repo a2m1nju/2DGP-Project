@@ -56,7 +56,7 @@ def init():
                     full_path = os.path.join(folder_path, filename)
                     image = load_image(full_path)
 
-                    price = random.randint(10, 50)
+                    price = random.randint(10, 30)
 
                     item_data = {'image': image, 'price': price, 'path': full_path}
                     item_database[m_type].append(item_data)
