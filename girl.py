@@ -324,7 +324,12 @@ class Hurt:
         else:
             self.girl.dir = 0
 
-        game_world.scroll_speed = -self.girl.dir * RUN_SPEED_PPS
+        if self.girl.bg_scrolling:
+            game_world.scroll_speed = -self.girl.dir * RUN_SPEED_PPS
+        else:
+            game_world.scroll_speed = 0
+            self.girl.x += self.girl.dir * RUN_SPEED_PPS * game_framework.frame_time
+            self.girl.x = clamp(25, self.girl.x, 1600 - 25)
 
         if self.girl.frame >= len(Hurt.sizes):
             self.girl.frame = len(Hurt.sizes) - 1
@@ -488,7 +493,12 @@ class Jump:
         else:
             self.girl.dir = 0
 
-        game_world.scroll_speed = -self.girl.dir * RUN_SPEED_PPS
+        if self.girl.bg_scrolling:
+            game_world.scroll_speed = -self.girl.dir * RUN_SPEED_PPS
+        else:
+            game_world.scroll_speed = 0
+            self.girl.x += self.girl.dir * RUN_SPEED_PPS * game_framework.frame_time
+            self.girl.x = clamp(25, self.girl.x, 1600 - 25)
 
         self.girl.frame = (self.girl.frame + animation_speed * ACTION_PER_TIME * game_framework.frame_time) % 8
 
