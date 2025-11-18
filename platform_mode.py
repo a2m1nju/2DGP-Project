@@ -243,7 +243,7 @@ def handle_shop_click(mx, my):
     for i, slot_pos in enumerate(item_slots):
         if i < len(shop_items):
             sx, sy = slot_pos
-            if (sx - 30 <= mx <= sx + 30) and (sy - 50 <= my <= sy + 30):
+            if (sx - 30 <= mx <= sx + 30) and (sy - 105 <= my <= sy - 80):
                 buy_item(i)
                 break
 
