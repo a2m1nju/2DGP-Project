@@ -10,6 +10,9 @@ import os
 font = None
 shop_ui = None
 shop_active = False
+inventory_ui = None
+inventory_active = False
+inventory_font = None
 
 item_database = {
     'hp': [],
@@ -22,11 +25,19 @@ item_slots = []
 
 def init():
     global font, shop_ui, shop_active, item_database, item_slots
+    global inventory_ui, inventory_active, inventory_font
 
     if shop_ui is None:
         shop_ui = load_image('./UI/상점1.png')
 
+    if inventory_ui is None:
+        inventory_ui = load_image('./UI/인벤토리1.png')
+
+    if inventory_font is None:
+        inventory_font = load_font('ENCR10B.TTF', 25)
+
     shop_active = False
+    inventory_active = False
 
     folder_map = {
         'hp': './아이템/상인1',
@@ -89,14 +100,15 @@ def update():
     game_world.update()
     game_world.handle_collisions()
 
-    if shop_active: return
+    if shop_active or inventory_active:
+        return
 
     if server.girl.x > 1550:
         import play_mode
         game_framework.change_mode(play_mode)
 
 def draw():
-    global font
+    global font, inventory_font
 
     clear_canvas()
     game_world.render()
@@ -114,6 +126,11 @@ def draw():
                 item_image.draw(x, y, 50, 50)
 
         font.draw(705, 117, f'{server.coin_count}', (0, 0, 0))
+
+    if inventory_active:
+        inventory_ui.draw(800, 300, 392, 404)
+        if inventory_font:
+            inventory_font.draw(705, 150, f'{server.coin_count}', (0, 0, 0))
 
     update_canvas()
 
@@ -133,11 +150,12 @@ def update_shop_items(merchant):
             while len(merchant.inventory) < 6:
                 merchant.inventory.append(random.choice(pool))
 
-    # 전역 shop_items 변수가 현재 상인의 인벤토리를 가리키게 함
     shop_items = merchant.inventory
 
+
 def handle_events():
-    global shop_active
+    global shop_active, inventory_active  # [추가]
+
     events = get_events()
     for event in events:
         if event.type == SDL_QUIT:
@@ -147,45 +165,54 @@ def handle_events():
             if event.key == SDLK_ESCAPE:
                 if shop_active:
                     shop_active = False
+                elif inventory_active:
+                    inventory_active = False
                 else:
                     game_framework.quit()
 
-
             elif event.key == SDLK_v:
-                target_merchant = None
+                if not inventory_active:
 
-                for obj in game_world.all_objects():
-                    if isinstance(obj, Merchant):
-                        if game_world.collide(server.girl, obj):
-                            target_merchant = obj
-                            break
+                    target_merchant = None
+                    for obj in game_world.all_objects():
+                        if isinstance(obj, Merchant):
+                            if game_world.collide(server.girl, obj):
+                                target_merchant = obj
+                                break
 
-                if target_merchant:
-                    shop_active = not shop_active
+                    if target_merchant:
+                        shop_active = not shop_active
+                        if shop_active:
+                            update_shop_items(target_merchant)
+                            server.girl.dir = 0
 
-                    if shop_active:
-                        update_shop_items(target_merchant)
+                            server.girl.key_a_down = False
+                            server.girl.key_d_down = False
+                            server.girl.state_machine.cur_state.exit(None)
+                            server.girl.state_machine.cur_state = server.girl.IDLE
+                            server.girl.state_machine.cur_state.enter(None)
+                    elif shop_active:
+                        shop_active = False
+
+            elif event.key == SDLK_t:
+                if not shop_active:
+                    inventory_active = not inventory_active
+                    if inventory_active:
+                        server.girl.dir = 0
                         server.girl.key_a_down = False
                         server.girl.key_d_down = False
-                        server.girl.key_shift_down = False
-                        server.girl.dir = 0
-                        server.girl.state_machine.cur_state.exit(None)
-                        server.girl.state_machine.cur_state = server.girl.IDLE
-                        server.girl.state_machine.cur_state.enter(None)
-
-                elif shop_active:
-                    shop_active = False
 
             else:
-                if not shop_active:
+                if not shop_active and not inventory_active:
                     server.girl.handle_event(event)
 
         elif event.type == SDL_MOUSEBUTTONDOWN:
             if shop_active:
                 mx, my = event.x, 600 - 1 - event.y
                 handle_shop_click(mx, my)
+
         else:
-            if not shop_active:
+            if not shop_active and not inventory_active:
                 server.girl.handle_event(event)
 
 
