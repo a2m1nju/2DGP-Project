@@ -95,6 +95,17 @@ def handle_events():
 
                 if near_merchant:
                     shop_active = not shop_active
+
+                    if shop_active:
+                        server.girl.key_a_down = False
+                        server.girl.key_d_down = False
+                        server.girl.key_shift_down = False
+                        server.girl.dir = 0
+
+                        server.girl.state_machine.cur_state.exit(None)
+                        server.girl.state_machine.cur_state = server.girl.IDLE
+                        server.girl.state_machine.cur_state.enter(None)
+
                 elif shop_active:
                     shop_active = False
 
