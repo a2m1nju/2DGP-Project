@@ -117,6 +117,12 @@ def update():
 
     if enemies_killed_count >= max_spawn_count:
         import gameclear_mode
+        server.coin_count = coin_count
+        game_framework.change_mode(gameclear_mode)
+        return
+
+    if enemies_killed_count >= max_spawn_count:
+        import gameclear_mode
         game_framework.change_mode(gameclear_mode)
         return
 
@@ -194,14 +200,25 @@ def draw():
         else:
             skill_e_icon.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
 
-    if enemies_killed_count >= max_spawn_count:
-        server.coin_count = coin_count
-        game_framework.change_mode(platform_mode)
-        return
-
     if inventory_active:
         inventory_ui.draw(800, 300, 392, 404)
-        inventory_font.draw(705, 150, f'{coin_count}', (0, 0, 0))
+
+        inv_start_x = 665
+        inv_start_y = 410
+        inv_gap_x = 67
+        inv_gap_y = 67
+
+        for i, item in enumerate(server.girl.inventory):
+            row = i // 5
+            col = i % 5
+            ix = inv_start_x + (col * inv_gap_x)
+            iy = inv_start_y - (row * inv_gap_y)
+
+            if 'image' in item:
+                item['image'].draw(ix, iy, 40, 40)
+
+        if inventory_font:
+            inventory_font.draw(705, 150, f'{coin_count}', (0, 0, 0))
 
     update_canvas()
 

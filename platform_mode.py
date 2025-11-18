@@ -36,6 +36,9 @@ def init():
     if inventory_font is None:
         inventory_font = load_font('ENCR10B.TTF', 25)
 
+    if font is None:
+        font = load_font('ENCR10B.TTF', 20)
+
     shop_active = False
     inventory_active = False
 
@@ -46,13 +49,17 @@ def init():
     }
 
     for m_type, folder_path in folder_map.items():
-        item_database[m_type] = [] # 리스트 초기화
+        item_database[m_type] = []
         if os.path.exists(folder_path):
             for filename in os.listdir(folder_path):
                 if filename.endswith('.png'):
                     full_path = os.path.join(folder_path, filename)
                     image = load_image(full_path)
-                    item_database[m_type].append(image)
+
+                    price = random.randint(10, 50)
+
+                    item_data = {'image': image, 'price': price, 'path': full_path}
+                    item_database[m_type].append(item_data)
         else:
             print(f"Warning: Folder not found - {folder_path}")
 
@@ -120,15 +127,31 @@ def draw():
     if shop_active:
         shop_ui.draw(800, 300, 357, 453)
 
-        for i, item_image in enumerate(shop_items):
+        for i, item in enumerate(shop_items):
             if i < len(item_slots):
                 x, y = item_slots[i]
-                item_image.draw(x, y, 50, 50)
+                item['image'].draw(x, y, 50, 50)
+                font.draw(x - 15, y - 47, f'{item["price"]}G', (0, 0, 0))
 
         font.draw(705, 117, f'{server.coin_count}', (0, 0, 0))
 
     if inventory_active:
         inventory_ui.draw(800, 300, 392, 404)
+
+        inv_start_x = 665
+        inv_start_y = 410
+        inv_gap_x = 67
+        inv_gap_y = 67
+
+        for i, item in enumerate(server.girl.inventory):
+            row = i // 5
+            col = i % 5
+
+            ix = inv_start_x + (col * inv_gap_x)
+            iy = inv_start_y - (row * inv_gap_y)
+
+            item['image'].draw(ix, iy, 40, 40)
+
         if inventory_font:
             inventory_font.draw(705, 150, f'{server.coin_count}', (0, 0, 0))
 
@@ -217,11 +240,30 @@ def handle_events():
 
 
 def handle_shop_click(mx, my):
-    pass
+    for i, slot_pos in enumerate(item_slots):
+        if i < len(shop_items):
+            sx, sy = slot_pos
+            if (sx - 30 <= mx <= sx + 30) and (sy - 50 <= my <= sy + 30):
+                buy_item(i)
+                break
 
 
-def buy_item(item_type, price):
-    pass
+def buy_item(index):
+    global shop_items
+
+    if index < 0 or index >= len(shop_items):
+        return
+
+    item = shop_items[index]
+
+    if server.coin_count >= item['price']:
+        server.coin_count -= item['price']
+        server.girl.inventory.append(item)
+
+        shop_items.pop(index)
+
+    else:
+        print("돈이 부족합니다!")
 
 
 def pause(): pass
