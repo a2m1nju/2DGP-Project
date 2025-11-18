@@ -553,6 +553,8 @@ class Girl:
 
         self.bg_scrolling = True
 
+        self.inventory = []
+
         self.IDLE = Idle(self)
         self.PROTECTION = Protection(self)
         self.WALK = Walk(self)

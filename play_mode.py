@@ -19,26 +19,48 @@ skill_q_icon_bw = None
 skill_e_icon = None
 skill_e_icon_bw = None
 
+inventory_ui = None
+inventory_active = False
+
 spawn_timer = 0.0
 spawn_cooldown = 5.0
 max_spawn_count = 1
 max_enemies_on_screen = 3
 coin_count = 0
 
+inventory_font = None
+
 def handle_events():
+    global inventory_active
+
     event_list = get_events()
     for event in event_list:
         if event.type == SDL_QUIT:
             game_framework.quit()
+
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
-            game_framework.quit()
+            if inventory_active:
+                inventory_active = False
+            else:
+                game_framework.quit()
+
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_t:
+            inventory_active = not inventory_active
+            if inventory_active:
+                girl.dir = 0
+                girl.key_a_down = False
+                girl.key_d_down = False
+
         else:
-            girl.handle_event(event)
+            if not inventory_active:
+                girl.handle_event(event)
 
 
 def init():
     global girl, font, spawn_timer, coin_count, skill_q_icon, skill_q_icon_bw
     global enemies_killed_count, skill_e_icon, skill_e_icon_bw
+    global inventory_ui, inventory_active
+    global inventory_font
 
     if server.girl is None:
         server.girl = Girl()
@@ -54,6 +76,7 @@ def init():
     game_world.add_collision_pair('girl:food', girl, None)
 
     font = load_font('ENCR10B.TTF', 16)
+    inventory_font = load_font('ENCR10B.TTF', 25)
 
     skill_q_icon = load_image('./이펙트/스킬/Q.png')
     skill_q_icon_bw = load_image('./이펙트/스킬/Q_b.png')
@@ -78,10 +101,16 @@ def init():
     enemies_killed_count = 0
     coin_count = server.coin_count
 
+    inventory_ui = load_image('./UI/인벤토리1.png')
+    inventory_active = False
+
 def update():
     global spawn_timer, spawn_cooldown, spawn_count, max_spawn_count
     global enemies_killed_count
     global max_enemies_on_screen
+
+    if inventory_active:
+        return
 
     game_world.update()
     game_world.handle_collisions()
@@ -170,15 +199,20 @@ def draw():
         game_framework.change_mode(platform_mode)
         return
 
+    if inventory_active:
+        inventory_ui.draw(800, 300, 392, 404)
+        inventory_font.draw(705, 150, f'{coin_count}', (0, 0, 0))
+
     update_canvas()
 
 def finish():
-    global skill_q_icon, skill_q_icon_bw, skill_e_icon, skill_e_icon_bw
+    global skill_q_icon, skill_q_icon_bw, skill_e_icon, skill_e_icon_bw, inventory_font
     game_world.clear()
     skill_q_icon = None
     skill_q_icon_bw = None
     skill_e_icon = None
     skill_e_icon_bw = None
+    inventory_font = None
 
 def pause(): pass
 def resume(): pass
