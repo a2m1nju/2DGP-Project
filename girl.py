@@ -527,6 +527,10 @@ class Girl:
         self.y_velocity = 0.0
 
         self.hp = 100
+        self.level = 1
+        self.exp = 0
+        self.max_exp = 100
+
 
         self.last_attack_time = 0.0
         self.attack_cooldown = 0.5
@@ -585,6 +589,16 @@ class Girl:
                              left_up: self.RUN, all_keys_up: self.IDLE}
             }
         )
+
+    def gain_exp(self, amount):
+        self.exp += amount
+        print(f"EXP Gained: {amount}. Current: {self.exp}/{self.max_exp}")
+
+        while self.exp >= self.max_exp:
+            self.exp -= self.max_exp
+            self.level += 1
+            self.max_exp = int(self.max_exp * 1.5)
+            print(f"Level Up! Current Level: {self.level}")
 
     def update(self):
         self.state_machine.update()

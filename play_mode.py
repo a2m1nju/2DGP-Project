@@ -21,7 +21,7 @@ skill_e_icon_bw = None
 
 spawn_timer = 0.0
 spawn_cooldown = 5.0
-max_spawn_count = 1
+max_spawn_count = 3
 max_enemies_on_screen = 3
 coin_count = 0
 
@@ -120,8 +120,11 @@ def draw():
     font.draw(50, 550, f'KILLS: {enemies_killed_count}', (255, 255, 255))
     font.draw(50, 520, f'COINS: {coin_count}', (255, 255, 255))
 
+    font.draw(50, 490, f'Lv: {girl.level}', (255, 255, 255))
+    font.draw(50, 460, f'EXP: {int(girl.exp)} / {int(girl.max_exp)}', (255, 255, 255))
+
     if skill_q_icon and skill_q_icon_bw:
-        icon_x, icon_y = 75, 475
+        icon_x, icon_y = 250, 475
         icon_w, icon_h = 50, 50
 
         current_time = get_time()
@@ -139,7 +142,7 @@ def draw():
             skill_q_icon.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
 
     if skill_e_icon and skill_e_icon_bw:
-        icon_x, icon_y = 140, 475
+        icon_x, icon_y = 315, 475
         icon_w, icon_h = 50, 50
 
         current_time = get_time()
