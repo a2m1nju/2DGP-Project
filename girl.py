@@ -129,6 +129,7 @@ class Protection:
     def enter(self, e):
         self.girl.dir = 0
         game_world.scroll_speed = 0.0
+        self.girl.frame = 0
 
         self.girl.buff_end_time = get_time() + 5.0
 
@@ -175,7 +176,7 @@ class Walk:
             Walk.image = load_image('./주인공/Walk.png')
 
     def enter(self, e):
-        pass
+        self.girl.frame = 0
 
     def exit(self, e):
         pass
@@ -222,7 +223,7 @@ class Run:
             Run.image = load_image('./주인공/Run.png')
 
     def enter(self, e):
-        pass
+        self.girl.frame = 0
 
     def exit(self, e):
         pass
