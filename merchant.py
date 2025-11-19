@@ -6,6 +6,7 @@ import server
 
 class Merchant:
     images = {}
+    speech_bubble = None
 
     animation_info = {
         'hp': {
@@ -39,6 +40,9 @@ class Merchant:
             Merchant.images[self.item_type] = load_image(info['path'])
         self.image = Merchant.images[self.item_type]
 
+        if Merchant.speech_bubble is None:
+            Merchant.speech_bubble = load_image('./UI/말풍선.png')
+
         self.sizes = info['sizes']
         self.height = info['height']
         self.fps = info.get('fps', 7)
@@ -50,6 +54,13 @@ class Merchant:
     def draw(self):
         left, width = self.sizes[int(self.frame)]
         self.image.clip_draw(left, 0, width, self.height, self.x, self.y, 60, 90)
+
+        bubble_x = self.x + 30
+        bubble_y = self.y + 80
+
+        if Merchant.speech_bubble:
+            Merchant.speech_bubble.draw(bubble_x, bubble_y, 60, 50)
+
 
     def get_bb(self):
         return self.x - 30, self.y - 45, self.x + 30, self.y + 45
