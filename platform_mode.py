@@ -236,9 +236,11 @@ def handle_events():
                     server.girl.handle_event(event)
 
         elif event.type == SDL_MOUSEBUTTONDOWN:
+            mx, my = event.x, 600 - 1 - event.y
             if shop_active:
-                mx, my = event.x, 600 - 1 - event.y
                 handle_shop_click(mx, my)
+            elif inventory_active:
+                handle_inventory_click(mx, my)
 
         else:
             if not shop_active and not inventory_active:
@@ -246,6 +248,17 @@ def handle_events():
 
 
 def handle_shop_click(mx, my):
+    global shop_active
+
+    close_btn_x_min = 940
+    close_btn_x_max = 960
+    close_btn_y_min = 490
+    close_btn_y_max = 525
+
+    if (close_btn_x_min <= mx <= close_btn_x_max) and (close_btn_y_min <= my <= close_btn_y_max):
+        shop_active = False
+        return
+
     for i, slot_pos in enumerate(item_slots):
         if i < len(shop_items):
             sx, sy = slot_pos
@@ -253,6 +266,17 @@ def handle_shop_click(mx, my):
                 buy_item(i)
                 break
 
+
+def handle_inventory_click(mx, my):
+    global inventory_active
+
+    close_btn_x_min = 950
+    close_btn_x_max = 985
+    close_btn_y_min = 460
+    close_btn_y_max = 490
+
+    if (close_btn_x_min <= mx <= close_btn_x_max) and (close_btn_y_min <= my <= close_btn_y_max):
+        inventory_active = False
 
 def buy_item(index):
     global shop_items

@@ -26,37 +26,11 @@ inventory_active = False
 
 spawn_timer = 0.0
 spawn_cooldown = 5.0
-max_spawn_count = 10
+max_spawn_count = 1
 max_enemies_on_screen = 3
 coin_count = 0
 
 inventory_font = None
-
-def handle_events():
-    global inventory_active
-
-    event_list = get_events()
-    for event in event_list:
-        if event.type == SDL_QUIT:
-            game_framework.quit()
-
-        elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
-            if inventory_active:
-                inventory_active = False
-            else:
-                game_framework.quit()
-
-        elif event.type == SDL_KEYDOWN and event.key == SDLK_t:
-            inventory_active = not inventory_active
-            if inventory_active:
-                girl.dir = 0
-                girl.key_a_down = False
-                girl.key_d_down = False
-
-        else:
-            if not inventory_active:
-                girl.handle_event(event)
-
 
 def init():
     global girl, font, spawn_timer, coin_count
@@ -112,6 +86,47 @@ def init():
 
     inventory_ui = load_image('./UI/인벤토리1.png')
     inventory_active = False
+
+def handle_events():
+    global inventory_active
+
+    event_list = get_events()
+    for event in event_list:
+        if event.type == SDL_QUIT:
+            game_framework.quit()
+
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
+            if inventory_active:
+                inventory_active = False
+            else:
+                game_framework.quit()
+
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_t:
+            inventory_active = not inventory_active
+            if inventory_active:
+                girl.dir = 0
+                girl.key_a_down = False
+                girl.key_d_down = False
+
+        elif event.type == SDL_MOUSEBUTTONDOWN:
+            if inventory_active:
+                mx, my = event.x, 600 - 1 - event.y
+                handle_inventory_click(mx, my)
+
+        else:
+            if not inventory_active:
+                girl.handle_event(event)
+
+def handle_inventory_click(mx, my):
+    global inventory_active
+
+    close_btn_x_min = 950
+    close_btn_x_max = 985
+    close_btn_y_min = 460
+    close_btn_y_max = 490
+
+    if (close_btn_x_min <= mx <= close_btn_x_max) and (close_btn_y_min <= my <= close_btn_y_max):
+        inventory_active = False
 
 def update():
     global spawn_timer, spawn_cooldown, spawn_count, max_spawn_count
