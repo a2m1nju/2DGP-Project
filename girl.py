@@ -598,7 +598,7 @@ class Girl:
                 self.SKILL : {hit_by_enemy: self.HURT, hp_is_zero: self.DEAD, left_down: self.WALK, right_down: self.WALK,
                                 space_down: self.ATTACK, time_out: self.IDLE,  e_down: self.PROTECTION, w_down: self.JUMP,
                               shift_down: self.RUN},
-                self.JUMP : {land_to_idle: self.IDLE, land_to_walk: self.WALK, hit_by_enemy: self.HURT, shift_down: self.JUMP,
+                self.JUMP : {land_to_idle: self.IDLE, land_to_walk: self.WALK, hit_by_enemy: self.HURT,
                               hp_is_zero: self.DEAD, space_down: self.ATTACK, q_down: self.SKILL, e_down: self.PROTECTION,
                              land_to_run: self.RUN},
                 self.RUN : { shift_up: self.WALK, space_down: self.ATTACK,w_down: self.JUMP, e_down: self.PROTECTION,

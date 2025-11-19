@@ -6,6 +6,7 @@ from subway import Subway
 from merchant import Merchant
 import random
 import os
+import server
 
 font = None
 shop_ui = None
@@ -38,6 +39,11 @@ def init():
 
     if font is None:
         font = load_font('ENCR10B.TTF', 20)
+
+    if server.girl:
+        server.girl.state_machine.cur_state = server.girl.IDLE
+        server.girl.IDLE.enter(None)
+        server.girl.bg_scrolling = False
 
     shop_active = False
     inventory_active = False
