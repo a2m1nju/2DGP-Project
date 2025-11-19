@@ -13,6 +13,8 @@ from enemy_R import Enemy_R
 
 girl = None
 font = None
+hp_bar_bg = None
+hp_bar_fill = None
 
 skill_q_icon = None
 skill_q_icon_bw = None
@@ -57,10 +59,10 @@ def handle_events():
 
 
 def init():
-    global girl, font, spawn_timer, coin_count, skill_q_icon, skill_q_icon_bw
-    global enemies_killed_count, skill_e_icon, skill_e_icon_bw
-    global inventory_ui, inventory_active
-    global inventory_font
+    global girl, font, spawn_timer, coin_count
+    global enemies_killed_count, skill_e_icon, skill_e_icon_bw, skill_q_icon, skill_q_icon_bw
+    global inventory_ui, inventory_active, inventory_font
+    global hp_bar_bg, hp_bar_fill
 
     if server.girl is None:
         server.girl = Girl()
@@ -85,6 +87,11 @@ def init():
 
     skill_e_icon = load_image('./이펙트/스킬/E.png')
     skill_e_icon_bw = load_image('./이펙트/스킬/E_b.png')
+
+    if hp_bar_bg is None:
+        hp_bar_bg = load_image('./UI/체력바.png')
+    if hp_bar_fill is None:
+        hp_bar_fill = load_image('./UI/체력줄.png')
 
     Subway('./배경/내부2.png', 800, 300, 1600, 600, 0, is_looping=True)
 
@@ -153,7 +160,37 @@ def draw():
     clear_canvas()
     game_world.render()
 
-    font.draw(girl.x - 30, girl.y + 110, f'HP: {girl.hp}', (255, 0, 0))
+    #font.draw(girl.x - 30, girl.y + 110, f'HP: {girl.hp}', (255, 0, 0))
+    if hp_bar_bg and hp_bar_fill:
+        bar_x = girl.x
+        bar_y = girl.y + 110
+
+        TARGET_WIDTH = 100
+        TARGET_HEIGHT = 20
+
+        HORIZONTAL_PADDING = 8
+        VERTICAL_PADDING = 8
+
+        FILL_DRAW_WIDTH = TARGET_WIDTH - HORIZONTAL_PADDING
+        FILL_DRAW_HEIGHT = TARGET_HEIGHT - VERTICAL_PADDING
+
+        hp_ratio = girl.hp / girl.max_hp
+        if hp_ratio < 0: hp_ratio = 0
+        if hp_ratio > 1: hp_ratio = 1
+
+        FILL_ORIGINAL_WIDTH = hp_bar_fill.w
+        current_clip_width = int(FILL_ORIGINAL_WIDTH * hp_ratio)
+        current_draw_width = int(FILL_DRAW_WIDTH * hp_ratio)
+
+        fill_left_edge_x = bar_x - (TARGET_WIDTH / 2) + (HORIZONTAL_PADDING / 2)
+        draw_x = fill_left_edge_x + (current_draw_width / 2)
+
+
+        if current_draw_width > 0:
+            hp_bar_fill.clip_draw(0, 0, current_clip_width, hp_bar_fill.h, draw_x, bar_y,
+                                  current_draw_width,FILL_DRAW_HEIGHT)
+        hp_bar_bg.draw(bar_x, bar_y, TARGET_WIDTH, TARGET_HEIGHT)
+
     font.draw(50, 550, f'KILLS: {enemies_killed_count}', (255, 255, 255))
     font.draw(50, 520, f'COINS: {coin_count}', (255, 255, 255))
 
@@ -226,12 +263,15 @@ def draw():
 
 def finish():
     global skill_q_icon, skill_q_icon_bw, skill_e_icon, skill_e_icon_bw, inventory_font
+    global hp_bar_bg, hp_bar_fill
     game_world.clear()
     skill_q_icon = None
     skill_q_icon_bw = None
     skill_e_icon = None
     skill_e_icon_bw = None
     inventory_font = None
+    hp_bar_bg = None
+    hp_bar_fill = None
 
 def pause(): pass
 def resume(): pass
