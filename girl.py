@@ -564,6 +564,8 @@ class Girl:
         self.bg_scrolling = True
 
         self.inventory = []
+        self.level_up_image = load_image('./UI/레벨업.png')
+        self.level_up_end_time = 0.0
 
         self.IDLE = Idle(self)
         self.PROTECTION = Protection(self)
@@ -618,6 +620,8 @@ class Girl:
             self.hp = self.max_hp
             self.damage += 5
             print(f"Level Up! Lv.{self.level} HP:{self.max_hp} Dmg:{self.damage}")
+
+            self.level_up_end_time = get_time() + 2.0
 
     def update(self):
         self.state_machine.update()
@@ -698,6 +702,9 @@ class Girl:
     def draw(self):
         self.state_machine.draw()
         draw_rectangle(*self.get_bb())
+
+        if get_time() < self.level_up_end_time:
+            self.level_up_image.draw(self.x, self.y + 140, 96, 17)
 
     def get_bb(self):
         return self.state_machine.get_bb()
