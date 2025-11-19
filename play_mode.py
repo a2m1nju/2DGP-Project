@@ -169,7 +169,7 @@ def draw():
         TARGET_HEIGHT = 20
 
         HORIZONTAL_PADDING = 8
-        VERTICAL_PADDING = 8
+        VERTICAL_PADDING = 10
 
         FILL_DRAW_WIDTH = TARGET_WIDTH - HORIZONTAL_PADDING
         FILL_DRAW_HEIGHT = TARGET_HEIGHT - VERTICAL_PADDING
@@ -185,11 +185,11 @@ def draw():
         fill_left_edge_x = bar_x - (TARGET_WIDTH / 2) + (HORIZONTAL_PADDING / 2)
         draw_x = fill_left_edge_x + (current_draw_width / 2)
 
+        hp_bar_bg.draw(bar_x, bar_y, TARGET_WIDTH, TARGET_HEIGHT)
 
         if current_draw_width > 0:
             hp_bar_fill.clip_draw(0, 0, current_clip_width, hp_bar_fill.h, draw_x, bar_y,
                                   current_draw_width,FILL_DRAW_HEIGHT)
-        hp_bar_bg.draw(bar_x, bar_y, TARGET_WIDTH, TARGET_HEIGHT)
 
     font.draw(50, 550, f'KILLS: {enemies_killed_count}', (255, 255, 255))
     font.draw(50, 520, f'COINS: {coin_count}', (255, 255, 255))

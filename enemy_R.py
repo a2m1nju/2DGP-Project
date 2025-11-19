@@ -270,18 +270,29 @@ class Dead:
 
 class Enemy_R:
     font = None
+    hp_bar_bg = None
+    hp_bar_fill = None
+
     def __init__(self, girl):
         self.x, self.y = 1300, 150
         self.frame = 0.0
         self.face_dir = 1
         self.dir = 0
         self.girl = girl
-        self.hp = 5
+
+        self.max_hp = 5
+        self.hp = self.max_hp
+
         self.last_attack_time = 0.0
         self.attack_cooldown = 2.0
 
         if Enemy_R.font is None:
             Enemy_R.font = load_font('ENCR10B.TTF', 16)
+
+        if Enemy_R.hp_bar_bg is None:
+            Enemy_R.hp_bar_bg = load_image('./UI/체력바.png')
+        if Enemy_R.hp_bar_fill is None:
+            Enemy_R.hp_bar_fill = load_image('./UI/체력줄.png')
 
         self.IDLE = Idle(self)
         self.WALK = Walk(self)
@@ -326,7 +337,40 @@ class Enemy_R:
         draw_rectangle(*self.get_bb())
 
         if self.state_machine.cur_state != self.DEAD:
-            Enemy_R.font.draw(self.x - 30, self.y + 110, f'HP: {self.hp}', (255, 0, 0))
+            # Enemy_R.font.draw(self.x - 30, self.y + 110, f'HP: {self.hp}', (255, 0, 0))
+
+            if Enemy_R.hp_bar_bg and Enemy_R.hp_bar_fill:
+                bar_x = self.x
+                bar_y = self.y + 110
+
+                TARGET_WIDTH = 100
+                TARGET_HEIGHT = 20
+
+                HORIZONTAL_PADDING = 8
+                VERTICAL_PADDING = 10
+
+                FILL_DRAW_WIDTH = TARGET_WIDTH - HORIZONTAL_PADDING
+                FILL_DRAW_HEIGHT = TARGET_HEIGHT - VERTICAL_PADDING
+
+                hp_ratio = self.hp / self.max_hp
+                if hp_ratio < 0: hp_ratio = 0
+                if hp_ratio > 1: hp_ratio = 1
+
+                FILL_ORIGINAL_WIDTH = Enemy_R.hp_bar_fill.w
+                current_clip_width = int(FILL_ORIGINAL_WIDTH * hp_ratio)
+                current_draw_width = int(FILL_DRAW_WIDTH * hp_ratio)
+
+                fill_left_edge_x = bar_x - (TARGET_WIDTH / 2) + (HORIZONTAL_PADDING / 2)
+                draw_x = fill_left_edge_x + (current_draw_width / 2)
+
+                Enemy_R.hp_bar_bg.draw(bar_x, bar_y, TARGET_WIDTH, TARGET_HEIGHT)
+
+                if current_draw_width > 0:
+                    Enemy_R.hp_bar_fill.clip_draw(
+                        0, 0, current_clip_width, Enemy_R.hp_bar_fill.h,
+                        draw_x, bar_y, current_draw_width, FILL_DRAW_HEIGHT
+                    )
+
 
     def get_bb(self):
         return self.state_machine.get_bb()
