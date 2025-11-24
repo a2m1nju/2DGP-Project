@@ -14,6 +14,8 @@ shop_active = False
 inventory_ui = None
 inventory_active = False
 inventory_font = None
+description_ui = None
+hovered_item_info = None
 
 item_database = {
     'hp': [],
@@ -24,15 +26,25 @@ item_database = {
 shop_items = []
 item_slots = []
 
+def get_item_description(filename, m_type):
+    pass
+
 def init():
     global font, shop_ui, shop_active, item_database, item_slots
     global inventory_ui, inventory_active, inventory_font
+    global description_ui, hovered_item_info , item_info_font
 
     if shop_ui is None:
         shop_ui = load_image('./UI/상점1.png')
 
     if inventory_ui is None:
         inventory_ui = load_image('./UI/인벤토리1.png')
+
+    if description_ui is None:
+        description_ui = load_image('./UI/설명창.png')
+
+    if item_info_font is None:
+        item_info_font = load_font('ChangwonDangamRound.TTF', 20)
 
     if inventory_font is None:
         inventory_font = load_font('ENCR10B.TTF', 25)
