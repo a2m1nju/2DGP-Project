@@ -91,30 +91,30 @@ def get_item_description(filename, m_type):
     elif m_type == 'speed':
         if '포션1' in name:
             desc = "치유의 포션"
-        if '포션2' in name:
+        elif '포션2' in name:
             desc = "번개의 포션"
-        if '포션3' in name:
+        elif '포션3' in name:
             desc = "서리의 포션"
-        if '포션4' in name:
+        elif '포션4' in name:
             desc = "치유의 포션 LV.2"
-        if '포션5' in name:
+        elif '포션5' in name:
             desc = "신속의 포션"
-        if '포션6' in name:
+        elif '포션6' in name:
             desc = "번개의 포션 LV.2"
-        if '포션7' in name:
+        elif '포션7' in name:
             desc = "신속의 포션 LV.2"
-        if '포션9' in name:
+        elif '포션9' in name:
             desc = "태양의 포션"
-        if '포션8' in name:
+        elif '포션8' in name:
             desc = "스톤 스킨의 포션"
-        if '포션10' in name:
+        elif '포션10' in name:
             desc = "달의 포션"
-        if '포션11' in name:
+        elif '포션11' in name:
             desc = "서리의 포션 LV.2"
         else:
             desc = "이동 속도를 올려주는 아이템입니다."
 
-    return f"<{name}> : {desc}"
+    return f"{desc}"
 
 def init():
     global font, shop_ui, shop_active, item_database, item_slots
@@ -133,7 +133,7 @@ def init():
         description_ui = load_image('./UI/설명창.png')
 
     if item_info_font is None:
-        item_info_font = load_font('ChangwonDangamRound.ttf', 20)
+        item_info_font = load_font('ChangwonDangamRound.ttf', 15)
 
     if inventory_font is None:
         inventory_font = load_font('ENCR10B.TTF', 25)
@@ -265,13 +265,32 @@ def draw():
 
     if hovered_item_info and description_ui:
         desc_x, desc_y = 480, 200
-        desc_width, desc_height = 250, 100
+        desc_width, desc_height = 250, 200
 
         description_ui.draw(desc_x, desc_y, desc_width, desc_height)
 
         desc_text = hovered_item_info['description']
 
-        item_info_font.draw(desc_x - 110, desc_y + 10, desc_text, (0, 0, 0))
+        max_chars_per_line = 20
+        line_spacing = 25
+
+        lines = []
+        current_index = 0
+        while current_index < len(desc_text):
+            line_segment = desc_text[current_index:current_index + max_chars_per_line].strip()
+            if line_segment:
+                lines.append(line_segment)
+            current_index += max_chars_per_line
+
+        start_y = desc_y + desc_height / 2 - 20
+
+        for i, line in enumerate(lines):
+            y_pos = start_y - (i * line_spacing)
+
+            if y_pos < desc_y - desc_height / 2 + 10:
+                break
+            x_pos = desc_x - 110
+            item_info_font.draw(x_pos, y_pos, line, (0, 0, 0))
 
     update_canvas()
 
@@ -328,7 +347,7 @@ def check_shop_hover(mx, my):
                 return
 
 def handle_events():
-    global shop_active, inventory_active
+    global shop_active, inventory_active, hovered_item_info
 
     events = get_events()
     for event in events:
@@ -344,6 +363,7 @@ def handle_events():
             if event.key == SDLK_ESCAPE:
                 if shop_active:
                     shop_active = False
+                    hovered_item_info = None
                 elif inventory_active:
                     inventory_active = False
                 else:
@@ -351,7 +371,6 @@ def handle_events():
 
             elif event.key == SDLK_v:
                 if not inventory_active:
-
                     target_merchant = None
                     for obj in game_world.all_objects():
                         if isinstance(obj, Merchant):
@@ -360,11 +379,13 @@ def handle_events():
                                 break
 
                     if target_merchant:
-                        shop_active = not shop_active
                         if shop_active:
+                            shop_active = False
+                            hovered_item_info = None
+                        else:
+                            shop_active = True
                             update_shop_items(target_merchant)
                             server.girl.dir = 0
-
                             server.girl.key_a_down = False
                             server.girl.key_d_down = False
                             server.girl.state_machine.cur_state.exit(None)
@@ -372,6 +393,8 @@ def handle_events():
                             server.girl.state_machine.cur_state.enter(None)
                     elif shop_active:
                         shop_active = False
+                        hovered_item_info = None
+
 
             elif event.key == SDLK_t:
                 if not shop_active:
