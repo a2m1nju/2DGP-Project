@@ -32,26 +32,39 @@ def get_item_description(filename, m_type):
 
     if m_type == 'hp':
         if '감튀' in name:
-            desc = "저는 맘스터치 감튀를 좋아합니다"
+            desc = ("[감자튀김]\n"
+                    "저는 맘스터치 감튀를 좋아합니다")
         elif '샌드위치2' in name:
-            desc = "서브웨이 에그마요에 에그마요 추가"
+            desc = ("[샌드위치]\n"
+                    "서브웨이 에그마요에 에그마요 추가")
         elif '당고' in name:
-            desc = "맛있는지 잘 모르겠다"
+            desc = ("[당고]\n"
+                    "맛있는지 잘 모르겠다")
         elif '비빔밥' in name:
-            desc = "열무비빔밥 vs 육회비빔밥"
+            desc = ("[비빔밥]\n"
+                    "열무비빔밥 vs 육회비빔밥")
         elif '사과' in name:
-            desc = "사과드립니다."
+            desc = ("[사과]\n"
+                    "사과드립니다.")
         elif '주먹밥' in name:
-            desc = "CU에 파는 반숙계란 버터간장밥을 아십니까?"
+            desc = ("[삼각김밥]\n"
+                    "CU에 파는 반숙계란 버터간장밥을 아십니까?")
         elif '체리' in name:
-            desc = "정신 체리세요[국산]."
+            desc = ("[체리]\n"
+                    "정신 체리세요[국산].")
         elif '치즈버거' in name:
-            desc = ("띠드버거 머꼬 시퍼여 띠드버거어~ 띠드버거 사쥬세요 띠드버거~"
+            desc = ("[치즈버거]\n"
+                    "띠드버거 머꼬 시퍼여 띠드버거어~ 띠드버거 사쥬세요 띠드버거~"
                     "나 띠드 대따 조아하는거 알디?? 내껀 띠드 두자앙?!")
         elif '토마토' in name:
-            desc = "저는 실제로 2달동안 토마토만 먹은적이 있습니다"
+            desc = ("[토마토]\n"
+                    "토맛토마토 VS 토마토맛토")
         elif '피자' in name:
-            desc = "핫소스 5개 추가"
+            desc = ("[피자]"
+                    "핫소스 5개 추가")
+        elif '김밥' in name:
+            desc = ("[김밥]\n"
+                    "김천국밥")
         else:
             desc = "체력을 회복시켜주는 음식입니다."
 
@@ -281,14 +294,18 @@ def draw():
         line_spacing = 25
 
         lines = []
-        current_index = 0
-        while current_index < len(desc_text):
-            line_segment = desc_text[current_index:current_index + max_chars_per_line].strip()
-            if line_segment:
-                lines.append(line_segment)
-            current_index += max_chars_per_line
+        manual_lines = desc_text.split('\n')
 
-        start_y = desc_y + desc_height / 2 - 20  # 280
+        for manual_line in manual_lines:
+            current_index = 0
+
+            while current_index < len(manual_line):
+                line_segment = manual_line[current_index:current_index + max_chars_per_line].strip()
+                if line_segment:
+                    lines.append(line_segment)
+                current_index += max_chars_per_line
+
+        start_y = desc_y + desc_height / 2 - 20
 
         for i, line in enumerate(lines):
             y_pos = start_y - (i * line_spacing)
