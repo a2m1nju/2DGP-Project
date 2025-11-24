@@ -264,8 +264,14 @@ def draw():
             inventory_font.draw(705, 150, f'{server.coin_count}', (0, 0, 0))
 
     if hovered_item_info and description_ui:
-        desc_x, desc_y = 480, 200
         desc_width, desc_height = 250, 200
+
+        if shop_active:
+            desc_x, desc_y = 480, 200
+        elif inventory_active:
+            desc_x, desc_y = 460, 200
+        else:
+            desc_x, desc_y = 480, 200
 
         description_ui.draw(desc_x, desc_y, desc_width, desc_height)
 
@@ -282,15 +288,20 @@ def draw():
                 lines.append(line_segment)
             current_index += max_chars_per_line
 
-        start_y = desc_y + desc_height / 2 - 20
+        start_y = desc_y + desc_height / 2 - 20  # 280
 
         for i, line in enumerate(lines):
             y_pos = start_y - (i * line_spacing)
 
             if y_pos < desc_y - desc_height / 2 + 10:
                 break
+
             x_pos = desc_x - 110
-            item_info_font.draw(x_pos, y_pos, line, (0, 0, 0))
+
+            if item_info_font:
+                item_info_font.draw(x_pos, y_pos, line, (0, 0, 0))
+            else:
+                font.draw(x_pos, y_pos, line, (0, 0, 0))
 
     update_canvas()
 
@@ -311,7 +322,6 @@ def update_shop_items(merchant):
                 merchant.inventory.append(random.choice(pool))
 
     shop_items = merchant.inventory
-
 
 def check_shop_hover(mx, my):
     global shop_active, shop_items, item_slots, hovered_item_info
@@ -346,6 +356,36 @@ def check_shop_hover(mx, my):
                 hovered_item_info = shop_items[i]
                 return
 
+def check_inventory_hover(mx, my):
+    global inventory_active, hovered_item_info
+
+    if not inventory_active:
+        return
+
+    inv_start_x = 665
+    inv_start_y = 410
+    inv_gap_x = 67
+    inv_gap_y = 67
+
+    if server.girl is None or not hasattr(server.girl, 'inventory'):
+        return
+
+    for i, item in enumerate(server.girl.inventory):
+        row = i // 5
+        col = i % 5
+
+        ix = inv_start_x + (col * inv_gap_x)
+        iy = inv_start_y - (row * inv_gap_y)
+
+        item_bb_x_min = ix - 20
+        item_bb_x_max = ix + 20
+        item_bb_y_min = iy - 20
+        item_bb_y_max = iy + 20
+
+        if (item_bb_x_min <= mx <= item_bb_x_max) and (item_bb_y_min <= my <= item_bb_y_max):
+            hovered_item_info = item
+            return
+
 def handle_events():
     global shop_active, inventory_active, hovered_item_info
 
@@ -356,8 +396,11 @@ def handle_events():
 
         elif event.type == SDL_MOUSEMOTION:
             mx, my = event.x, 600 - 1 - event.y
+            hovered_item_info = None
             if shop_active:
                 check_shop_hover(mx, my)
+            elif inventory_active:
+                check_inventory_hover(mx, my)
 
         elif event.type == SDL_KEYDOWN:
             if event.key == SDLK_ESCAPE:
@@ -366,6 +409,7 @@ def handle_events():
                     hovered_item_info = None
                 elif inventory_active:
                     inventory_active = False
+                    hovered_item_info = None
                 else:
                     game_framework.quit()
 
@@ -405,11 +449,14 @@ def handle_events():
                         server.girl.key_d_down = False
 
             else:
+                hovered_item_info = None
                 if not shop_active and not inventory_active:
                     server.girl.handle_event(event)
 
+
         elif event.type == SDL_MOUSEBUTTONDOWN:
             mx, my = event.x, 600 - 1 - event.y
+
             if shop_active:
                 handle_shop_click(mx, my)
             elif inventory_active:
