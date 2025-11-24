@@ -16,6 +16,7 @@ inventory_active = False
 inventory_font = None
 description_ui = None
 hovered_item_info = None
+item_info_font = None
 
 item_database = {
     'hp': [],
@@ -27,12 +28,100 @@ shop_items = []
 item_slots = []
 
 def get_item_description(filename, m_type):
-    pass
+    name = os.path.splitext(filename)[0]
+
+    if m_type == 'hp':
+        if '감튀' in name:
+            desc = "저는 맘스터치 감튀를 좋아합니다"
+        elif '샌드위치2' in name:
+            desc = "서브웨이 에그마요에 에그마요 추가"
+        elif '당고' in name:
+            desc = "맛있는지 잘 모르겠다"
+        elif '비빔밥' in name:
+            desc = "열무비빔밥 vs 육회비빔밥"
+        elif '사과' in name:
+            desc = "사과드립니다."
+        elif '주먹밥' in name:
+            desc = "CU에 파는 반숙계란 버터간장밥을 아십니까?"
+        elif '체리' in name:
+            desc = "정신 체리세요[국산]."
+        elif '치즈버거' in name:
+            desc = ("띠드버거 머꼬 시퍼여 띠드버거어~ 띠드버거 사쥬세요 띠드버거~"
+                    "나 띠드 대따 조아하는거 알디?? 내껀 띠드 두자앙?!")
+        elif '토마토' in name:
+            desc = "저는 실제로 2달동안 토마토만 먹은적이 있습니다"
+        elif '피자' in name:
+            desc = "핫소스 5개 추가"
+        else:
+            desc = "체력을 회복시켜주는 음식입니다."
+
+    elif m_type == 'power':
+        if '망토' in name:
+            desc = "마법사가 될 것 같은 느낌"
+        elif '모자1' in name:
+            desc = "고양이가 되어보세요."
+        elif '모자2' in name:
+            desc = ("너 테레비도 안 보냐? 테레비도 안 봐?"
+                    "너 뉴스도 안 보지?"
+                    "지금 대침체 모르냐? 금융 위기 모르냐?"
+                    "왜 나만 계속 갈구냐 왜 갈구냐고")
+        elif '모자3' in name:
+            desc = "리나메"
+        elif '반지1' in name:
+            desc = "오른손 중지의 의미는 성공"
+        elif '반지2' in name:
+            desc = "왼손 검지의 의미는 신념 "
+        elif '반지3' in name:
+            desc = "오른손 약지의 의미는 정신력"
+        elif '방패1' in name:
+            desc = "엄청난 태풍을 부르는 금창의 용사"
+        elif '방패2' in name:
+            desc = "망치 나가신다!"
+        elif '방패3' in name:
+            desc = "놀랍게도 더이상 쓸 말이 없습니다"
+        elif '왕관' in name:
+            desc = "KING 너희들 나 못 이겨 "
+        elif '의상1' in name:
+            desc = "저는 흰색 옷을 입으면 구마 당합니다"
+        elif '의상2' in name:
+            desc = "왠지 도둑질을 잘 할 것 같은 복장"
+        else:
+            desc = "공격력 또는 방어력을 올려주는 장비입니다."
+
+    elif m_type == 'speed':
+        if '포션1' in name:
+            desc = "치유의 포션"
+        if '포션2' in name:
+            desc = "번개의 포션"
+        if '포션3' in name:
+            desc = "서리의 포션"
+        if '포션4' in name:
+            desc = "치유의 포션 LV.2"
+        if '포션5' in name:
+            desc = "신속의 포션"
+        if '포션6' in name:
+            desc = "번개의 포션 LV.2"
+        if '포션7' in name:
+            desc = "신속의 포션 LV.2"
+        if '포션9' in name:
+            desc = "태양의 포션"
+        if '포션8' in name:
+            desc = "스톤 스킨의 포션"
+        if '포션10' in name:
+            desc = "달의 포션"
+        if '포션11' in name:
+            desc = "서리의 포션 LV.2"
+        else:
+            desc = "이동 속도를 올려주는 아이템입니다."
+
+    return f"<{name}> : {desc}"
 
 def init():
     global font, shop_ui, shop_active, item_database, item_slots
     global inventory_ui, inventory_active, inventory_font
     global description_ui, hovered_item_info , item_info_font
+
+    hovered_item_info = None
 
     if shop_ui is None:
         shop_ui = load_image('./UI/상점1.png')
@@ -44,7 +133,7 @@ def init():
         description_ui = load_image('./UI/설명창.png')
 
     if item_info_font is None:
-        item_info_font = load_font('ChangwonDangamRound.TTF', 20)
+        item_info_font = load_font('ChangwonDangamRound.ttf', 20)
 
     if inventory_font is None:
         inventory_font = load_font('ENCR10B.TTF', 25)
@@ -75,8 +164,9 @@ def init():
                     image = load_image(full_path)
 
                     price = random.randint(10, 30)
+                    description = get_item_description(filename, m_type)
 
-                    item_data = {'image': image, 'price': price, 'path': full_path}
+                    item_data = {'image': image, 'price': price, 'path': full_path, 'description': description}
                     item_database[m_type].append(item_data)
         else:
             print(f"Warning: Folder not found - {folder_path}")
@@ -133,14 +223,14 @@ def update():
         game_framework.change_mode(play_mode)
 
 def draw():
-    global font, inventory_font
+    global font, inventory_font, hovered_item_info, item_info_font
 
     clear_canvas()
     game_world.render()
 
     if font is None:
         from pico2d import load_font
-        font = load_font('ENCR10B.TTF', 25)
+        font = load_font('ENCR10B.TTF', 20)
 
     if shop_active:
         shop_ui.draw(800, 300, 357, 453)
@@ -173,6 +263,16 @@ def draw():
         if inventory_font:
             inventory_font.draw(705, 150, f'{server.coin_count}', (0, 0, 0))
 
+    if hovered_item_info and description_ui:
+        desc_x, desc_y = 480, 200
+        desc_width, desc_height = 250, 100
+
+        description_ui.draw(desc_x, desc_y, desc_width, desc_height)
+
+        desc_text = hovered_item_info['description']
+
+        item_info_font.draw(desc_x - 110, desc_y + 10, desc_text, (0, 0, 0))
+
     update_canvas()
 
 
@@ -194,13 +294,51 @@ def update_shop_items(merchant):
     shop_items = merchant.inventory
 
 
+def check_shop_hover(mx, my):
+    global shop_active, shop_items, item_slots, hovered_item_info
+
+    hovered_item_info = None
+
+    if not shop_active:
+        return
+
+    for i, slot_pos in enumerate(item_slots):
+        if i < len(shop_items):
+            sx, sy = slot_pos
+
+            item_bb_x_min = sx - 25
+            item_bb_x_max = sx + 25
+            item_bb_y_min = sy - 25
+            item_bb_y_max = sy + 25
+
+            if (item_bb_x_min <= mx <= item_bb_x_max) and (item_bb_y_min <= my <= item_bb_y_max):
+                hovered_item_info = shop_items[i]
+                return
+
+    for i, slot_pos in enumerate(item_slots):
+        if i < len(shop_items):
+            sx, sy = slot_pos
+            price_bb_x_min = sx - 30
+            price_bb_x_max = sx + 30
+            price_bb_y_min = sy - 105
+            price_bb_y_max = sy - 80
+
+            if (price_bb_x_min <= mx <= price_bb_x_max) and (price_bb_y_min <= my <= price_bb_y_max):
+                hovered_item_info = shop_items[i]
+                return
+
 def handle_events():
-    global shop_active, inventory_active  # [추가]
+    global shop_active, inventory_active
 
     events = get_events()
     for event in events:
         if event.type == SDL_QUIT:
             game_framework.quit()
+
+        elif event.type == SDL_MOUSEMOTION:
+            mx, my = event.x, 600 - 1 - event.y
+            if shop_active:
+                check_shop_hover(mx, my)
 
         elif event.type == SDL_KEYDOWN:
             if event.key == SDLK_ESCAPE:
