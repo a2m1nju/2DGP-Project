@@ -24,6 +24,36 @@ item_database = {
     'speed': []
 }
 
+HP_ITEM_VALUES = {
+    '감튀': 15,
+    '샌드위치2': 25,
+    '당고': 20,
+    '비빔밥': 60,
+    '사과': 10,
+    '주먹밥': 30,
+    '체리': 5,
+    '치즈버거': 35,
+    '토마토': 5,
+    '피자': 50,
+    '김밥': 40
+}
+
+POWER_ITEM_INFO = {
+    '망토': {'type': 'max_hp', 'value': 30},
+    '모자1': {'type': 'max_hp', 'value': 5},
+    '모자2': {'type': 'damage', 'value': 1},
+    '모자3': {'type': 'max_hp', 'value': 45},
+    '반지1': {'type': 'damage', 'value': 3},
+    '반지2': {'type': 'damage', 'value': 5},
+    '반지3': {'type': 'damage', 'value': 10},
+    '방패1': {'type': 'max_hp', 'value': 40},
+    '방패2': {'type': 'damage', 'value': 15},
+    '방패3': {'type': 'max_hp', 'value': 30},
+    '왕관': {'type': 'damage', 'value': 20},
+    '의상1': {'type': 'max_hp', 'value': 20},
+    '의상2': {'type': 'damage', 'value': 8},
+}
+
 shop_items = []
 item_slots = []
 
@@ -68,6 +98,14 @@ def get_item_description(filename, m_type):
         else:
             desc = "체력을 회복시켜주는 음식입니다."
 
+        recovery = 0
+        for key, val in HP_ITEM_VALUES.items():
+            if key in name:
+                recovery = val
+                break
+        if recovery > 0:
+            desc += f"\n[HP +{recovery}]"
+
     elif m_type == 'power':
         if '망토' in name:
             desc = "마법사가 될 것 같은 느낌"
@@ -100,6 +138,19 @@ def get_item_description(filename, m_type):
             desc = "왠지 도둑질을 잘 할 것 같은 복장"
         else:
             desc = "공격력 또는 방어력을 올려주는 장비입니다."
+
+        found_info = None
+        for key, info in POWER_ITEM_INFO.items():
+            if key in name:
+                found_info = info
+                break
+
+        if found_info:
+            val = found_info['value']
+            if found_info['type'] == 'damage':
+                desc += f"\n[공격력 +{val}]"
+            elif found_info['type'] == 'max_hp':
+                desc += f"\n[최대체력 +{val}]"
 
     elif m_type == 'speed':
         if '포션1' in name:
@@ -176,10 +227,47 @@ def init():
                     full_path = os.path.join(folder_path, filename)
                     image = load_image(full_path)
 
-                    price = random.randint(10, 30)
                     description = get_item_description(filename, m_type)
+                    name = os.path.splitext(filename)[0]
 
-                    item_data = {'image': image, 'price': price, 'path': full_path, 'description': description}
+                    item_value = 0
+                    item_stat_type = None
+
+                    if m_type == 'hp':
+                        for key, val in HP_ITEM_VALUES.items():
+                            if key in name:
+                                item_value = val
+                                break
+                        if item_value == 0: item_value = 10
+
+                    if m_type == 'hp':
+                        price = item_value//2 + random.randint(5, 15)
+                    else:
+                        price = random.randint(10, 30)
+
+                    if m_type == 'power':
+                        item_value = 5
+                        item_stat_type = 'max_hp'
+
+                        for key, info in POWER_ITEM_INFO.items():
+                            if key in name:
+                                item_value = info['value']
+                                item_stat_type = info['type']
+                                break
+
+                        if item_stat_type == 'damage':
+                            price = item_value * 10 + random.randint(10, 30)
+                        else:
+                            price = item_value + random.randint(20, 40)
+
+
+
+                    item_data = {'image': image,
+                                 'price': price,
+                                 'path': full_path,
+                                 'description': description,
+                                 'value': item_value,
+                                 'stat_type': item_stat_type}
                     item_database[m_type].append(item_data)
         else:
             print(f"Warning: Folder not found - {folder_path}")
@@ -526,6 +614,16 @@ def buy_item(index):
     if server.coin_count >= item['price']:
         server.coin_count -= item['price']
         server.girl.inventory.append(item)
+
+        if 'stat_type' in item and 'value' in item:
+            if item['stat_type'] == 'max_hp':
+                server.girl.max_hp += item['value']
+                server.girl.hp += item['value']
+                print(f"최대 체력 증가! {server.girl.max_hp}")
+
+            elif item['stat_type'] == 'damage':
+                server.girl.damage += item['value']
+                print(f"공격력 증가! {server.girl.damage}")
 
         shop_items.pop(index)
 

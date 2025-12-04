@@ -26,7 +26,7 @@ inventory_active = False
 
 spawn_timer = 0.0
 spawn_cooldown = 5.0
-max_spawn_count = 3
+max_spawn_count = 10
 max_enemies_on_screen = 3
 coin_count = 0
 
@@ -211,6 +211,9 @@ def draw():
 
     font.draw(50, 490, f'Lv: {girl.level}', (255, 255, 255))
     font.draw(50, 460, f'EXP: {int(girl.exp)} / {int(girl.max_exp)}', (255, 255, 255))
+
+    font.draw(50, 430, f'MAX HP: {girl.max_hp}', (255, 255, 255))
+    font.draw(50, 400, f'ATK: {girl.damage}', (255, 255, 255))
 
     if skill_q_icon and skill_q_icon_bw:
         icon_x, icon_y = 250, 475
