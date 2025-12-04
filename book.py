@@ -16,7 +16,7 @@ class Book:
     sizes = [(20, 12, 25, 20), (82, 15, 21, 26), (155, 13, 22, 17), (215, 7, 28, 23),
              (273, 7, 28, 30), (339, 7, 28, 17), (403, 10, 25, 18) ,(470, 9, 26, 15), (529, 2, 34, 25)]
 
-    def __init__(self, x=400, y=300, throwin_speed=15, throwin_angle = 0, damage = 1):
+    def __init__(self, x=400, y=300, throwin_speed=15, throwin_angle = 0, damage = 1, max_range=450.0):
         if Book.image == None:
             Book.image = load_image('./주인공/Book.png')
         self.x, self.y = x, y
@@ -26,6 +26,7 @@ class Book:
         self.frame = 0.0
         self.traveled_distance = 0.0
         self.damage = damage
+        self.max_range = max_range
 
     def draw(self):
         left , bottom, height, width= self.sizes[int(self.frame)]
@@ -47,7 +48,7 @@ class Book:
 
         self.traveled_distance += math.sqrt(distance_this_frame_x ** 2 + distance_this_frame_y ** 2)
 
-        if self.traveled_distance > MAX_RANGE_PIXELS:
+        if self.traveled_distance > self.max_range:
             game_world.remove_object(self)
 
 

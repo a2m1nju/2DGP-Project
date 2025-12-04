@@ -543,6 +543,7 @@ class Girl:
         self.max_hp = 100
         self.hp = self.max_hp
         self.damage = 1
+        self.attack_range = 450.0
 
         self.last_attack_time = 0.0
         self.attack_cooldown = 0.5
@@ -696,7 +697,7 @@ class Girl:
             pass
 
     def throw_book(self):
-        book = Book(self.x + self.face_dir*40, self.y+20, self.face_dir * 15, 0, self.damage)
+        book = Book(self.x + self.face_dir*40, self.y+20, self.face_dir * 15, 0, self.damage, self.attack_range)
         game_world.add_object(book, 4)
         game_world.add_collision_pair('book:enemy', book, None)
 

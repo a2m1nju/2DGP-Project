@@ -39,18 +39,18 @@ HP_ITEM_VALUES = {
 }
 
 POWER_ITEM_INFO = {
-    '망토': {'type': 'max_hp', 'value': 30},
+    '망토': {'type': 'range', 'value': 150},
     '모자1': {'type': 'max_hp', 'value': 5},
     '모자2': {'type': 'damage', 'value': 1},
     '모자3': {'type': 'max_hp', 'value': 45},
-    '반지1': {'type': 'damage', 'value': 3},
+    '반지1': {'type': 'range', 'value': 100},
     '반지2': {'type': 'damage', 'value': 5},
     '반지3': {'type': 'damage', 'value': 10},
     '방패1': {'type': 'max_hp', 'value': 40},
     '방패2': {'type': 'damage', 'value': 15},
     '방패3': {'type': 'max_hp', 'value': 30},
     '왕관': {'type': 'damage', 'value': 20},
-    '의상1': {'type': 'max_hp', 'value': 20},
+    '의상1': {'type': 'range', 'value': 50},
     '의상2': {'type': 'damage', 'value': 8},
 }
 
@@ -151,6 +151,8 @@ def get_item_description(filename, m_type):
                 desc += f"\n[공격력 +{val}]"
             elif found_info['type'] == 'max_hp':
                 desc += f"\n[최대체력 +{val}]"
+            elif found_info['type'] == 'range':
+                desc += f"\n[사거리 +{val}]"
 
     elif m_type == 'speed':
         if '포션1' in name:
@@ -257,6 +259,8 @@ def init():
 
                         if item_stat_type == 'damage':
                             price = item_value * 10 + random.randint(10, 30)
+                        elif item_stat_type == 'range':
+                            price = int(item_value * 0.5) + random.randint(20, 40)
                         else:
                             price = item_value + random.randint(20, 40)
 
@@ -624,6 +628,10 @@ def buy_item(index):
             elif item['stat_type'] == 'damage':
                 server.girl.damage += item['value']
                 print(f"공격력 증가! {server.girl.damage}")
+
+            elif item['stat_type'] == 'range':
+                server.girl.attack_range += item['value']
+                print(f"사거리 증가! {server.girl.attack_range}")
 
         shop_items.pop(index)
 
