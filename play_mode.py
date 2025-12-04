@@ -30,7 +30,7 @@ item_info_font = None
 
 spawn_timer = 0.0
 spawn_cooldown = 5.0
-max_spawn_count = 10
+max_spawn_count = 5
 max_enemies_on_screen = 3
 coin_count = 0
 
@@ -183,6 +183,7 @@ def handle_inventory_click(mx, my):
 
 
 def use_inventory_item(index):
+    global hovered_item_info
     if index < 0 or index >= len(server.girl.inventory):
         return
 
@@ -205,7 +206,34 @@ def use_inventory_item(index):
         print(f"아이템 사용: HP {recovery} 회복! 현재 HP: {server.girl.hp}")
 
         server.girl.inventory.pop(index)
-        global hovered_item_info
+        hovered_item_info = None
+
+    elif '상인3' in item['path'] or 'potion' in item['path']:  # 상인3 폴더가 포션
+        p_type = item.get('stat_type')
+        val = item.get('value', 0)
+        dur = item.get('duration', 0)
+
+        if p_type == 'perm_q':
+            server.girl.q_damage_bonus += val
+            print(f"Q 스킬 공격력 영구 증가! (+{val})")
+        elif p_type == 'perm_e':
+            server.girl.e_duration_bonus += val
+            print(f"E 스킬 지속시간 영구 증가! (+{val})")
+
+        elif p_type == 'regen':
+            server.girl.activate_buff('regen', val, dur)
+        elif p_type == 'speed':
+            server.girl.activate_buff('speed', val, dur)
+        elif p_type == 'q_buff':
+            server.girl.activate_buff('q_buff', val, dur)
+        elif p_type == 'defense':
+            server.girl.activate_buff('defense', val, dur)
+        elif p_type == 'freeze':
+
+            server.freeze_timer = get_time() + dur
+            print(f"모든 적이 {dur}초간 멈춥니다!")
+
+        server.girl.inventory.pop(index)
         hovered_item_info = None
     else:
         print("사용할 수 없는 아이템입니다(장비 등).")

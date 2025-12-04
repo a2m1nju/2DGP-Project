@@ -21,7 +21,7 @@ item_info_font = None
 item_database = {
     'hp': [],
     'power': [],
-    'speed': []
+    'potion': []
 }
 
 HP_ITEM_VALUES = {
@@ -52,6 +52,20 @@ POWER_ITEM_INFO = {
     '왕관': {'type': 'damage', 'value': 20},
     '의상1': {'type': 'range', 'value': 50},
     '의상2': {'type': 'damage', 'value': 8},
+}
+
+POTION_ITEM_INFO = {
+    '포션1': {'type': 'regen', 'value': 2, 'duration': 10.0},      # 치유: 10초간 초당 2 회복 (총 20)
+    '포션2': {'type': 'q_buff', 'value': 5, 'duration': 15.0},     # 번개: 15초간 Q 데미지 +5
+    '포션3': {'type': 'freeze', 'value': 0, 'duration': 5.0},      # 서리: 5초간 적 정지
+    '포션4': {'type': 'regen', 'value': 5, 'duration': 10.0},      # 치유LV2: 10초간 초당 5 회복 (총 50)
+    '포션5': {'type': 'speed', 'value': 1.5, 'duration': 10.0},    # 신속: 10초간 이속 1.5배
+    '포션6': {'type': 'q_buff', 'value': 10, 'duration': 15.0},    # 번개LV2
+    '포션7': {'type': 'speed', 'value': 2.0, 'duration': 10.0},    # 신속LV2
+    '포션8': {'type': 'defense', 'value': 0.5, 'duration': 15.0},  # 스톤스킨: 15초간 받는 피해 50% 감소
+    '포션9': {'type': 'perm_q', 'value': 2.0, 'duration': 0},      # 태양: 영구 Q 데미지 +2
+    '포션10': {'type': 'perm_e', 'value': 2.0, 'duration': 0},     # 달: 영구 E 지속시간 +2초
+    '포션11': {'type': 'freeze', 'value': 0, 'duration': 10.0},    # 서리LV2
 }
 
 shop_items = []
@@ -154,31 +168,31 @@ def get_item_description(filename, m_type):
             elif found_info['type'] == 'range':
                 desc += f"\n[사거리 +{val}]"
 
-    elif m_type == 'speed':
-        if '포션1' in name:
-            desc = "치유의 포션"
-        elif '포션2' in name:
-            desc = "번개의 포션"
-        elif '포션3' in name:
-            desc = "서리의 포션"
-        elif '포션4' in name:
+    elif m_type == 'potion':
+        if '포션1' == name:
+            desc = "치유의 포션" # 일정시간동안 체력회복
+        elif '포션2' == name:
+            desc = "번개의 포션" # 일정시간동안 q 스킬 공격력 증가
+        elif '포션3' == name:
+            desc = "서리의 포션" # 일정시간동안 적 멈춤
+        elif '포션4' == name:
             desc = "치유의 포션 LV.2"
-        elif '포션5' in name:
-            desc = "신속의 포션"
-        elif '포션6' in name:
+        elif '포션5' == name:
+            desc = "신속의 포션" # 일정시간동안 이동속도 증가
+        elif '포션6' == name:
             desc = "번개의 포션 LV.2"
-        elif '포션7' in name:
+        elif '포션7' == name:
             desc = "신속의 포션 LV.2"
-        elif '포션9' in name:
-            desc = "태양의 포션"
-        elif '포션8' in name:
-            desc = "스톤 스킨의 포션"
-        elif '포션10' in name:
-            desc = "달의 포션"
-        elif '포션11' in name:
+        elif '포션9' == name:
+            desc = "태양의 포션" #영구적으로 q 스킬 공격력 증가
+        elif '포션8' == name:
+            desc = "스톤 스킨의 포션" # 일정시간동안 방어력 증가
+        elif '포션10' == name:
+            desc = "달의 포션" # 영구적으로 e 스킬 지속시간 증가
+        elif '포션11' == name:
             desc = "서리의 포션 LV.2"
         else:
-            desc = "이동 속도를 올려주는 아이템입니다."
+            desc = "알 수 없는 포션입니다."
 
     return f"{desc}"
 
@@ -218,7 +232,7 @@ def init():
     folder_map = {
         'hp': './아이템/상인1',
         'power': './아이템/상인2',
-        'speed': './아이템/상인3'
+        'potion': './아이템/상인3'
     }
 
     for m_type, folder_path in folder_map.items():
@@ -264,6 +278,22 @@ def init():
                         else:
                             price = item_value + random.randint(20, 40)
 
+                    if m_type == 'potion':
+                        item_value = 0
+                        item_stat_type = 'none'
+                        item_duration = 0
+
+                        if name in POTION_ITEM_INFO:
+                            info = POTION_ITEM_INFO[name]
+                            item_stat_type = info['type']
+                            item_value = info['value']
+                            item_duration = info['duration']
+
+                        if 'perm' in item_stat_type:
+                            price = 150 + random.randint(0, 50)
+                        else:
+                            price = 30 + random.randint(0, 20)
+
 
 
                     item_data = {'image': image,
@@ -271,7 +301,8 @@ def init():
                                  'path': full_path,
                                  'description': description,
                                  'value': item_value,
-                                 'stat_type': item_stat_type}
+                                 'stat_type': item_stat_type,
+                                 'duration': item_duration if m_type == 'potion' else 0}
                     item_database[m_type].append(item_data)
         else:
             print(f"Warning: Folder not found - {folder_path}")
@@ -303,7 +334,7 @@ def init():
     m2 = Merchant(900, 160, 'power')
     game_world.add_object(m2, 3)
 
-    m3 = Merchant(1300, 160, 'speed')
+    m3 = Merchant(1300, 160, 'potion')
     game_world.add_object(m3, 3)
 
     game_world.add_collision_pair('girl:merchant', server.girl, m1)

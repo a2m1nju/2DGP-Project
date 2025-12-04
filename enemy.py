@@ -3,6 +3,7 @@ from pico2d import load_image, get_time, load_font, draw_rectangle
 import game_world
 import game_framework
 import random
+import server
 
 from state_machine import StateMachine
 from coin import Coin
@@ -322,9 +323,13 @@ class Enemy:
         )
 
     def update(self):
+        self.x += game_world.scroll_speed * game_framework.frame_time
+
+        if server.freeze_timer > get_time():
+            return
+
         self.state_machine.update()
 
-        self.x += game_world.scroll_speed * game_framework.frame_time
         self.x += self.dir * RUN_SPEED_PPS * game_framework.frame_time
 
         canvas_width = 1600

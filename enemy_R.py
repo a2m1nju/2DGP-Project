@@ -3,6 +3,7 @@ from pico2d import load_image, get_time, load_font, draw_rectangle
 import game_world
 import game_framework
 import random
+import server
 
 from state_machine import StateMachine
 from fire import Fire
@@ -313,8 +314,13 @@ class Enemy_R:
         )
 
     def update(self):
-        self.state_machine.update()
         self.x += game_world.scroll_speed * game_framework.frame_time
+
+        if server.freeze_timer > get_time():
+            return
+
+        self.state_machine.update()
+
         self.x += self.dir * RUN_SPEED_PPS * game_framework.frame_time
 
         canvas_width = 1600
@@ -323,6 +329,7 @@ class Enemy_R:
             game_world.remove_object(self)
         elif self.x > (canvas_width + buffer):
             game_world.remove_object(self)
+
 
     def throw_fire(self):
         fire = Fire(self.x + self.face_dir * 40, self.y + 45, self.face_dir * 10)

@@ -131,7 +131,7 @@ class Protection:
         game_world.scroll_speed = 0.0
         self.girl.frame = 0
 
-        self.girl.buff_end_time = get_time() + 5.0
+        self.girl.buff_end_time = get_time() + 5.0 + self.girl.e_duration_bonus
 
         if self.girl.shield_object is None:
             self.girl.shield_object = Shield(self.girl.x, self.girl.y)
@@ -182,6 +182,10 @@ class Walk:
         pass
 
     def do(self):
+        speed_mult = 1.0
+        if get_time() < self.girl.buffs['speed']['timer']:
+            speed_mult = self.girl.buffs['speed']['value']
+
         if self.girl.key_d_down:
             self.girl.dir = 1
             self.girl.face_dir = 1
@@ -192,10 +196,10 @@ class Walk:
             self.girl.dir = 0
 
         if self.girl.bg_scrolling:
-            game_world.scroll_speed = -self.girl.dir * RUN_SPEED_PPS
+            game_world.scroll_speed = -self.girl.dir * RUN_SPEED_PPS * speed_mult
         else:
             game_world.scroll_speed = 0
-            self.girl.x += self.girl.dir * RUN_SPEED_PPS * game_framework.frame_time
+            self.girl.x += self.girl.dir * RUN_SPEED_PPS * speed_mult * game_framework.frame_time
             self.girl.x = clamp(25, self.girl.x, 1600 - 25)
 
         self.girl.frame = (self.girl.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 12
@@ -230,6 +234,9 @@ class Run:
 
     def do(self):
         animation_speed = 7.0
+        speed_mult = 1.0
+        if get_time() < self.girl.buffs['speed']['timer']:
+            speed_mult = self.girl.buffs['speed']['value']
 
         if self.girl.key_d_down:
             self.girl.dir = 1
@@ -241,10 +248,10 @@ class Run:
             self.girl.dir = 0
 
         if self.girl.bg_scrolling:
-            game_world.scroll_speed = -self.girl.dir * DASH_SPEED_PPS
+            game_world.scroll_speed = -self.girl.dir * DASH_SPEED_PPS * speed_mult
         else:
             game_world.scroll_speed = 0
-            self.girl.x += self.girl.dir * DASH_SPEED_PPS * game_framework.frame_time
+            self.girl.x += self.girl.dir * DASH_SPEED_PPS * speed_mult * game_framework.frame_time
             self.girl.x = clamp(25, self.girl.x, 1600 - 25)
 
         self.girl.frame = (self.girl.frame + animation_speed * ACTION_PER_TIME * game_framework.frame_time) % 6
@@ -417,6 +424,15 @@ class Skill:
         base_y = 230
         min_distance = 20
 
+        base_tick_damage = 2
+        dmg_bonus = self.girl.q_damage_bonus
+
+        if hasattr(self.girl, 'buffs') and 'q_buff' in self.girl.buffs:
+            if get_time() < self.girl.buffs['q_buff']['timer']:
+                dmg_bonus += self.girl.buffs['q_buff']['value']
+
+        final_tick_damage = base_tick_damage + dmg_bonus
+
         offsets = []
         for _ in range(4):
             offsets.append(random.randint(100, 400))
@@ -436,7 +452,7 @@ class Skill:
             last_x = current_x
 
         for x_pos in final_x_positions:
-            lightning = Lightning(x_pos, base_y)
+            lightning = Lightning(x_pos, base_y, final_tick_damage)
             game_world.add_object(lightning, 4)
 
     def exit(self, e):
@@ -563,6 +579,17 @@ class Girl:
         self.buff_end_time = 0.0
         self.shield_object = None
 
+        self.q_damage_bonus = 0
+        self.e_duration_bonus = 0.0
+
+        self.buffs = {
+            'regen': {'timer': 0, 'value': 0},
+            'speed': {'timer': 0, 'value': 1.0},
+            'q_buff': {'timer': 0, 'value': 0},
+            'defense': {'timer': 0, 'value': 1.0}
+        }
+        self.regen_tick = 0.0
+
         self.bg_scrolling = True
 
         self.inventory = []
@@ -609,6 +636,11 @@ class Girl:
             }
         )
 
+    def activate_buff(self, name, value, duration):
+        self.buffs[name]['timer'] = get_time() + duration
+        self.buffs[name]['value'] = value
+        print(f"버프 활성화: {name} (수치:{value}, 시간:{duration}초)")
+
     def gain_exp(self, amount):
         self.exp += amount
         print(f"Exp: {self.exp}/{self.max_exp}")
@@ -627,6 +659,13 @@ class Girl:
 
     def update(self):
         self.state_machine.update()
+        current_time = get_time()
+        if current_time < self.buffs['regen']['timer']:
+            if current_time - self.regen_tick > 1.0:  # 1초마다
+                self.hp += self.buffs['regen']['value']
+                if self.hp > self.max_hp: self.hp = self.max_hp
+                self.regen_tick = current_time
+                print("체력 자동 회복중...")
 
         if self.y > self.ground_y:
             self.y_velocity -= GRAVITY * PIXEL_PER_METER * game_framework.frame_time
@@ -731,24 +770,17 @@ class Girl:
         if current_time - self.last_hit_time < self.hit_cooldown:
             return
 
-        if group == 'girl:enemy':
+        if group == 'girl:enemy' or group == 'fire:girl':
             if self.state_machine.cur_state == self.DEAD:
                 return
 
-            self.hp -= 10
-            self.last_hit_time = current_time
+            dmg_multiplier = 1.0
+            if get_time() < self.buffs['defense']['timer']:
+                dmg_multiplier = self.buffs['defense']['value']
 
-            if self.hp <= 0:
-                self.hp = 0
-                self.state_machine.handle_state_event(('HP_IS_ZERO', None))
-            else:
-                self.state_machine.handle_state_event(('HIT_BY_ENEMY', None))
+            damage = 10 * dmg_multiplier
+            self.hp -= damage
 
-        elif group == 'fire:girl':
-            if self.state_machine.cur_state == self.DEAD:
-                return
-
-            self.hp -= 10
             self.last_hit_time = current_time
 
             if self.hp <= 0:

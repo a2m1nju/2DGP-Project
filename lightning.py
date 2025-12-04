@@ -13,7 +13,8 @@ class Lightning:
     image = None
     sizes = [0, 170, 340, 510, 680]
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, damage=2):
+        self.damage = damage
         if Lightning.image is None:
             Lightning.image = load_image('./이펙트/번개/번개.png')
 
@@ -22,6 +23,8 @@ class Lightning:
         self.duration_timer = THUNDER_DURATION
         self.damage_timer = 0.0
         self.hit_enemies = set()
+
+        self.damage = damage
 
     def update(self):
         self.frame = (self.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % len(self.sizes)
@@ -55,7 +58,7 @@ class Lightning:
                 if game_world.collide(self, o):
                     if o.state_machine.cur_state == o.DEAD:
                         continue
-                    o.hp -= 1
+                    o.hp -= self.damage
 
                     if o.hp <= 0:
                         o.state_machine.handle_state_event(('HP_IS_ZERO', None))
@@ -64,4 +67,7 @@ class Lightning:
                     self.hit_enemies.add(o)
 
     def handle_collision(self, group, other):
-        pass
+        if group == 'lightning:enemy':
+            if hasattr(other, 'take_damage'):
+                other.take_damage(self.damage)
+            game_world.remove_object(self)
