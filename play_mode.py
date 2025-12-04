@@ -34,6 +34,9 @@ max_spawn_count = 5
 max_enemies_on_screen = 3
 coin_count = 0
 
+last_click_time = 0.0
+last_clicked_index = -1
+
 inventory_font = None
 
 def init():
@@ -137,6 +140,7 @@ def handle_events():
 
 def handle_inventory_click(mx, my):
     global inventory_active
+    global last_click_time, last_clicked_index
 
     close_btn_x_min = 950
     close_btn_x_max = 985
@@ -145,6 +149,66 @@ def handle_inventory_click(mx, my):
 
     if (close_btn_x_min <= mx <= close_btn_x_max) and (close_btn_y_min <= my <= close_btn_y_max):
         inventory_active = False
+
+    inv_start_x = 665
+    inv_start_y = 410
+    inv_gap_x = 67
+    inv_gap_y = 67
+
+    clicked_index = -1
+
+    for i in range(len(server.girl.inventory)):
+        row = i // 5
+        col = i % 5
+        ix = inv_start_x + (col * inv_gap_x)
+        iy = inv_start_y - (row * inv_gap_y)
+
+        if (ix - 20 <= mx <= ix + 20) and (iy - 20 <= my <= iy + 20):
+            clicked_index = i
+            break
+
+    if clicked_index != -1:
+        current_time = get_time()
+
+        if clicked_index == last_clicked_index and (current_time - last_click_time) < 0.5:
+            use_inventory_item(clicked_index)  # 아이템 사용 함수 호출
+            last_clicked_index = -1  # 더블클릭 후 초기화
+            last_click_time = 0.0
+
+        else:
+            last_clicked_index = clicked_index
+            last_click_time = current_time
+    else:
+        last_clicked_index = -1
+
+
+def use_inventory_item(index):
+    if index < 0 or index >= len(server.girl.inventory):
+        return
+
+    item = server.girl.inventory[index]
+
+    is_food = False
+
+    if '상인1' in item['path']:
+        is_food = True
+    elif item.get('value', 0) > 0 and item.get('stat_type') is None:
+        is_food = True
+
+    if is_food:
+        recovery = item.get('value', 0)
+        server.girl.hp += recovery
+
+        if server.girl.hp > server.girl.max_hp:
+            server.girl.hp = server.girl.max_hp
+
+        print(f"아이템 사용: HP {recovery} 회복! 현재 HP: {server.girl.hp}")
+
+        server.girl.inventory.pop(index)
+        global hovered_item_info
+        hovered_item_info = None
+    else:
+        print("사용할 수 없는 아이템입니다(장비 등).")
 
 def check_inventory_hover(mx, my):
     global inventory_active, hovered_item_info
