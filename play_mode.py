@@ -24,9 +24,13 @@ skill_e_icon_bw = None
 inventory_ui = None
 inventory_active = False
 
+description_ui = None
+hovered_item_info = None
+item_info_font = None
+
 spawn_timer = 0.0
 spawn_cooldown = 5.0
-max_spawn_count = 10
+max_spawn_count = 5
 max_enemies_on_screen = 3
 coin_count = 0
 
@@ -37,6 +41,7 @@ def init():
     global enemies_killed_count, skill_e_icon, skill_e_icon_bw, skill_q_icon, skill_q_icon_bw
     global inventory_ui, inventory_active, inventory_font
     global hp_bar_bg, hp_bar_fill
+    global description_ui, hovered_item_info, item_info_font
 
     if server.girl is None:
         server.girl = Girl()
@@ -87,6 +92,14 @@ def init():
     inventory_ui = load_image('./UI/인벤토리1.png')
     inventory_active = False
 
+    if description_ui is None:
+        description_ui = load_image('./UI/설명창.png')
+
+    if item_info_font is None:
+        item_info_font = load_font('ChangwonDangamRound.ttf', 15)
+
+    hovered_item_info = None
+
 def handle_events():
     global inventory_active
 
@@ -113,6 +126,11 @@ def handle_events():
                 mx, my = event.x, 600 - 1 - event.y
                 handle_inventory_click(mx, my)
 
+        elif event.type == SDL_MOUSEMOTION:
+            if inventory_active:
+                mx, my = event.x, 600 - 1 - event.y
+                check_inventory_hover(mx, my)
+
         else:
             if not inventory_active:
                 girl.handle_event(event)
@@ -127,6 +145,38 @@ def handle_inventory_click(mx, my):
 
     if (close_btn_x_min <= mx <= close_btn_x_max) and (close_btn_y_min <= my <= close_btn_y_max):
         inventory_active = False
+
+def check_inventory_hover(mx, my):
+    global inventory_active, hovered_item_info
+
+    if not inventory_active:
+        return
+
+    inv_start_x = 665
+    inv_start_y = 410
+    inv_gap_x = 67
+    inv_gap_y = 67
+
+    if server.girl is None or not hasattr(server.girl, 'inventory'):
+        return
+
+    hovered_item_info = None
+
+    for i, item in enumerate(server.girl.inventory):
+        row = i // 5
+        col = i % 5
+
+        ix = inv_start_x + (col * inv_gap_x)
+        iy = inv_start_y - (row * inv_gap_y)
+
+        item_bb_x_min = ix - 20
+        item_bb_x_max = ix + 20
+        item_bb_y_min = iy - 20
+        item_bb_y_max = iy + 20
+
+        if (item_bb_x_min <= mx <= item_bb_x_max) and (item_bb_y_min <= my <= item_bb_y_max):
+            hovered_item_info = item
+            return
 
 def update():
     global spawn_timer, spawn_cooldown, spawn_count, max_spawn_count
@@ -276,6 +326,38 @@ def draw():
 
         if inventory_font:
             inventory_font.draw(705, 150, f'{coin_count}', (0, 0, 0))
+
+    if inventory_active and hovered_item_info and description_ui:
+        desc_width, desc_height = 250, 200
+        desc_x, desc_y = 460, 200
+
+        description_ui.draw(desc_x, desc_y, desc_width, desc_height)
+        desc_text = hovered_item_info['description']
+
+        max_chars_per_line = 20
+        line_spacing = 25
+        lines = []
+        manual_lines = desc_text.split('\n')
+
+        for manual_line in manual_lines:
+            current_index = 0
+            while current_index < len(manual_line):
+                line_segment = manual_line[current_index:current_index + max_chars_per_line].strip()
+                if line_segment:
+                    lines.append(line_segment)
+                current_index += max_chars_per_line
+
+        start_y = desc_y + desc_height / 2 - 20
+
+        for i, line in enumerate(lines):
+            y_pos = start_y - (i * line_spacing)
+            if y_pos < desc_y - desc_height / 2 + 10:
+                break
+
+            x_pos = desc_x - 110
+
+            if item_info_font:
+                item_info_font.draw(x_pos, y_pos, line, (0, 0, 0))
 
     update_canvas()
 
