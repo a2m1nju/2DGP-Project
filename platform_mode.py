@@ -355,8 +355,19 @@ def update():
         return
 
     if server.girl.x > 1550:
-        import play_mode
-        game_framework.change_mode(play_mode)
+        if server.stage_level == 1:
+            import stage2_mode
+            game_framework.change_mode(stage2_mode)
+
+        elif server.stage_level == 2:
+            import play_mode
+            server.stage_level = 1
+            game_framework.change_mode(play_mode)
+
+        else:
+            # 기본값
+            import play_mode
+            game_framework.change_mode(play_mode)
 
 def draw():
     global font, inventory_font, hovered_item_info, item_info_font

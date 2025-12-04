@@ -5,6 +5,7 @@ import game_framework
 import game_world
 import server
 import platform_mode
+import gameclear_mode
 
 from girl import Girl
 from subway import Subway
@@ -29,9 +30,10 @@ hovered_item_info = None
 item_info_font = None
 
 spawn_timer = 0.0
-spawn_cooldown = 5.0
+spawn_cooldown = 3.0
 max_spawn_count = 5
-max_enemies_on_screen = 3
+max_enemies_on_screen = 5
+
 coin_count = 0
 
 last_click_time = 0.0
@@ -46,7 +48,7 @@ def init():
     global hp_bar_bg, hp_bar_fill
     global description_ui, hovered_item_info, item_info_font
 
-    server.stage_level = 1
+    server.stage_level = 2
 
     if server.girl is None:
         server.girl = Girl()
@@ -57,6 +59,7 @@ def init():
     girl.x = 800
     girl.ground_y = 150
     girl.y = girl.ground_y
+
     game_world.add_object(server.girl, 4)
     game_world.add_collision_pair('girl:enemy', girl, None)
     game_world.add_collision_pair('fire:girl', None, girl)
@@ -77,9 +80,9 @@ def init():
     if hp_bar_fill is None:
         hp_bar_fill = load_image('./UI/체력줄.png')
 
-    Subway('./배경/내부2.png', 800, 300, 1600, 600, 0, is_looping=True)
+    Subway('./배경/스테이지2.png', 800, 300, 1600, 600, 0, is_looping=True)
 
-    for i in range(0,1):
+    for i in range(0,2):
         if random.choice([True, False]):
             e = Enemy(girl)
         else:
