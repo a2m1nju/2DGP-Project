@@ -7,6 +7,9 @@ from merchant import Merchant
 import random
 import os
 import server
+import play_mode
+import stage2_mode
+import stage3_mode
 
 font = None
 shop_ui = None
@@ -367,7 +370,6 @@ def update():
             import play_mode
             server.stage_level = 1
             game_framework.change_mode(play_mode)
-
         else:
             import play_mode
             server.stage_level = 1

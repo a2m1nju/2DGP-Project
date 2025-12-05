@@ -288,7 +288,7 @@ def update():
 
     if server.enemies_killed_count >= max_spawn_count:
         server.coin_count = coin_count
-        game_framework.change_mode(stage3_mode)
+        game_framework.change_mode(gameclear_mode)
         return
 
     current_enemy_count = 0
