@@ -231,7 +231,7 @@ class Dead:
         game_world.remove_collision_object(self.enemy)
 
         import play_mode
-        play_mode.enemies_killed_count += 1
+        server.enemies_killed_count += 1
 
         self.enemy.girl.gain_exp(20)
 

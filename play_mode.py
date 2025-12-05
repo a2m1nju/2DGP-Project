@@ -30,7 +30,7 @@ item_info_font = None
 
 spawn_timer = 0.0
 spawn_cooldown = 5.0
-max_spawn_count = 5
+max_spawn_count = 3
 max_enemies_on_screen = 3
 coin_count = 0
 
@@ -41,7 +41,7 @@ inventory_font = None
 
 def init():
     global girl, font, spawn_timer, coin_count
-    global enemies_killed_count, skill_e_icon, skill_e_icon_bw, skill_q_icon, skill_q_icon_bw
+    global skill_e_icon, skill_e_icon_bw, skill_q_icon, skill_q_icon_bw
     global inventory_ui, inventory_active, inventory_font
     global hp_bar_bg, hp_bar_fill
     global description_ui, hovered_item_info, item_info_font
@@ -91,7 +91,7 @@ def init():
         game_world.add_collision_pair('girl:enemy', None, e)
 
     spawn_timer = get_time()
-    enemies_killed_count = 0
+    server.enemies_killed_count = 0
     coin_count = server.coin_count
 
     inventory_ui = load_image('./UI/인벤토리1.png')
@@ -173,8 +173,8 @@ def handle_inventory_click(mx, my):
         current_time = get_time()
 
         if clicked_index == last_clicked_index and (current_time - last_click_time) < 0.5:
-            use_inventory_item(clicked_index)  # 아이템 사용 함수 호출
-            last_clicked_index = -1  # 더블클릭 후 초기화
+            use_inventory_item(clicked_index)
+            last_clicked_index = -1
             last_click_time = 0.0
 
         else:
@@ -210,7 +210,7 @@ def use_inventory_item(index):
         server.girl.inventory.pop(index)
         hovered_item_info = None
 
-    elif '상인3' in item['path'] or 'potion' in item['path']:  # 상인3 폴더가 포션
+    elif '상인3' in item['path'] or 'potion' in item['path']:
         p_type = item.get('stat_type')
         val = item.get('value', 0)
         dur = item.get('duration', 0)
@@ -274,7 +274,6 @@ def check_inventory_hover(mx, my):
 
 def update():
     global spawn_timer, spawn_cooldown, spawn_count, max_spawn_count
-    global enemies_killed_count
     global max_enemies_on_screen
 
     if inventory_active:
@@ -283,15 +282,10 @@ def update():
     game_world.update()
     game_world.handle_collisions()
 
-    if enemies_killed_count >= max_spawn_count:
-        import gameclear_mode
+    if server.enemies_killed_count >= max_spawn_count:
+        import platform_mode
         server.coin_count = coin_count
-        game_framework.change_mode(gameclear_mode)
-        return
-
-    if enemies_killed_count >= max_spawn_count:
-        import gameclear_mode
-        game_framework.change_mode(gameclear_mode)
+        game_framework.change_mode(platform_mode)
         return
 
     current_enemy_count = 0
@@ -350,7 +344,7 @@ def draw():
             hp_bar_fill.clip_draw(0, 0, current_clip_width, hp_bar_fill.h, draw_x, bar_y,
                                   current_draw_width,FILL_DRAW_HEIGHT)
 
-    font.draw(50, 550, f'KILLS: {enemies_killed_count}', (255, 255, 255))
+    font.draw(50, 550, f'KILLS: {server.enemies_killed_count}', (255, 255, 255))
     font.draw(50, 520, f'COINS: {coin_count}', (255, 255, 255))
 
     font.draw(50, 490, f'Lv: {girl.level}', (255, 255, 255))

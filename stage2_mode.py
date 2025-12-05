@@ -6,6 +6,7 @@ import game_world
 import server
 import platform_mode
 import gameclear_mode
+import stage3_mode
 
 from girl import Girl
 from subway import Subway
@@ -31,7 +32,7 @@ item_info_font = None
 
 spawn_timer = 0.0
 spawn_cooldown = 3.0
-max_spawn_count = 5
+max_spawn_count = 3
 max_enemies_on_screen = 5
 
 coin_count = 0
@@ -43,7 +44,7 @@ inventory_font = None
 
 def init():
     global girl, font, spawn_timer, coin_count
-    global enemies_killed_count, skill_e_icon, skill_e_icon_bw, skill_q_icon, skill_q_icon_bw
+    global skill_e_icon, skill_e_icon_bw, skill_q_icon, skill_q_icon_bw
     global inventory_ui, inventory_active, inventory_font
     global hp_bar_bg, hp_bar_fill
     global description_ui, hovered_item_info, item_info_font
@@ -94,7 +95,7 @@ def init():
         game_world.add_collision_pair('girl:enemy', None, e)
 
     spawn_timer = get_time()
-    enemies_killed_count = 0
+    server.enemies_killed_count = 0
     coin_count = server.coin_count
 
     inventory_ui = load_image('./UI/인벤토리1.png')
@@ -277,7 +278,6 @@ def check_inventory_hover(mx, my):
 
 def update():
     global spawn_timer, spawn_cooldown, spawn_count, max_spawn_count
-    global enemies_killed_count
     global max_enemies_on_screen
 
     if inventory_active:
@@ -286,15 +286,9 @@ def update():
     game_world.update()
     game_world.handle_collisions()
 
-    if enemies_killed_count >= max_spawn_count:
-        import gameclear_mode
+    if server.enemies_killed_count >= max_spawn_count:
         server.coin_count = coin_count
-        game_framework.change_mode(gameclear_mode)
-        return
-
-    if enemies_killed_count >= max_spawn_count:
-        import gameclear_mode
-        game_framework.change_mode(gameclear_mode)
+        game_framework.change_mode(stage3_mode)
         return
 
     current_enemy_count = 0
@@ -353,7 +347,7 @@ def draw():
             hp_bar_fill.clip_draw(0, 0, current_clip_width, hp_bar_fill.h, draw_x, bar_y,
                                   current_draw_width,FILL_DRAW_HEIGHT)
 
-    font.draw(50, 550, f'KILLS: {enemies_killed_count}', (255, 255, 255))
+    font.draw(50, 550, f'KILLS: {server.enemies_killed_count}', (255, 255, 255))
     font.draw(50, 520, f'COINS: {coin_count}', (255, 255, 255))
 
     font.draw(50, 490, f'Lv: {girl.level}', (255, 255, 255))

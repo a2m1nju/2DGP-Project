@@ -360,13 +360,17 @@ def update():
             game_framework.change_mode(stage2_mode)
 
         elif server.stage_level == 2:
+            import stage3_mode
+            game_framework.change_mode(stage3_mode)
+
+        elif server.stage_level == 3:
             import play_mode
             server.stage_level = 1
             game_framework.change_mode(play_mode)
 
         else:
-            # 기본값
             import play_mode
+            server.stage_level = 1
             game_framework.change_mode(play_mode)
 
 def draw():
