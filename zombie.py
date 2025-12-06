@@ -204,6 +204,22 @@ class ZombieWalk:
         self.zombie.frame = 0.0
 
     def do(self):
+        dist_to_player = self.zombie.girl.x - self.zombie.x
+        if dist_to_player > 0:
+            self.zombie.dir = 1
+            self.zombie.face_dir = 1
+        elif dist_to_player < 0:
+            self.zombie.dir = -1
+            self.zombie.face_dir = -1
+        else:
+            self.zombie.dir = 0
+
+        dist_abs = abs(dist_to_player)
+        if dist_abs < 110:
+            self.zombie.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
+        elif dist_abs > 600:
+            self.zombie.state_machine.handle_state_event(('PLAYER_OUT_OF_RANGE', None))
+
         self.zombie.frame = (self.zombie.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % len(
             self.frames)
 
@@ -215,8 +231,8 @@ class ZombieWalk:
         left, bottom, width, height = self.frames[idx]
 
         cfg = ZOMBIE_DRAW_CONFIG[self.zombie.type]
-        dst_w = width * cfg['scale']
-        dst_h = height * cfg['scale']
+        dst_w = width * 2.5 * cfg['scale']
+        dst_h = height * 2.5 * cfg['scale']
         dst_y = self.zombie.y + cfg['dy']
 
         if self.zombie.face_dir == -1:
@@ -401,14 +417,23 @@ class Zombie:
         self.HURT = ZombieHurt(self)
         self.DEAD = ZombieDead(self)
 
+        self.chase_state = self.RUN
+
+        if self.type in [1, 2]:
+            if random.random() < 0.5:
+                self.chase_state = self.WALK
+            else:
+                self.chase_state = self.RUN
+
         self.state_machine = StateMachine(
             self.IDLE,
             {
-                self.IDLE: {player_in_sight_range: self.RUN, player_in_attack_range: self.ATTACK,
+                self.IDLE: {player_in_sight_range: self.chase_state, player_in_attack_range: self.ATTACK,
                             hit_by_book: self.HURT, hp_is_zero: self.DEAD},
                 self.RUN: {player_in_attack_range: self.ATTACK, player_out_of_range: self.IDLE,
                            hit_by_book: self.HURT, hp_is_zero: self.DEAD},
-                self.WALK: {time_out: self.IDLE},
+                self.WALK: {player_in_attack_range: self.ATTACK, player_out_of_range: self.IDLE,
+                           hit_by_book: self.HURT, hp_is_zero: self.DEAD},
                 self.ATTACK: {attack_finished: self.IDLE, hit_by_book: self.HURT, hp_is_zero: self.DEAD},
                 self.HURT: {hurt_finished: self.IDLE, hp_is_zero: self.DEAD},
                 self.DEAD: {}
@@ -423,7 +448,12 @@ class Zombie:
 
         self.state_machine.update()
 
-        self.x += self.dir * RUN_SPEED_PPS * game_framework.frame_time
+        current_speed = RUN_SPEED_PPS
+        if self.type in [1, 2]:
+            if self.state_machine.cur_state == self.RUN:
+                current_speed = RUN_SPEED_PPS * 1.5
+
+        self.x += self.dir * current_speed * game_framework.frame_time
 
         canvas_width = 1600
         buffer = canvas_width / 2
