@@ -82,13 +82,15 @@ def init():
 
     Subway('./배경/스테이지2.png', 800, 300, 1600, 600, 0, is_looping=True)
 
-    for i in range(2):
+    for i in range(1):
         z_type = random.randint(1, 4)  # 1부터 4까지 랜덤 선택
         zombie = Zombie(girl, type=z_type)
         zombie.x = random.randint(1000, 1500)
         game_world.add_object(zombie, 4)
         game_world.add_collision_pair('book:enemy', None, zombie)
         game_world.add_collision_pair('girl:enemy', None, zombie)
+        game_world.add_collision_pair('lightning:enemy', None, zombie)
+
 
     spawn_timer = get_time()
     server.enemies_killed_count = 0
@@ -304,6 +306,7 @@ def update():
         game_world.add_object(zombie, 4)
         game_world.add_collision_pair('book:enemy', None, zombie)
         game_world.add_collision_pair('girl:enemy', None, zombie)
+        game_world.add_collision_pair('lightning:enemy', None, zombie)
 
 
 def draw():

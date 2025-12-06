@@ -54,7 +54,7 @@ class Lightning:
 
     def apply_damage_to_enemies_in_range(self):
         for o in game_world.all_objects():
-            if 'Enemy' in o.__class__.__name__ and o not in self.hit_enemies:
+            if ('Enemy' in o.__class__.__name__ or 'Zombie' in o.__class__.__name__) and o not in self.hit_enemies:
                 if game_world.collide(self, o):
                     if o.state_machine.cur_state == o.DEAD:
                         continue
@@ -68,6 +68,8 @@ class Lightning:
 
     def handle_collision(self, group, other):
         if group == 'lightning:enemy':
-            if hasattr(other, 'take_damage'):
-                other.take_damage(self.damage)
-            game_world.remove_object(self)
+            if other not in self.hit_enemies:
+                if hasattr(other, 'take_damage'):
+                    other.take_damage(self.damage)
+                self.hit_enemies.add(other)
+            #game_world.remove_object(self)

@@ -454,6 +454,8 @@ class Skill:
         for x_pos in final_x_positions:
             lightning = Lightning(x_pos, base_y, final_tick_damage)
             game_world.add_object(lightning, 4)
+            game_world.add_collision_pair('lightning:enemy', lightning, None)
+
 
     def exit(self, e):
         pass

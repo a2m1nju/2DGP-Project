@@ -380,7 +380,7 @@ class Zombie:
         self.face_dir = 1
         self.dir = 0
         self.girl = girl
-        self.type = type  # 좀비 타입 (1, 2, 3, 4)
+        self.type = type
 
         self.max_hp = 10
         self.hp = self.max_hp
