@@ -31,8 +31,8 @@ item_info_font = None
 
 spawn_timer = 0.0
 spawn_cooldown = 3.0
-max_spawn_count = 3
-max_enemies_on_screen = 5
+max_spawn_count = 10
+max_enemies_on_screen = 1
 
 coin_count = 0
 
@@ -173,8 +173,8 @@ def handle_inventory_click(mx, my):
         current_time = get_time()
 
         if clicked_index == last_clicked_index and (current_time - last_click_time) < 0.5:
-            use_inventory_item(clicked_index)  # 아이템 사용 함수 호출
-            last_clicked_index = -1  # 더블클릭 후 초기화
+            use_inventory_item(clicked_index)
+            last_clicked_index = -1
             last_click_time = 0.0
 
         else:
@@ -299,7 +299,7 @@ def update():
         spawn_timer = current_time
 
         #z_type = random.randint(1, 4)
-        zombie = Zombie(girl, type=2)
+        zombie = Zombie(girl, type=4)
         zombie.x = 1700 + random.randint(-50, 50)
         game_world.add_object(zombie, 4)
         game_world.add_collision_pair('book:enemy', None, zombie)
