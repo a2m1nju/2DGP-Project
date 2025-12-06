@@ -10,8 +10,7 @@ import stage3_mode
 
 from girl import Girl
 from subway import Subway
-from enemy import Enemy
-from enemy_R import Enemy_R
+from zombie import Zombie
 
 girl = None
 font = None
@@ -83,16 +82,13 @@ def init():
 
     Subway('./배경/스테이지2.png', 800, 300, 1600, 600, 0, is_looping=True)
 
-    for i in range(0,2):
-        if random.choice([True, False]):
-            e = Enemy(girl)
-        else:
-            e = Enemy_R(girl)
-
-        e.x = random.randint(1000, 1500)
-        game_world.add_object(e, 4)
-        game_world.add_collision_pair('book:enemy', None, e)
-        game_world.add_collision_pair('girl:enemy', None, e)
+    for i in range(2):
+        z_type = random.randint(1, 4)  # 1부터 4까지 랜덤 선택
+        zombie = Zombie(girl, type=z_type)
+        zombie.x = random.randint(1000, 1500)
+        game_world.add_object(zombie, 4)
+        game_world.add_collision_pair('book:enemy', None, zombie)
+        game_world.add_collision_pair('girl:enemy', None, zombie)
 
     spawn_timer = get_time()
     server.enemies_killed_count = 0
@@ -302,14 +298,12 @@ def update():
     if current_time - spawn_timer > spawn_cooldown:
         spawn_timer = current_time
 
-        if random.choice([True, False]):
-            e = Enemy(girl)
-        else:
-            e = Enemy_R(girl)
-        e.x = 1700 + random.randint(-50, 50)
-        game_world.add_object(e, 4)
-        game_world.add_collision_pair('book:enemy', None, e)
-        game_world.add_collision_pair('girl:enemy', None, e)
+        #z_type = random.randint(1, 4)
+        zombie = Zombie(girl, type=1)
+        zombie.x = 1700 + random.randint(-50, 50)
+        game_world.add_object(zombie, 4)
+        game_world.add_collision_pair('book:enemy', None, zombie)
+        game_world.add_collision_pair('girl:enemy', None, zombie)
 
 
 def draw():
