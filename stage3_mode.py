@@ -344,7 +344,7 @@ def draw():
                                   current_draw_width,FILL_DRAW_HEIGHT)
 
     font.draw(50, 550, f'KILLS: {server.enemies_killed_count}', (255, 255, 255))
-    font.draw(50, 520, f'COINS: {coin_count}', (255, 255, 255))
+    font.draw(50, 520, f'COINS: {server.coin_count}', (255, 255, 255))
 
     font.draw(50, 490, f'Lv: {girl.level}', (255, 255, 255))
     font.draw(50, 460, f'EXP: {int(girl.exp)} / {int(girl.max_exp)}', (255, 255, 255))
@@ -407,7 +407,7 @@ def draw():
                 item['image'].draw(ix, iy, 40, 40)
 
         if inventory_font:
-            inventory_font.draw(705, 150, f'{coin_count}', (0, 0, 0))
+            inventory_font.draw(705, 150, f'{server.coin_count}', (0, 0, 0))
 
     if inventory_active and hovered_item_info and description_ui:
         desc_width, desc_height = 250, 200

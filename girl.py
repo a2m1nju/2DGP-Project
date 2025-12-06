@@ -4,6 +4,7 @@ from sdl2 import SDL_KEYDOWN, SDLK_SPACE, SDL_KEYUP, SDLK_a, SDLK_d, SDLK_e, SDL
 import game_world
 import game_framework
 import random
+import server
 
 from book import Book
 from lightning import Lightning
@@ -757,7 +758,7 @@ class Girl:
 
         if group == 'girl:coin':
             import play_mode
-            play_mode.coin_count += other.value
+            server.coin_count += other.value
             return
 
         elif group == 'girl:food':
