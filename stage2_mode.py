@@ -298,8 +298,8 @@ def update():
     if current_time - spawn_timer > spawn_cooldown:
         spawn_timer = current_time
 
-        #z_type = random.randint(1, 4)
-        zombie = Zombie(girl, type=4)
+        z_type = random.randint(1, 4)
+        zombie = Zombie(girl,  type=z_type)
         zombie.x = 1700 + random.randint(-50, 50)
         game_world.add_object(zombie, 4)
         game_world.add_collision_pair('book:enemy', None, zombie)

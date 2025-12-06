@@ -272,8 +272,10 @@ class ZombieAttack:
 
     def get_bb(self):
         bb_w, bb_h = ZOMBIE_BB_SIZE[self.zombie.type]
-        return self.zombie.x - (bb_w + 45), self.zombie.y - (bb_h + 10), self.zombie.x + (bb_w + 45), self.zombie.y + (
-                    bb_h + 10)
+        expand_w = 35
+        if self.zombie.type == 3:
+            expand_w = 30
+        return self.zombie.x - (bb_w + expand_w), self.zombie.y - bb_h, self.zombie.x + (bb_w + expand_w), self.zombie.y + bb_h
 
 
 class ZombieHurt:
@@ -392,7 +394,6 @@ class Zombie:
         if Zombie.hp_bar_fill is None:
             Zombie.hp_bar_fill = load_image('./UI/체력줄.png')
 
-        # 상태 인스턴스 생성
         self.IDLE = ZombieIdle(self)
         self.RUN = ZombieRun(self)
         self.WALK = ZombieWalk(self)
@@ -437,6 +438,7 @@ class Zombie:
 
     def draw(self):
         self.state_machine.draw()
+        draw_rectangle(*self.get_bb())
 
         if self.state_machine.cur_state != self.DEAD:
             if Zombie.hp_bar_bg and Zombie.hp_bar_fill:
