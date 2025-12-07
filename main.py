@@ -6,5 +6,5 @@ import start_mode
 import stage2_mode
 
 open_canvas(1600, 600)
-game_framework.run(stage2_mode)
+game_framework.run(start_mode)
 close_canvas()

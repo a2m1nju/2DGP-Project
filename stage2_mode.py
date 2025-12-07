@@ -298,9 +298,7 @@ def update():
 
     if boss_spawned and boss:
         if boss.hp <= 0 and boss.state_machine.cur_state == boss.DEAD:
-            # 애니메이션 끝자락 체크 (프레임 인덱스)
             if boss.frame >= len(boss.DEAD.frames) - 1:
-                server.coin_count = coin_count
                 game_framework.change_mode(gameclear_mode)
                 return
 
@@ -313,7 +311,6 @@ def update():
         return
 
     if server.enemies_killed_count >= max_spawn_count:
-        server.coin_count = coin_count
         game_framework.change_mode(gameclear_mode)
         return
 

@@ -200,7 +200,7 @@ def get_item_description(filename, m_type):
     return f"{desc}"
 
 def init():
-    global font, shop_ui, shop_active, item_database, item_slots
+    global font, shop_ui, shop_active, item_database, item_slots, coin_count
     global inventory_ui, inventory_active, inventory_font
     global description_ui, hovered_item_info , item_info_font
 
@@ -228,6 +228,8 @@ def init():
         server.girl.state_machine.cur_state = server.girl.IDLE
         server.girl.IDLE.enter(None)
         server.girl.bg_scrolling = False
+
+    coin_count = server.coin_count
 
     shop_active = False
     inventory_active = False
