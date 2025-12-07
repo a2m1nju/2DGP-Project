@@ -260,7 +260,7 @@ class ZombieBoss:
         self.face_dir = -1
         self.dir = 0
 
-        self.max_hp = 10
+        self.max_hp = 20
         self.hp = self.max_hp
 
         self.skill_cooldown = 8.0
@@ -383,8 +383,9 @@ class ZombieBoss:
     def get_bb_rect(self):
         return self.x - 90, self.y - 100, self.x + 90, self.y + 140
 
+
     def handle_collision(self, group, other):
-        if group == 'book:enemy' or group == 'lightning:enemy':
+        if group == 'book:enemy':
             if self.state_machine.cur_state == self.DEAD: return
             self.hp -= other.damage
             if self.hp <= 0:
