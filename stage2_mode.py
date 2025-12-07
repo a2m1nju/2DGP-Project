@@ -32,7 +32,7 @@ item_info_font = None
 
 spawn_timer = 0.0
 spawn_cooldown = 3.0
-max_spawn_count = 10
+max_spawn_count = 5
 max_enemies_on_screen = 1
 
 coin_count = 0
@@ -45,7 +45,7 @@ inventory_font = None
 # 좀비중간보스
 boss = None
 boss_spawned = False
-boss_spawn_threshold = 1
+boss_spawn_threshold = 5
 
 def init():
     global girl, font, spawn_timer, coin_count

@@ -4,7 +4,8 @@ import game_framework
 #import play_mode as start_mode
 import start_mode
 import stage2_mode
+import stage3_mode
 
 open_canvas(1600, 600)
-game_framework.run(start_mode)
+game_framework.run(stage3_mode)
 close_canvas()

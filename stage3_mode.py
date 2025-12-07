@@ -9,8 +9,7 @@ import gameclear_mode
 
 from girl import Girl
 from subway import Subway
-from enemy import Enemy
-from enemy_R import Enemy_R
+from final_boss import FinalBoss
 
 girl = None
 font = None
@@ -29,20 +28,21 @@ description_ui = None
 hovered_item_info = None
 item_info_font = None
 
-spawn_timer = 0.0
-spawn_cooldown = 2.0
-max_spawn_count = 3
-max_enemies_on_screen = 5
+spawn_timer = 0.0  # 사용 안 함
+spawn_cooldown = 2.0  # 사용 안 함
+# max_spawn_count = 3 # 보스전이므로 킬 카운트 방식 변경
+# max_enemies_on_screen = 5
 
 coin_count = 0
-
 last_click_time = 0.0
 last_clicked_index = -1
-
 inventory_font = None
 
+boss = None  # 보스 객체 변수
+
+
 def init():
-    global girl, font, spawn_timer, coin_count
+    global girl, font, spawn_timer, coin_count, boss
     global skill_e_icon, skill_e_icon_bw, skill_q_icon, skill_q_icon_bw
     global inventory_ui, inventory_active, inventory_font
     global hp_bar_bg, hp_bar_fill
@@ -56,11 +56,12 @@ def init():
     server.girl.bg_scrolling = True
 
     girl = server.girl
-    girl.x = 800
+    girl.x = 100  # 시작 위치 조정
     girl.ground_y = 150
     girl.y = girl.ground_y
 
     game_world.add_object(server.girl, 4)
+    # 기존 충돌 체크 유지
     game_world.add_collision_pair('girl:enemy', girl, None)
     game_world.add_collision_pair('fire:girl', None, girl)
     game_world.add_collision_pair('girl:coin', girl, None)
@@ -82,18 +83,14 @@ def init():
 
     Subway('./배경/스테이지3.png', 800, 300, 1600, 600, 0, is_looping=True)
 
-    for i in range(0, 1):
-        if random.choice([True, False]):
-            e = Enemy(girl)
-        else:
-            e = Enemy_R(girl)
+    # 보스 소환
+    boss = FinalBoss(girl)
+    game_world.add_object(boss, 4)
 
-        e.x = random.randint(1000, 1500)
-        game_world.add_object(e, 4)
-        game_world.add_collision_pair('book:enemy', None, e)
-        game_world.add_collision_pair('girl:enemy', None, e)
+    # 충돌 그룹 설정 (보스를 enemy 그룹으로 취급하여 기존 공격 로직 활용)
+    game_world.add_collision_pair('book:enemy', None, boss)
+    game_world.add_collision_pair('girl:enemy', None, boss)
 
-    spawn_timer = get_time()
     server.enemies_killed_count = 0
     coin_count = server.coin_count
 
@@ -108,6 +105,7 @@ def init():
 
     hovered_item_info = None
 
+
 def handle_events():
     global inventory_active
 
@@ -115,35 +113,32 @@ def handle_events():
     for event in event_list:
         if event.type == SDL_QUIT:
             game_framework.quit()
-
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             if inventory_active:
                 inventory_active = False
             else:
                 game_framework.quit()
-
         elif event.type == SDL_KEYDOWN and event.key == SDLK_t:
             inventory_active = not inventory_active
             if inventory_active:
                 girl.dir = 0
                 girl.key_a_down = False
                 girl.key_d_down = False
-
         elif event.type == SDL_MOUSEBUTTONDOWN:
             if inventory_active:
                 mx, my = event.x, 600 - 1 - event.y
                 handle_inventory_click(mx, my)
-
         elif event.type == SDL_MOUSEMOTION:
             if inventory_active:
                 mx, my = event.x, 600 - 1 - event.y
                 check_inventory_hover(mx, my)
-
         else:
             if not inventory_active:
                 girl.handle_event(event)
 
+
 def handle_inventory_click(mx, my):
+    # (기존 코드와 동일)
     global inventory_active
     global last_click_time, last_clicked_index
 
@@ -174,12 +169,10 @@ def handle_inventory_click(mx, my):
 
     if clicked_index != -1:
         current_time = get_time()
-
         if clicked_index == last_clicked_index and (current_time - last_click_time) < 0.5:
             use_inventory_item(clicked_index)
             last_clicked_index = -1
             last_click_time = 0.0
-
         else:
             last_clicked_index = clicked_index
             last_click_time = current_time
@@ -188,12 +181,10 @@ def handle_inventory_click(mx, my):
 
 
 def use_inventory_item(index):
+    # (기존 코드와 동일)
     global hovered_item_info
-    if index < 0 or index >= len(server.girl.inventory):
-        return
-
+    if index < 0 or index >= len(server.girl.inventory): return
     item = server.girl.inventory[index]
-
     is_food = False
 
     if '상인1' in item['path']:
@@ -204,12 +195,8 @@ def use_inventory_item(index):
     if is_food:
         recovery = item.get('value', 0)
         server.girl.hp += recovery
-
-        if server.girl.hp > server.girl.max_hp:
-            server.girl.hp = server.girl.max_hp
-
+        if server.girl.hp > server.girl.max_hp: server.girl.hp = server.girl.max_hp
         print(f"아이템 사용: HP {recovery} 회복! 현재 HP: {server.girl.hp}")
-
         server.girl.inventory.pop(index)
         hovered_item_info = None
 
@@ -224,7 +211,6 @@ def use_inventory_item(index):
         elif p_type == 'perm_e':
             server.girl.e_duration_bonus += val
             print(f"E 스킬 지속시간 영구 증가! (+{val})")
-
         elif p_type == 'regen':
             server.girl.activate_buff('regen', val, dur)
         elif p_type == 'speed':
@@ -236,35 +222,29 @@ def use_inventory_item(index):
         elif p_type == 'freeze':
             server.freeze_timer = get_time() + dur
             print(f"모든 적이 {dur}초간 멈춥니다!")
-
         server.girl.inventory.pop(index)
         hovered_item_info = None
     else:
         print("사용할 수 없는 아이템입니다(장비 등).")
 
+
 def check_inventory_hover(mx, my):
+    # (기존 코드와 동일)
     global inventory_active, hovered_item_info
-
-    if not inventory_active:
-        return
-
+    if not inventory_active: return
     inv_start_x = 665
     inv_start_y = 410
     inv_gap_x = 67
     inv_gap_y = 67
 
-    if server.girl is None or not hasattr(server.girl, 'inventory'):
-        return
-
+    if server.girl is None or not hasattr(server.girl, 'inventory'): return
     hovered_item_info = None
 
     for i, item in enumerate(server.girl.inventory):
         row = i // 5
         col = i % 5
-
         ix = inv_start_x + (col * inv_gap_x)
         iy = inv_start_y - (row * inv_gap_y)
-
         item_bb_x_min = ix - 20
         item_bb_x_max = ix + 20
         item_bb_y_min = iy - 20
@@ -274,9 +254,10 @@ def check_inventory_hover(mx, my):
             hovered_item_info = item
             return
 
+
 def update():
-    global spawn_timer, spawn_cooldown, spawn_count, max_spawn_count
-    global max_enemies_on_screen
+    # 기존 적 생성 로직 제거, 보스 처치 확인
+    global coin_count
 
     if inventory_active:
         return
@@ -284,45 +265,25 @@ def update():
     game_world.update()
     game_world.handle_collisions()
 
-    if server.enemies_killed_count >= max_spawn_count:
+    # 보스가 죽었을 때 (FinalBoss 클래스에서 죽으면 enemies_killed_count를 9999로 설정함)
+    if server.enemies_killed_count >= 9999:
         server.coin_count = coin_count
         game_framework.change_mode(gameclear_mode)
         return
 
-    current_enemy_count = 0
-    if 'girl:enemy' in game_world.collision_pairs:
-        current_enemy_count = len(game_world.collision_pairs['girl:enemy'][1])
-
-    if current_enemy_count >= max_enemies_on_screen:
-        return
-
-    current_time = get_time()
-    if current_time - spawn_timer > spawn_cooldown:
-        spawn_timer = current_time
-
-        if random.choice([True, False]):
-            e = Enemy(girl)
-        else:
-            e = Enemy_R(girl)
-        e.x = 1700 + random.randint(-50, 50)
-        game_world.add_object(e, 4)
-        game_world.add_collision_pair('book:enemy', None, e)
-        game_world.add_collision_pair('girl:enemy', None, e)
-
 
 def draw():
+    # (기존 코드와 동일)
     clear_canvas()
     game_world.render()
 
     if hp_bar_bg and hp_bar_fill:
         bar_x = girl.x
         bar_y = girl.y + 110
-
         TARGET_WIDTH = 100
         TARGET_HEIGHT = 20
         HORIZONTAL_PADDING = 8
         VERTICAL_PADDING = 10
-
         FILL_DRAW_WIDTH = TARGET_WIDTH - HORIZONTAL_PADDING
         FILL_DRAW_HEIGHT = TARGET_HEIGHT - VERTICAL_PADDING
 
@@ -338,10 +299,9 @@ def draw():
         draw_x = fill_left_edge_x + (current_draw_width / 2)
 
         hp_bar_bg.draw(bar_x, bar_y, TARGET_WIDTH, TARGET_HEIGHT)
-
         if current_draw_width > 0:
             hp_bar_fill.clip_draw(0, 0, current_clip_width, hp_bar_fill.h, draw_x, bar_y,
-                                  current_draw_width,FILL_DRAW_HEIGHT)
+                                  current_draw_width, FILL_DRAW_HEIGHT)
 
     font.draw(50, 550, f'KILLS: {server.enemies_killed_count}', (255, 255, 255))
     font.draw(50, 520, f'COINS: {server.coin_count}', (255, 255, 255))
@@ -355,7 +315,6 @@ def draw():
     if skill_q_icon and skill_q_icon_bw:
         icon_x, icon_y = 250, 475
         icon_w, icon_h = 50, 50
-
         current_time = get_time()
         elapsed_time = current_time - girl.last_skill_time
         cooldown = girl.skill_cooldown
@@ -371,7 +330,6 @@ def draw():
     if skill_e_icon and skill_e_icon_bw:
         icon_x, icon_y = 315, 475
         icon_w, icon_h = 50, 50
-
         current_time = get_time()
         elapsed_time = current_time - girl.last_skill_e_time
         cooldown = girl.skill_e_cooldown
@@ -381,12 +339,10 @@ def draw():
             skill_e_icon.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
             remaining_buff_time = girl.buff_end_time - current_time
             font.draw(icon_x - 5, icon_y - 40, f'{remaining_buff_time:.1f}', (255, 255, 255))
-
         elif elapsed_time < cooldown:
             skill_e_icon_bw.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
             remaining_time = cooldown - elapsed_time
             font.draw(icon_x - 5, icon_y - 40, f'{remaining_time:.1f}', (255, 255, 255))
-
         else:
             skill_e_icon.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
 
@@ -396,54 +352,44 @@ def draw():
         inv_start_y = 410
         inv_gap_x = 67
         inv_gap_y = 67
-
         for i, item in enumerate(server.girl.inventory):
             row = i // 5
             col = i % 5
             ix = inv_start_x + (col * inv_gap_x)
             iy = inv_start_y - (row * inv_gap_y)
-
             if 'image' in item:
                 item['image'].draw(ix, iy, 40, 40)
-
         if inventory_font:
             inventory_font.draw(705, 150, f'{server.coin_count}', (0, 0, 0))
 
     if inventory_active and hovered_item_info and description_ui:
         desc_width, desc_height = 250, 200
         desc_x, desc_y = 460, 200
-
         description_ui.draw(desc_x, desc_y, desc_width, desc_height)
         desc_text = hovered_item_info['description']
-
         max_chars_per_line = 20
         line_spacing = 25
         lines = []
         manual_lines = desc_text.split('\n')
-
         for manual_line in manual_lines:
             current_index = 0
             while current_index < len(manual_line):
                 line_segment = manual_line[current_index:current_index + max_chars_per_line].strip()
-                if line_segment:
-                    lines.append(line_segment)
+                if line_segment: lines.append(line_segment)
                 current_index += max_chars_per_line
-
         start_y = desc_y + desc_height / 2 - 20
-
         for i, line in enumerate(lines):
             y_pos = start_y - (i * line_spacing)
-            if y_pos < desc_y - desc_height / 2 + 10:
-                break
+            if y_pos < desc_y - desc_height / 2 + 10: break
             x_pos = desc_x - 110
-            if item_info_font:
-                item_info_font.draw(x_pos, y_pos, line, (0, 0, 0))
+            if item_info_font: item_info_font.draw(x_pos, y_pos, line, (0, 0, 0))
 
     update_canvas()
 
+
 def finish():
     global skill_q_icon, skill_q_icon_bw, skill_e_icon, skill_e_icon_bw, inventory_font
-    global hp_bar_bg, hp_bar_fill
+    global hp_bar_bg, hp_bar_fill, boss
     game_world.clear()
     skill_q_icon = None
     skill_q_icon_bw = None
@@ -452,6 +398,10 @@ def finish():
     inventory_font = None
     hp_bar_bg = None
     hp_bar_fill = None
+    boss = None
+
 
 def pause(): pass
+
+
 def resume(): pass
