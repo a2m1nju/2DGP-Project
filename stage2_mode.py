@@ -45,7 +45,7 @@ inventory_font = None
 # 좀비중간보스
 boss = None
 boss_spawned = False
-boss_spawn_threshold = 3
+boss_spawn_threshold = 1
 
 def init():
     global girl, font, spawn_timer, coin_count

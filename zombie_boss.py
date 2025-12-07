@@ -17,24 +17,22 @@ RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
 
 TIME_PER_ACTION = 0.5
 ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
-FRAMES_PER_ACTION = 8  # 기본 8프레임 기준 (이미지에 맞춰 수정 필요)
+FRAMES_PER_ACTION = 8
 
-# 이벤트 정의
+
 time_out = lambda e: e[0] == 'TIMEOUT'
 player_in_sight_range = lambda e: e[0] == 'PLAYER_IN_SIGHT_RANGE'
 player_in_attack_range = lambda e: e[0] == 'PLAYER_IN_ATTACK_RANGE'
 player_out_of_range = lambda e: e[0] == 'PLAYER_OUT_OF_RANGE'
 hit_by_book = lambda e: e[0] == 'HIT_BY_BOOK'
 hp_is_zero = lambda e: e[0] == 'HP_IS_ZERO'
-use_skill = lambda e: e[0] == 'USE_SKILL'  # 스킬(독) 사용 이벤트
+use_skill = lambda e: e[0] == 'USE_SKILL'
 
 attack_finished = time_out
 hurt_finished = time_out
 dead_finished = time_out
 skill_finished = time_out
 
-# [중요] 보스 애니메이션 데이터
-# 가지고 계신 이미지의 실제 스프라이트 좌표(left, bottom, width, height)로 수정해야 합니다.
 BOSS_ANIMATION_DATA = {
     'Idle': [(0, 0, 70, 78), (136, 0, 70, 78), (274, 0, 70, 78), (410, 0, 70, 78), (545, 0, 70, 78),
              (683, 0, 70, 78)],
@@ -158,9 +156,9 @@ class BossAttack:
     def get_bb(self):
         l, b, r, t = self.boss.get_bb_rect()
         if self.boss.face_dir == 1:
-            return l, b, r + 50, t
+            return l + 20, b, r + 20, t
         else:
-            return l - 50, b, r, t
+            return l - 20, b, r - 20, t
 
 
 class BossSkill:
@@ -254,10 +252,10 @@ class ZombieBoss:
         self.face_dir = -1
         self.dir = 0
 
-        self.max_hp = 300
+        self.max_hp = 10
         self.hp = self.max_hp
 
-        self.scale = 2.0
+        self.scale = 2.5
         self.bb_width = 60
         self.bb_height = 120
 
@@ -329,20 +327,24 @@ class ZombieBoss:
         dst_w = width * self.scale
         dst_h = height * self.scale
 
+        base_height = 78
+        y_offset = (height - base_height) * self.scale / 2
+        dst_y = self.y + y_offset + 10
+
         if self.face_dir == -1:
-            image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.x, self.y, dst_w, dst_h)
+            image.clip_composite_draw(left, bottom, width, height, 0, 'h', self.x, dst_y, dst_w, dst_h)
         else:
-            image.clip_composite_draw(left, bottom, width, height, 0, '', self.x, self.y, dst_w, dst_h)
+            image.clip_composite_draw(left, bottom, width, height, 0, '', self.x, dst_y, dst_w, dst_h)
 
     def draw_hp_bar(self):
         if ZombieBoss.hp_bar_bg and ZombieBoss.hp_bar_fill:
             bar_x = self.x
-            bar_y = self.y + 160
+            bar_y = self.y + 200
 
             TARGET_WIDTH = 200
             TARGET_HEIGHT = 30
-            HORIZONTAL_PADDING = 8
-            VERTICAL_PADDING = 10
+            HORIZONTAL_PADDING = 18
+            VERTICAL_PADDING = 12
             FILL_DRAW_WIDTH = TARGET_WIDTH - HORIZONTAL_PADDING
             FILL_DRAW_HEIGHT = TARGET_HEIGHT - VERTICAL_PADDING
 
@@ -368,7 +370,7 @@ class ZombieBoss:
         return self.state_machine.get_bb()
 
     def get_bb_rect(self):
-        return self.x - self.bb_width, self.y - self.bb_height, self.x + self.bb_width, self.y + self.bb_height
+        return self.x - 90, self.y - 100, self.x + 90, self.y + 140
 
     def handle_collision(self, group, other):
         if group == 'book:enemy' or group == 'lightning:enemy':
