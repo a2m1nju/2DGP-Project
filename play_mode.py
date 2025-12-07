@@ -62,6 +62,7 @@ def init():
     game_world.add_collision_pair('fire:girl', None, girl)
     game_world.add_collision_pair('girl:coin', girl, None)
     game_world.add_collision_pair('girl:food', girl, None)
+    game_world.add_collision_pair('girl:poison', girl, None)
 
     font = load_font('ENCR10B.TTF', 16)
     inventory_font = load_font('ENCR10B.TTF', 25)
@@ -102,6 +103,7 @@ def init():
 
     if item_info_font is None:
         item_info_font = load_font('ChangwonDangamRound.ttf', 15)
+
 
     hovered_item_info = None
 

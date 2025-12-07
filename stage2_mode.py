@@ -75,6 +75,7 @@ def init():
     game_world.add_collision_pair('fire:girl', None, girl)
     game_world.add_collision_pair('girl:coin', girl, None)
     game_world.add_collision_pair('girl:food', girl, None)
+    game_world.add_collision_pair('girl:poison', girl, None)
 
     font = load_font('ENCR10B.TTF', 16)
     inventory_font = load_font('ENCR10B.TTF', 25)

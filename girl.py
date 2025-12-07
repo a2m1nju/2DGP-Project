@@ -566,6 +566,7 @@ class Girl:
 
         self.last_attack_time = 0.0
         self.attack_cooldown = 0.5
+        self.last_poison_time = 0.0
         self.last_hit_time = 0.0
         self.hit_cooldown = 0.5
 
@@ -768,6 +769,31 @@ class Girl:
             return
 
         if current_time < self.buff_end_time:
+            return
+
+        if group == 'girl:poison':
+            if current_time - self.last_poison_time < 0.5:
+                return
+
+            dmg_multiplier = 1.0
+            if get_time() < self.buffs['defense']['timer']:
+                dmg_multiplier = self.buffs['defense']['value']
+
+            damage = 0
+            if hasattr(other, 'damage'):
+                damage = other.damage * dmg_multiplier
+            else:
+                damage = 5 * dmg_multiplier
+
+            self.hp -= damage
+            self.last_poison_time = current_time
+
+            print(f"독 데미지! HP: {self.hp}")
+
+            if self.hp <= 0:
+                self.hp = 0
+                self.state_machine.handle_state_event(('HP_IS_ZERO', None))
+
             return
 
         if current_time - self.last_hit_time < self.hit_cooldown:
