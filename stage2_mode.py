@@ -11,6 +11,7 @@ import stage3_mode
 from girl import Girl
 from subway import Subway
 from zombie import Zombie
+from zombie_boss import ZombieBoss
 
 girl = None
 font = None
@@ -41,12 +42,21 @@ last_clicked_index = -1
 
 inventory_font = None
 
+# 좀비중간보스
+boss = None
+boss_spawned = False
+boss_spawn_threshold = 3
+
 def init():
     global girl, font, spawn_timer, coin_count
     global skill_e_icon, skill_e_icon_bw, skill_q_icon, skill_q_icon_bw
     global inventory_ui, inventory_active, inventory_font
     global hp_bar_bg, hp_bar_fill
     global description_ui, hovered_item_info, item_info_font
+    global boss, boss_spawned
+
+    boss = None
+    boss_spawned = False
 
     server.stage_level = 2
 
@@ -83,7 +93,7 @@ def init():
     Subway('./배경/스테이지2.png', 800, 300, 1600, 600, 0, is_looping=True)
 
     for i in range(1):
-        z_type = random.randint(1, 4)  # 1부터 4까지 랜덤 선택
+        z_type = random.randint(1, 4)
         zombie = Zombie(girl, type=z_type)
         zombie.x = random.randint(1000, 1500)
         game_world.add_object(zombie, 4)
@@ -277,12 +287,29 @@ def check_inventory_hover(mx, my):
 def update():
     global spawn_timer, spawn_cooldown, spawn_count, max_spawn_count
     global max_enemies_on_screen
+    global boss, boss_spawned
 
     if inventory_active:
         return
 
     game_world.update()
     game_world.handle_collisions()
+
+    if boss_spawned and boss:
+        if boss.hp <= 0 and boss.state_machine.cur_state == boss.DEAD:
+            # 애니메이션 끝자락 체크 (프레임 인덱스)
+            if boss.frame >= len(boss.DEAD.frames) - 1:
+                server.coin_count = coin_count
+                game_framework.change_mode(gameclear_mode)
+                return
+
+    if not boss_spawned:
+        if server.enemies_killed_count >= boss_spawn_threshold:
+            spawn_boss()
+            return
+
+    if boss_spawned:
+        return
 
     if server.enemies_killed_count >= max_spawn_count:
         server.coin_count = coin_count
@@ -308,6 +335,20 @@ def update():
         game_world.add_collision_pair('girl:enemy', None, zombie)
         game_world.add_collision_pair('lightning:enemy', None, zombie)
 
+
+def spawn_boss():
+    global boss, boss_spawned
+
+    boss = ZombieBoss(girl)
+    boss.x = 1700
+    boss.y = 150
+
+    game_world.add_object(boss, 4)
+    boss_spawned = True
+
+    game_world.add_collision_pair('book:enemy', None, boss)
+    game_world.add_collision_pair('girl:enemy', None, boss)
+    game_world.add_collision_pair('lightning:enemy', None, boss)
 
 def draw():
     clear_canvas()
@@ -452,6 +493,7 @@ def draw():
 def finish():
     global skill_q_icon, skill_q_icon_bw, skill_e_icon, skill_e_icon_bw, inventory_font
     global hp_bar_bg, hp_bar_fill
+    global boss, boss_spawned
     game_world.clear()
     skill_q_icon = None
     skill_q_icon_bw = None
@@ -460,6 +502,8 @@ def finish():
     inventory_font = None
     hp_bar_bg = None
     hp_bar_fill = None
+    boss = None
+    boss_spawned = False
 
 def pause(): pass
 def resume(): pass
