@@ -67,11 +67,14 @@ class BossIdle:
 
         if dist_to_player < 150:
             self.boss.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
-        elif dist_to_player < 1000:
-            if dist_to_player > 300 and random.random() < 0.01:
-                self.boss.state_machine.handle_state_event(('USE_SKILL', None))
-            else:
-                self.boss.state_machine.handle_state_event(('PLAYER_IN_SIGHT_RANGE', None))
+        elif dist_to_player < 800:
+            current_time = get_time()
+            if current_time - self.boss.last_skill_time > self.boss.skill_cooldown:
+                if dist_to_player > 300 and random.random() < 0.01:
+                    self.boss.state_machine.handle_state_event(('USE_SKILL', None))
+                    return
+
+            self.boss.state_machine.handle_state_event(('PLAYER_IN_SIGHT_RANGE', None))
 
     def exit(self, e):
         pass
@@ -98,8 +101,10 @@ class BossWalk:
         self.boss.frame = (self.boss.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % len(
             self.frames)
 
-        if random.random() < 0.005:
-            self.boss.state_machine.handle_state_event(('USE_SKILL', None))
+        current_time = get_time()
+        if current_time - self.boss.last_skill_time > self.boss.skill_cooldown:
+            if random.random() < 0.01:
+                self.boss.state_machine.handle_state_event(('USE_SKILL', None))
 
     def exit(self, e): pass
 
@@ -121,8 +126,10 @@ class BossRun:
         self.boss.frame = (self.boss.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % len(
             self.frames)
 
-        if random.random() < 0.005:
-            self.boss.state_machine.handle_state_event(('USE_SKILL', None))
+        current_time = get_time()
+        if current_time - self.boss.last_skill_time > self.boss.skill_cooldown:
+            if random.random() < 0.01:
+                self.boss.state_machine.handle_state_event(('USE_SKILL', None))
 
     def exit(self, e): pass
 
@@ -170,6 +177,7 @@ class BossSkill:
     def enter(self, e):
         self.boss.dir = 0
         self.boss.frame = 0.0
+        self.boss.last_skill_time = get_time()
 
     def do(self):
         self.boss.frame = (self.boss.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time)
@@ -255,6 +263,9 @@ class ZombieBoss:
         self.max_hp = 10
         self.hp = self.max_hp
 
+        self.skill_cooldown = 8.0
+        self.last_skill_time = get_time() - 5.0
+
         self.scale = 2.5
         self.bb_width = 60
         self.bb_height = 120
@@ -304,7 +315,7 @@ class ZombieBoss:
         dist_abs = abs(dist)
         if dist_abs < 150:
             self.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
-        elif dist_abs > 1000:
+        elif dist_abs > 800:
             self.state_machine.handle_state_event(('PLAYER_OUT_OF_RANGE', None))
 
         self.x += self.dir * RUN_SPEED_PPS * game_framework.frame_time
