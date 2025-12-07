@@ -211,26 +211,37 @@ class BossSkill:
 
     def spawn_poison(self):
         import random
-        # 플레이어(girl)의 현재 위치를 타겟으로 설정
         target_x = self.boss.girl.x
 
-        # 3개 정도의 독 장판을 플레이어 주변에 생성
-        for _ in range(3):
-            # 플레이어 위치 기준 ±100 범위 내 랜덤 생성
-            offset = random.randint(-100, 100)
+        spawned_positions = []
+        count = 0
+        max_attempts = 20
+
+        while count < 2 and max_attempts > 0:
+            max_attempts -= 1
+
+            offset = random.randint(-200, 200)
             spawn_x = target_x + offset
 
-            # 맵 밖으로 나가지 않도록 clamp (맵 크기 0~1600 가정)
             spawn_x = clamp(50, spawn_x, 1550)
 
-            # 바닥 높이 (Girl의 바닥 y값인 150보다 살짝 아래로 조정하여 자연스럽게)
-            spawn_y = 130
+            is_too_close = False
+            for prev_x in spawned_positions:
+                if abs(spawn_x - prev_x) < 80:
+                    is_too_close = True
+                    break
 
+            if is_too_close:
+                continue
+
+            spawned_positions.append(spawn_x)
+
+            spawn_y = 120
             poison = Poison(spawn_x, spawn_y)
             game_world.add_object(poison, 4)
-
-            # 생성된 독 객체를 충돌 그룹에 등록
             game_world.add_collision_pair('girl:poison', None, poison)
+
+            count += 1
 
 
 class BossHurt:
