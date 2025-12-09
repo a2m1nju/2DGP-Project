@@ -6,6 +6,7 @@ import server
 
 from state_machine import StateMachine
 from coin import Coin
+from monster import Monster
 
 PIXEL_PER_METER = (10.0 / 0.3)
 RUN_SPEED_KMPH = 10.0
@@ -58,6 +59,13 @@ class BossIdle:
             self.frames)
         dist_to_player = abs(self.boss.x - self.boss.girl.x)
 
+        if get_time() - self.boss.skill_timer > self.boss.skill_cooldown:
+            if dist_to_player < 800:
+                self.boss.skill_timer = get_time()
+                self.boss.skill_cooldown = random.uniform(5.0, 10.0)
+                self.boss.state_machine.handle_state_event(('USE_SKILL', None))
+                return
+
         if dist_to_player < 100:
             self.boss.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
         elif dist_to_player < 800:
@@ -84,6 +92,15 @@ class BossWalk:
         self.boss.frame = 0.0
 
     def do(self):
+        dist_to_player = abs(self.boss.girl.x - self.boss.x)
+
+        if get_time() - self.boss.skill_timer > self.boss.skill_cooldown:
+            if dist_to_player < 800:
+                self.boss.skill_timer = get_time()
+                self.boss.skill_cooldown = random.uniform(5.0, 10.0)
+                self.boss.state_machine.handle_state_event(('USE_SKILL', None))
+                return
+
         self.boss.update_move()
         self.boss.frame = (self.boss.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % len(
             self.frames)
@@ -176,6 +193,48 @@ class BossDead:
         return 0, 0, 0, 0
 
 
+class BossAction:
+    def __init__(self, boss):
+        self.boss = boss
+        self.image = load_image('./적/보스/보스/Action.png')
+        self.frames = BOSS_ANIMATION_DATA['Action']
+
+    def enter(self, e):
+        self.boss.dir = 0
+        self.boss.frame = 0.0
+        self.spawned = False
+
+    def do(self):
+        self.boss.frame = (self.boss.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time)
+
+        if int(self.boss.frame) == 6 and not self.spawned:
+            self.spawn_monster()
+            self.spawned = True
+
+        if self.boss.frame >= len(self.frames):
+            self.boss.state_machine.handle_state_event(('TIMEOUT', None))
+
+    def spawn_monster(self):
+        spawn_x = self.boss.x + (150 * self.boss.face_dir)
+        spawn_y = self.boss.y - 50
+
+        minion = Monster(spawn_x, spawn_y, self.boss.girl)
+
+        game_world.add_object(minion, 3)
+
+        game_world.add_collision_pair('girl:enemy', None, minion)
+        game_world.add_collision_pair('book:enemy', None, minion)
+
+    def exit(self, e):
+        pass
+
+    def draw(self):
+        self.boss.draw_image(self.image, self.frames)
+
+    def get_bb(self):
+        return self.boss.get_bb_rect()
+
+
 class FinalBoss:
     font = None
     hp_bar_bg = None
@@ -193,6 +252,9 @@ class FinalBoss:
 
         self.scale = 2.0
 
+        self.skill_timer = get_time()
+        self.skill_cooldown = random.uniform(5.0, 10.0)
+
         if FinalBoss.font is None: FinalBoss.font = load_font('ENCR10B.TTF', 16)
         if FinalBoss.hp_bar_bg is None: FinalBoss.hp_bar_bg = load_image('./UI/체력바.png')
         if FinalBoss.hp_bar_fill is None: FinalBoss.hp_bar_fill = load_image('./UI/체력줄.png')
@@ -202,17 +264,22 @@ class FinalBoss:
         self.ATTACK = BossAttack(self)
         self.HURT = BossHurt(self)
         self.DEAD = BossDead(self)
+        self.ACTION = BossAction(self)
+
+        self.skill_timer = get_time()
 
         self.state_machine = StateMachine(
             self.IDLE,
             {
                 self.IDLE: {player_in_sight_range: self.WALK, player_in_attack_range: self.ATTACK,
-                            hit_by_book: self.HURT, hp_is_zero: self.DEAD},
+                            hit_by_book: self.HURT, hp_is_zero: self.DEAD, use_skill: self.ACTION},
                 self.WALK: {player_in_attack_range: self.ATTACK, player_out_of_range: self.IDLE, hit_by_book: self.HURT,
-                            hp_is_zero: self.DEAD},
+                            hp_is_zero: self.DEAD, use_skill: self.ACTION},
                 self.ATTACK: {attack_finished: self.IDLE, hit_by_book: self.HURT, hp_is_zero: self.DEAD},
                 self.HURT: {hurt_finished: self.IDLE, hp_is_zero: self.DEAD},
-                self.DEAD: {}
+                self.DEAD: {},
+                self.ACTION: {attack_finished: self.IDLE, hit_by_book: self.HURT, hp_is_zero: self.DEAD
+                }
             }
         )
 
