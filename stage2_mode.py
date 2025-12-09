@@ -106,7 +106,7 @@ def init():
 
     is_clearing = False
     clearing_timer = 0.0
-    announcement_x = -600
+    announcement_x = 1600
     announcement_font = load_font('ChangwonDangamRound.ttf', 40)
 
     if announcement_bg_image is None:
@@ -341,9 +341,9 @@ def update():
                 announcement_sound.play()
 
     if is_clearing:
-        announcement_x += 400 * game_framework.frame_time
+        announcement_x -= 500 * game_framework.frame_time
 
-        if announcement_x > 1600:
+        if announcement_x + 800 < 0:
             import platform_mode
             game_framework.change_mode(platform_mode)
         return

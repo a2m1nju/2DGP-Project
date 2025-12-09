@@ -28,17 +28,28 @@ description_ui = None
 hovered_item_info = None
 item_info_font = None
 
-spawn_timer = 0.0  # 사용 안 함
-spawn_cooldown = 2.0  # 사용 안 함
-# max_spawn_count = 3 # 보스전이므로 킬 카운트 방식 변경
-# max_enemies_on_screen = 5
+spawn_timer = 0.0
+spawn_cooldown = 2.0
 
 coin_count = 0
 last_click_time = 0.0
 last_clicked_index = -1
 inventory_font = None
 
-boss = None  # 보스 객체 변수
+boss = None
+
+is_clearing = False
+clearing_timer = 0.0
+announcement_sound = None
+announcement_font = None
+announcement_x = 0
+announcement_text = ("이번 역은 우리 열차의 종착역인 정왕역입니다. "
+                     "내릴실 때에는 차 안에 두고 내리는 물건이 없는지 다시 한번 살펴보시기 바랍니다. "
+                     "안녕히 가십시오. 감사합니다.")
+
+announcement_bg_image = None
+bgm = None
+AUDIO_DURATION = 12.5
 
 
 def init():
@@ -47,6 +58,8 @@ def init():
     global inventory_ui, inventory_active, inventory_font
     global hp_bar_bg, hp_bar_fill
     global description_ui, hovered_item_info, item_info_font
+    global is_clearing, clearing_timer, announcement_sound, announcement_font, announcement_x, announcement_bg_image
+    global bgm
 
     server.stage_level = 3
 
@@ -83,11 +96,37 @@ def init():
 
     Subway('./배경/스테이지3.png', 800, 300, 1600, 600, 0, is_looping=True)
 
+    is_clearing = False
+    clearing_timer = 0.0
+    announcement_x = 1600
+    announcement_font = load_font('ChangwonDangamRound.ttf', 40)
+
+    if announcement_bg_image is None:
+        try:
+            announcement_bg_image = load_image('./배경/스테이지1/안내배경.png')
+        except:
+            print("안내 배경 이미지를 찾을 수 없습니다.")
+            announcement_bg_image = None
+
+    try:
+        announcement_sound = load_wav('./음악/정왕역.wav')
+        announcement_sound.set_volume(65)
+    except:
+        print("안내 방송 파일(./음악/정왕역.wav)을 찾을 수 없습니다.")
+        announcement_sound = None
+
+    try:
+        bgm = load_music('./음악/스테이지3.wav')
+        bgm.set_volume(50)
+        bgm.repeat_play()
+    except:
+        print("배경음악 파일을 찾을 수 없습니다.")
+        bgm = None
+
     # 보스 소환
     boss = FinalBoss(girl)
     game_world.add_object(boss, 4)
 
-    # 충돌 그룹 설정 (보스를 enemy 그룹으로 취급하여 기존 공격 로직 활용)
     game_world.add_collision_pair('book:enemy', None, boss)
     game_world.add_collision_pair('girl:enemy', None, boss)
 
@@ -256,8 +295,9 @@ def check_inventory_hover(mx, my):
 
 
 def update():
-    # 기존 적 생성 로직 제거, 보스 처치 확인
     global coin_count
+    global is_clearing, clearing_timer, announcement_x, announcement_sound
+    global bgm
 
     if inventory_active:
         return
@@ -265,86 +305,87 @@ def update():
     game_world.update()
     game_world.handle_collisions()
 
-    # 보스가 죽었을 때 (FinalBoss 클래스에서 죽으면 enemies_killed_count를 9999로 설정함)
-    if server.enemies_killed_count >= 9999:
-        server.coin_count = coin_count
-        game_framework.change_mode(gameclear_mode)
+    if boss and boss.hp <= 0:
+        if not is_clearing:
+            is_clearing = True
+            clearing_timer = get_time()
+
+            if announcement_sound:
+                announcement_sound.play()
+
+    if is_clearing:
+        announcement_x -= 400 * game_framework.frame_time
+
+        if get_time() - clearing_timer > AUDIO_DURATION:
+            game_framework.change_mode(gameclear_mode)
         return
 
-
 def draw():
-    # (기존 코드와 동일)
     clear_canvas()
     game_world.render()
 
-    if hp_bar_bg and hp_bar_fill:
-        bar_x = girl.x
-        bar_y = girl.y + 110
-        TARGET_WIDTH = 100
-        TARGET_HEIGHT = 20
-        HORIZONTAL_PADDING = 8
-        VERTICAL_PADDING = 10
-        FILL_DRAW_WIDTH = TARGET_WIDTH - HORIZONTAL_PADDING
-        FILL_DRAW_HEIGHT = TARGET_HEIGHT - VERTICAL_PADDING
+    if not is_clearing:
+        if hp_bar_bg and hp_bar_fill:
+            bar_x = girl.x
+            bar_y = girl.y + 110
+            TARGET_WIDTH, TARGET_HEIGHT = 100, 20
+            HORIZONTAL_PADDING, VERTICAL_PADDING = 8, 10
+            FILL_DRAW_WIDTH = TARGET_WIDTH - HORIZONTAL_PADDING
+            FILL_DRAW_HEIGHT = TARGET_HEIGHT - VERTICAL_PADDING
 
-        hp_ratio = girl.hp / girl.max_hp
-        if hp_ratio < 0: hp_ratio = 0
-        if hp_ratio > 1: hp_ratio = 1
+            hp_ratio = girl.hp / girl.max_hp
+            if hp_ratio < 0: hp_ratio = 0
+            if hp_ratio > 1: hp_ratio = 1
 
-        FILL_ORIGINAL_WIDTH = hp_bar_fill.w
-        current_clip_width = int(FILL_ORIGINAL_WIDTH * hp_ratio)
-        current_draw_width = int(FILL_DRAW_WIDTH * hp_ratio)
+            FILL_ORIGINAL_WIDTH = hp_bar_fill.w
+            current_clip_width = int(FILL_ORIGINAL_WIDTH * hp_ratio)
+            current_draw_width = int(FILL_DRAW_WIDTH * hp_ratio)
+            fill_left_edge_x = bar_x - (TARGET_WIDTH / 2) + (HORIZONTAL_PADDING / 2)
+            draw_x = fill_left_edge_x + (current_draw_width / 2)
 
-        fill_left_edge_x = bar_x - (TARGET_WIDTH / 2) + (HORIZONTAL_PADDING / 2)
-        draw_x = fill_left_edge_x + (current_draw_width / 2)
+            hp_bar_bg.draw(bar_x, bar_y, TARGET_WIDTH, TARGET_HEIGHT)
+            if current_draw_width > 0:
+                hp_bar_fill.clip_draw(0, 0, current_clip_width, hp_bar_fill.h, draw_x, bar_y,
+                                      current_draw_width, FILL_DRAW_HEIGHT)
 
-        hp_bar_bg.draw(bar_x, bar_y, TARGET_WIDTH, TARGET_HEIGHT)
-        if current_draw_width > 0:
-            hp_bar_fill.clip_draw(0, 0, current_clip_width, hp_bar_fill.h, draw_x, bar_y,
-                                  current_draw_width, FILL_DRAW_HEIGHT)
+        font.draw(50, 550, f'KILLS: {server.enemies_killed_count}', (255, 255, 255))
+        font.draw(50, 520, f'COINS: {server.coin_count}', (255, 255, 255))
+        font.draw(50, 490, f'Lv: {girl.level}', (255, 255, 255))
+        font.draw(50, 460, f'EXP: {int(girl.exp)} / {int(girl.max_exp)}', (255, 255, 255))
+        font.draw(50, 430, f'MAX HP: {girl.max_hp}', (255, 255, 255))
+        font.draw(50, 400, f'ATK: {girl.damage}', (255, 255, 255))
 
-    font.draw(50, 550, f'KILLS: {server.enemies_killed_count}', (255, 255, 255))
-    font.draw(50, 520, f'COINS: {server.coin_count}', (255, 255, 255))
+        if skill_q_icon and skill_q_icon_bw:
+            icon_x, icon_y = 250, 475
+            current_time = get_time()
+            elapsed_time = current_time - girl.last_skill_time
+            cooldown = girl.skill_cooldown
+            if elapsed_time < cooldown:
+                skill_q_icon_bw.clip_draw(0, 0, 32, 32, icon_x, icon_y, 50, 50)
+                font.draw(icon_x - 5, icon_y - 40, f'{cooldown - elapsed_time:.1f}', (255, 255, 255))
+            else:
+                skill_q_icon.clip_draw(0, 0, 32, 32, icon_x, icon_y, 50, 50)
 
-    font.draw(50, 490, f'Lv: {girl.level}', (255, 255, 255))
-    font.draw(50, 460, f'EXP: {int(girl.exp)} / {int(girl.max_exp)}', (255, 255, 255))
+        if skill_e_icon and skill_e_icon_bw:
+            icon_x, icon_y = 315, 475
+            current_time = get_time()
+            elapsed_time = current_time - girl.last_skill_e_time
+            cooldown = girl.skill_e_cooldown
+            if current_time < girl.buff_end_time:
+                skill_e_icon.clip_draw(0, 0, 32, 32, icon_x, icon_y, 50, 50)
+                font.draw(icon_x - 5, icon_y - 40, f'{girl.buff_end_time - current_time:.1f}', (255, 255, 255))
+            elif elapsed_time < cooldown:
+                skill_e_icon_bw.clip_draw(0, 0, 32, 32, icon_x, icon_y, 50, 50)
+                font.draw(icon_x - 5, icon_y - 40, f'{cooldown - elapsed_time:.1f}', (255, 255, 255))
+            else:
+                skill_e_icon.clip_draw(0, 0, 32, 32, icon_x, icon_y, 50, 50)
 
-    font.draw(50, 430, f'MAX HP: {girl.max_hp}', (255, 255, 255))
-    font.draw(50, 400, f'ATK: {girl.damage}', (255, 255, 255))
+    if is_clearing:
+        if announcement_bg_image:
+            announcement_bg_image.draw(800, 550, 1600, 80)
 
-    if skill_q_icon and skill_q_icon_bw:
-        icon_x, icon_y = 250, 475
-        icon_w, icon_h = 50, 50
-        current_time = get_time()
-        elapsed_time = current_time - girl.last_skill_time
-        cooldown = girl.skill_cooldown
-        clip_l, clip_b, clip_w, clip_h = 0, 0, 32, 32
-
-        if elapsed_time < cooldown:
-            skill_q_icon_bw.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
-            remaining_time = cooldown - elapsed_time
-            font.draw(icon_x - 5, icon_y - 40, f'{remaining_time:.1f}', (255, 255, 255))
-        else:
-            skill_q_icon.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
-
-    if skill_e_icon and skill_e_icon_bw:
-        icon_x, icon_y = 315, 475
-        icon_w, icon_h = 50, 50
-        current_time = get_time()
-        elapsed_time = current_time - girl.last_skill_e_time
-        cooldown = girl.skill_e_cooldown
-        clip_l, clip_b, clip_w, clip_h = 0, 0, 32, 32
-
-        if current_time < girl.buff_end_time:
-            skill_e_icon.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
-            remaining_buff_time = girl.buff_end_time - current_time
-            font.draw(icon_x - 5, icon_y - 40, f'{remaining_buff_time:.1f}', (255, 255, 255))
-        elif elapsed_time < cooldown:
-            skill_e_icon_bw.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
-            remaining_time = cooldown - elapsed_time
-            font.draw(icon_x - 5, icon_y - 40, f'{remaining_time:.1f}', (255, 255, 255))
-        else:
-            skill_e_icon.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
+        if announcement_font:
+            announcement_font.draw(announcement_x, 550, announcement_text, (255, 0, 0))
 
     if inventory_active:
         inventory_ui.draw(800, 300, 392, 404)
@@ -390,6 +431,8 @@ def draw():
 def finish():
     global skill_q_icon, skill_q_icon_bw, skill_e_icon, skill_e_icon_bw, inventory_font
     global hp_bar_bg, hp_bar_fill, boss
+    global announcement_sound, announcement_font
+    global bgm, announcement_bg_image
     game_world.clear()
     skill_q_icon = None
     skill_q_icon_bw = None
@@ -399,6 +442,10 @@ def finish():
     hp_bar_bg = None
     hp_bar_fill = None
     boss = None
+    announcement_sound = None
+    announcement_font = None
+    bgm = None
+    announcement_bg_image = None
 
 
 def pause(): pass
