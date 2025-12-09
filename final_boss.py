@@ -7,6 +7,7 @@ import server
 from state_machine import StateMachine
 from coin import Coin
 from monster import Monster
+from magic_ball import MagicBall
 
 PIXEL_PER_METER = (10.0 / 0.3)
 RUN_SPEED_KMPH = 10.0
@@ -25,6 +26,7 @@ player_out_of_range = lambda e: e[0] == 'PLAYER_OUT_OF_RANGE'
 hit_by_book = lambda e: e[0] == 'HIT_BY_BOOK'
 hp_is_zero = lambda e: e[0] == 'HP_IS_ZERO'
 use_skill = lambda e: e[0] == 'USE_SKILL'
+cast_magic = lambda e: e[0] == 'CAST_MAGIC'
 
 attack_finished = time_out
 hurt_finished = time_out
@@ -40,7 +42,8 @@ BOSS_ANIMATION_DATA = {
     'Hurt': [(0, 0, 74, 106), (114, 0, 74, 106), (236, 0, 74, 106)],
     'Dead': [(0, 0, 53, 102), (124, 0, 51, 102), (239, 0, 69, 102), (361, 0, 113, 102), (495, 0, 123, 102)],
     'Action': [(0, 0, 43, 109), (125, 0, 46, 109), (242, 0, 110, 109), (376, 0, 126, 109), (519, 0, 145, 109),
-               (679, 0, 141, 109)]
+               (679, 0, 141, 109)],
+    'Magic': [(0, 0, 53, 110), (117, 0, 78, 110), (238, 0, 96, 110), (354, 0, 106, 110)]
 }
 
 
@@ -60,10 +63,15 @@ class BossIdle:
         dist_to_player = abs(self.boss.x - self.boss.girl.x)
 
         if get_time() - self.boss.skill_timer > self.boss.skill_cooldown:
+            dist_to_player = abs(self.boss.x - self.boss.girl.x)
             if dist_to_player < 800:
                 self.boss.skill_timer = get_time()
-                self.boss.skill_cooldown = random.uniform(5.0, 10.0)
-                self.boss.state_machine.handle_state_event(('USE_SKILL', None))
+                self.boss.skill_cooldown = random.uniform(2.0, 5.0)
+
+                if random.random() < 0.6:
+                    self.boss.state_machine.handle_state_event(('CAST_MAGIC', None))
+                else:
+                    self.boss.state_machine.handle_state_event(('USE_SKILL', None))
                 return
 
         if dist_to_player < 100:
@@ -97,8 +105,12 @@ class BossWalk:
         if get_time() - self.boss.skill_timer > self.boss.skill_cooldown:
             if dist_to_player < 800:
                 self.boss.skill_timer = get_time()
-                self.boss.skill_cooldown = random.uniform(5.0, 10.0)
-                self.boss.state_machine.handle_state_event(('USE_SKILL', None))
+                self.boss.skill_cooldown = random.uniform(2.0, 5.0)
+
+                if random.random() < 0.6:
+                    self.boss.state_machine.handle_state_event(('CAST_MAGIC', None))
+                else:
+                    self.boss.state_machine.handle_state_event(('USE_SKILL', None))
                 return
 
         self.boss.update_move()
@@ -235,6 +247,46 @@ class BossAction:
         return self.boss.get_bb_rect()
 
 
+class BossMagic:
+    def __init__(self, boss):
+        self.boss = boss
+        self.image = load_image('./적/보스/보스/Magic.png')
+        self.frames = BOSS_ANIMATION_DATA['Magic']
+        self.magicked = False
+
+    def enter(self, e):
+        self.boss.dir = 0
+        self.boss.frame = 0.0
+        self.magicked = False
+
+    def do(self):
+        self.boss.frame = (self.boss.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time)
+
+        if int(self.boss.frame) == 4 and not self.magicked:
+            self.fire_magic()
+            self.magicked = True
+
+        if self.boss.frame >= len(self.frames):
+            self.boss.state_machine.handle_state_event(('TIMEOUT', None))
+
+    def fire_magic(self):
+        ball_x = self.boss.x + (100 * self.boss.face_dir)
+        ball_y = self.boss.y - 20
+        ball = MagicBall(ball_x, ball_y, self.boss.face_dir)
+
+        game_world.add_object(ball, 4)
+        game_world.add_collision_pair('fire:girl', ball, None)
+
+    def exit(self, e):
+        pass
+
+    def draw(self):
+        self.boss.draw_image(self.image, self.frames)
+
+    def get_bb(self):
+        return self.boss.get_bb_rect()
+
+
 class FinalBoss:
     font = None
     hp_bar_bg = None
@@ -265,6 +317,7 @@ class FinalBoss:
         self.HURT = BossHurt(self)
         self.DEAD = BossDead(self)
         self.ACTION = BossAction(self)
+        self.MAGIC = BossMagic(self)
 
         self.skill_timer = get_time()
 
@@ -272,13 +325,14 @@ class FinalBoss:
             self.IDLE,
             {
                 self.IDLE: {player_in_sight_range: self.WALK, player_in_attack_range: self.ATTACK,
-                            hit_by_book: self.HURT, hp_is_zero: self.DEAD, use_skill: self.ACTION},
+                            hit_by_book: self.HURT, hp_is_zero: self.DEAD, use_skill: self.ACTION, cast_magic: self.MAGIC},
                 self.WALK: {player_in_attack_range: self.ATTACK, player_out_of_range: self.IDLE, hit_by_book: self.HURT,
-                            hp_is_zero: self.DEAD, use_skill: self.ACTION},
+                            hp_is_zero: self.DEAD, use_skill: self.ACTION, cast_magic: self.MAGIC},
                 self.ATTACK: {attack_finished: self.IDLE, hit_by_book: self.HURT, hp_is_zero: self.DEAD},
                 self.HURT: {hurt_finished: self.IDLE, hp_is_zero: self.DEAD},
                 self.DEAD: {},
-                self.ACTION: {attack_finished: self.IDLE, hit_by_book: self.HURT, hp_is_zero: self.DEAD
+                self.ACTION: {attack_finished: self.IDLE, hit_by_book: self.HURT, hp_is_zero: self.DEAD},
+                self.MAGIC: { attack_finished: self.IDLE, hit_by_book: self.HURT, hp_is_zero: self.DEAD
                 }
             }
         )
