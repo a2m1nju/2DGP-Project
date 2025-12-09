@@ -352,7 +352,7 @@ def update():
                 announcement_sound.play()
 
     if is_clearing:
-        announcement_x -= 600 * game_framework.frame_time
+        announcement_x -= 400 * game_framework.frame_time
 
         if announcement_x + 800 < 0:
             import platform_mode

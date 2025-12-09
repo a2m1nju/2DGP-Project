@@ -1,4 +1,4 @@
-from pico2d import load_image, get_time, load_font, draw_rectangle, clamp
+from pico2d import*
 from sdl2 import SDL_KEYDOWN, SDLK_SPACE, SDL_KEYUP, SDLK_a, SDLK_d, SDLK_e, SDLK_q, SDLK_w, SDLK_LSHIFT
 
 import game_world
@@ -170,14 +170,22 @@ class Protection:
 
 class Walk:
     image = None
+    walk_sound = None
     sizes = [4, 132, 259, 385 , 513, 642, 772, 902, 1031, 1160, 1287, 1414]
     def __init__(self, girl):
         self.girl = girl
         if Walk.image == None:
             Walk.image = load_image('./주인공/Walk.png')
 
+        if Walk.walk_sound == None:
+            Walk.walk_sound = load_wav('./음악/주인공-걷기.wav')
+            Walk.walk_sound.set_volume(20)
+
+        self.sound_timer = 0
+
     def enter(self, e):
         self.girl.frame = 0
+        self.sound_timer = 0
 
     def exit(self, e):
         pass
@@ -203,8 +211,13 @@ class Walk:
             self.girl.x += self.girl.dir * RUN_SPEED_PPS * speed_mult * game_framework.frame_time
             self.girl.x = clamp(25, self.girl.x, 1600 - 25)
 
+        frame_before = int(self.girl.frame)
         self.girl.frame = (self.girl.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 12
+        frame_after = int(self.girl.frame)
 
+        if frame_before != frame_after:
+            if frame_after == 0 or frame_after == 6:
+                Walk.walk_sound.play()
 
     def draw(self):
         left = Walk.sizes[int(self.girl.frame)]
