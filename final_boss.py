@@ -332,8 +332,8 @@ class FinalBoss:
                 self.ATTACK: {attack_finished: self.IDLE, hit_by_book: self.HURT, hp_is_zero: self.DEAD},
                 self.HURT: {hurt_finished: self.IDLE, hp_is_zero: self.DEAD},
                 self.DEAD: {},
-                self.ACTION: {attack_finished: self.IDLE, hit_by_book: self.HURT, hp_is_zero: self.DEAD},
-                self.MAGIC: { attack_finished: self.IDLE, hit_by_book: self.HURT, hp_is_zero: self.DEAD
+                self.ACTION: {attack_finished: self.IDLE, hp_is_zero: self.DEAD},
+                self.MAGIC: { attack_finished: self.IDLE, hp_is_zero: self.DEAD
                 }
             }
         )
