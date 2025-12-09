@@ -538,12 +538,17 @@ class Skill:
 
 class Jump:
     image = None
+    land_sound = None
     sizes = [0, 88, 180, 275, 362, 457, 557, 650 ]
 
     def __init__(self, girl):
         self.girl = girl
         if Jump.image == None:
             Jump.image = load_image('./주인공/Jump.png')
+
+        if Jump.land_sound == None:
+            Jump.land_sound = load_wav('./음악/착지.mp3')
+            Jump.land_sound.set_volume(20)
 
     def enter(self, e):
         self.girl.frame = 0.0
@@ -573,7 +578,14 @@ class Jump:
             self.girl.x += self.girl.dir * RUN_SPEED_PPS * game_framework.frame_time
             self.girl.x = clamp(25, self.girl.x, 1600 - 25)
 
+        frame_before = int(self.girl.frame)
         self.girl.frame = (self.girl.frame + animation_speed * ACTION_PER_TIME * game_framework.frame_time) % 8
+        frame_after = int(self.girl.frame)
+
+        if frame_before != frame_after:
+            if  frame_after == 5:
+                if Jump.land_sound:
+                    Jump.land_sound.play()
 
         if self.girl.y <= 150:
             self.girl.y = 150
