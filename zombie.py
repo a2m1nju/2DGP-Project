@@ -398,7 +398,7 @@ class Zombie:
         self.girl = girl
         self.type = type
 
-        self.max_hp = 10
+        self.max_hp = 30
         self.hp = self.max_hp
         self.wait_time = 0.0
 

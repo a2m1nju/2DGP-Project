@@ -425,6 +425,8 @@ class Skill:
         base_y = 230
         min_distance = 20
 
+        level_bonus_damage = self.girl.level * 1.5
+
         base_tick_damage = 2
         dmg_bonus = self.girl.q_damage_bonus
 
@@ -432,7 +434,7 @@ class Skill:
             if get_time() < self.girl.buffs['q_buff']['timer']:
                 dmg_bonus += self.girl.buffs['q_buff']['value']
 
-        final_tick_damage = base_tick_damage + dmg_bonus
+        final_tick_damage = base_tick_damage + dmg_bonus + level_bonus_damage
 
         offsets = []
         for _ in range(4):

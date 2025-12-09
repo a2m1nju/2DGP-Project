@@ -303,7 +303,7 @@ class ZombieBoss:
         self.face_dir = -1
         self.dir = 0
 
-        self.max_hp = 20
+        self.max_hp = 100
         self.hp = self.max_hp
 
         self.skill_cooldown = 8.0

@@ -172,7 +172,7 @@ class Monster:
         self.frame = 0
         self.dir = 0
         self.face_dir = -1
-        self.max_hp = 5
+        self.max_hp = 100
         self.hp = self.max_hp
 
         if Monster.hp_bar_bg is None:

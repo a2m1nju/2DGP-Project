@@ -300,7 +300,7 @@ class FinalBoss:
         self.face_dir = -1
         self.dir = 0
 
-        self.max_hp = 10
+        self.max_hp = 500
         self.hp = self.max_hp
 
         self.scale = 2.0
