@@ -21,6 +21,8 @@ description_ui = None
 hovered_item_info = None
 item_info_font = None
 
+bgm = None
+
 item_database = {
     'hp': [],
     'power': [],
@@ -203,6 +205,7 @@ def init():
     global font, shop_ui, shop_active, item_database, item_slots, coin_count
     global inventory_ui, inventory_active, inventory_font
     global description_ui, hovered_item_info , item_info_font
+    global bgm
 
     hovered_item_info = None
 
@@ -223,6 +226,10 @@ def init():
 
     if font is None:
         font = load_font('ENCR10B.TTF', 20)
+
+    bgm = load_music('./음악/플랫폼.wav')
+    bgm.set_volume(50)
+    bgm.repeat_play()
 
     if server.girl:
         server.girl.state_machine.cur_state = server.girl.IDLE
@@ -347,10 +354,15 @@ def init():
     game_world.add_collision_pair('girl:merchant', server.girl, m3)
 
 def finish():
-    game_world.clear()
-
     global shop_items
+    global bgm
+    game_world.clear()
     shop_items = []
+    if bgm:
+        bgm.stop()
+        del bgm
+    bgm = None
+
 
 def update():
     game_world.update()
