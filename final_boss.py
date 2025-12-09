@@ -205,7 +205,7 @@ class BossAction:
         self.spawned = False
 
     def do(self):
-        self.boss.frame = (self.boss.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time)
+        self.boss.frame = (self.boss.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time * 0.3)
 
         if int(self.boss.frame) == 6 and not self.spawned:
             self.spawn_monster()

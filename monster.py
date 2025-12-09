@@ -169,7 +169,7 @@ class Monster:
         self.frame = 0
         self.dir = 0
         self.face_dir = -1
-        self.hp = 3
+        self.hp = 5
 
         self.IDLE = MonsterIdle(self)
         self.WALK = MonsterWalk(self)
