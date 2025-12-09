@@ -41,6 +41,16 @@ inventory_font = None
 background = None
 current_bg_index = 1
 
+is_clearing = False
+clearing_timer = 0.0
+announcement_sound = None
+announcement_font = None
+announcement_x = 0
+announcement_text = "이번역은 고통역입니다. 내리실 문은 오른쪽입니다."
+announcement_bg_image = None
+
+bgm = None
+
 def init():
     global girl, font, spawn_timer, coin_count
     global skill_e_icon, skill_e_icon_bw, skill_q_icon, skill_q_icon_bw
@@ -48,6 +58,8 @@ def init():
     global hp_bar_bg, hp_bar_fill
     global description_ui, hovered_item_info, item_info_font
     global background, current_bg_index
+    global is_clearing, clearing_timer, announcement_sound, announcement_font, announcement_x, announcement_bg_image
+    global bgm
 
     server.stage_level = 1
 
@@ -83,6 +95,29 @@ def init():
 
     background = Subway('./배경/스테이지1/1.png', 800, 300, 1600, 600, 0, is_looping=True)
     current_bg_index = 1
+
+    is_clearing = False
+    clearing_timer = 0.0
+    announcement_x = -600
+    announcement_font = load_font('ChangwonDangamRound.ttf', 40)
+
+    if announcement_bg_image is None:
+        try:
+            announcement_bg_image = load_image('./배경/스테이지1/안내배경.png')
+        except:
+            print("이미지를 찾을 수 없습니다.")
+            announcement_bg_image = None
+
+    try:
+        announcement_sound = load_wav('./음악/고통역.wav')
+        announcement_sound.set_volume(65)
+    except:
+        print("안내 방송 파일을 찾을 수 없습니다.")
+        announcement_sound = None
+
+    bgm = load_music('./음악/스테이지1.wav')
+    bgm.set_volume(50)
+    bgm.repeat_play()
 
     for i in range(0,1):
         if random.choice([True, False]):
@@ -282,6 +317,8 @@ def update():
     global spawn_timer, spawn_cooldown, spawn_count, max_spawn_count
     global max_enemies_on_screen
     global current_bg_index
+    global is_clearing, clearing_timer, announcement_x, announcement_sound
+    global bgm
 
     if inventory_active:
         return
@@ -298,8 +335,18 @@ def update():
         background.image = load_image(f'./배경/스테이지1/{current_bg_index}.png')
 
     if server.enemies_killed_count >= max_spawn_count:
-        import platform_mode
-        game_framework.change_mode(platform_mode)
+        if not is_clearing:
+            is_clearing = True
+            clearing_timer = get_time()
+            if announcement_sound:
+                announcement_sound.play()
+
+    if is_clearing:
+        announcement_x += 400 * game_framework.frame_time
+
+        if announcement_x > 1600:
+            import platform_mode
+            game_framework.change_mode(platform_mode)
         return
 
     current_enemy_count = 0
@@ -328,86 +375,87 @@ def draw():
     game_world.render()
 
     #font.draw(girl.x - 30, girl.y + 110, f'HP: {girl.hp}', (255, 0, 0))
-    if hp_bar_bg and hp_bar_fill:
-        bar_x = girl.x
-        bar_y = girl.y + 110
+    if not is_clearing:
+        if hp_bar_bg and hp_bar_fill:
+            bar_x = girl.x
+            bar_y = girl.y + 110
 
-        TARGET_WIDTH = 100
-        TARGET_HEIGHT = 20
+            TARGET_WIDTH = 100
+            TARGET_HEIGHT = 20
+            HORIZONTAL_PADDING = 8
+            VERTICAL_PADDING = 10
+            FILL_DRAW_WIDTH = TARGET_WIDTH - HORIZONTAL_PADDING
+            FILL_DRAW_HEIGHT = TARGET_HEIGHT - VERTICAL_PADDING
 
-        HORIZONTAL_PADDING = 8
-        VERTICAL_PADDING = 10
+            hp_ratio = girl.hp / girl.max_hp
+            if hp_ratio < 0: hp_ratio = 0
+            if hp_ratio > 1: hp_ratio = 1
 
-        FILL_DRAW_WIDTH = TARGET_WIDTH - HORIZONTAL_PADDING
-        FILL_DRAW_HEIGHT = TARGET_HEIGHT - VERTICAL_PADDING
+            FILL_ORIGINAL_WIDTH = hp_bar_fill.w
+            current_clip_width = int(FILL_ORIGINAL_WIDTH * hp_ratio)
+            current_draw_width = int(FILL_DRAW_WIDTH * hp_ratio)
 
-        hp_ratio = girl.hp / girl.max_hp
-        if hp_ratio < 0: hp_ratio = 0
-        if hp_ratio > 1: hp_ratio = 1
+            fill_left_edge_x = bar_x - (TARGET_WIDTH / 2) + (HORIZONTAL_PADDING / 2)
+            draw_x = fill_left_edge_x + (current_draw_width / 2)
 
-        FILL_ORIGINAL_WIDTH = hp_bar_fill.w
-        current_clip_width = int(FILL_ORIGINAL_WIDTH * hp_ratio)
-        current_draw_width = int(FILL_DRAW_WIDTH * hp_ratio)
+            hp_bar_bg.draw(bar_x, bar_y, TARGET_WIDTH, TARGET_HEIGHT)
 
-        fill_left_edge_x = bar_x - (TARGET_WIDTH / 2) + (HORIZONTAL_PADDING / 2)
-        draw_x = fill_left_edge_x + (current_draw_width / 2)
+            if current_draw_width > 0:
+                hp_bar_fill.clip_draw(0, 0, current_clip_width, hp_bar_fill.h, draw_x, bar_y,
+                                      current_draw_width, FILL_DRAW_HEIGHT)
 
-        hp_bar_bg.draw(bar_x, bar_y, TARGET_WIDTH, TARGET_HEIGHT)
+        font.draw(50, 550, f'KILLS: {server.enemies_killed_count}', (255, 255, 255))
+        font.draw(50, 520, f'COINS: {server.coin_count}', (255, 255, 255))
+        font.draw(50, 490, f'Lv: {girl.level}', (255, 255, 255))
+        font.draw(50, 460, f'EXP: {int(girl.exp)} / {int(girl.max_exp)}', (255, 255, 255))
+        font.draw(50, 430, f'MAX HP: {girl.max_hp}', (255, 255, 255))
+        font.draw(50, 400, f'ATK: {girl.damage}', (255, 255, 255))
 
-        if current_draw_width > 0:
-            hp_bar_fill.clip_draw(0, 0, current_clip_width, hp_bar_fill.h, draw_x, bar_y,
-                                  current_draw_width,FILL_DRAW_HEIGHT)
+        if skill_q_icon and skill_q_icon_bw:
+            icon_x, icon_y = 250, 475
+            icon_w, icon_h = 50, 50
 
-    font.draw(50, 550, f'KILLS: {server.enemies_killed_count}', (255, 255, 255))
-    font.draw(50, 520, f'COINS: {server.coin_count}', (255, 255, 255))
+            current_time = get_time()
+            elapsed_time = current_time - girl.last_skill_time
+            cooldown = girl.skill_cooldown
 
-    font.draw(50, 490, f'Lv: {girl.level}', (255, 255, 255))
-    font.draw(50, 460, f'EXP: {int(girl.exp)} / {int(girl.max_exp)}', (255, 255, 255))
+            clip_l, clip_b, clip_w, clip_h = 0, 0, 32, 32
 
-    font.draw(50, 430, f'MAX HP: {girl.max_hp}', (255, 255, 255))
-    font.draw(50, 400, f'ATK: {girl.damage}', (255, 255, 255))
+            if elapsed_time < cooldown:
+                skill_q_icon_bw.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
+                remaining_time = cooldown - elapsed_time
+                font.draw(icon_x - 5, icon_y - 40, f'{remaining_time:.1f}', (255, 255, 255))
+            else:
+                skill_q_icon.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
 
-    if skill_q_icon and skill_q_icon_bw:
-        icon_x, icon_y = 250, 475
-        icon_w, icon_h = 50, 50
+        if skill_e_icon and skill_e_icon_bw:
+            icon_x, icon_y = 315, 475
+            icon_w, icon_h = 50, 50
 
-        current_time = get_time()
-        elapsed_time = current_time - girl.last_skill_time
-        cooldown = girl.skill_cooldown
+            current_time = get_time()
+            elapsed_time = current_time - girl.last_skill_e_time
+            cooldown = girl.skill_e_cooldown
 
-        clip_l, clip_b, clip_w, clip_h = 0, 0, 32, 32
+            clip_l, clip_b, clip_w, clip_h = 0, 0, 32, 32
 
-        if elapsed_time < cooldown:
-            skill_q_icon_bw.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
+            if current_time < girl.buff_end_time:
+                skill_e_icon.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
+                remaining_buff_time = girl.buff_end_time - current_time
+                font.draw(icon_x - 5, icon_y - 40, f'{remaining_buff_time:.1f}', (255, 255, 255))
 
-            remaining_time = cooldown - elapsed_time
-            font.draw(icon_x - 5, icon_y - 40, f'{remaining_time:.1f}', (255, 255, 255))
-        else:
-            skill_q_icon.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
+            elif elapsed_time < cooldown:
+                skill_e_icon_bw.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
+                remaining_time = cooldown - elapsed_time
+                font.draw(icon_x - 5, icon_y - 40, f'{remaining_time:.1f}', (255, 255, 255))
 
-    if skill_e_icon and skill_e_icon_bw:
-        icon_x, icon_y = 315, 475
-        icon_w, icon_h = 50, 50
+            else:
+                skill_e_icon.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
 
-        current_time = get_time()
+    if is_clearing and announcement_bg_image:
+        announcement_bg_image.draw(800, 500, 1600, 80)
 
-        elapsed_time = current_time - girl.last_skill_e_time
-        cooldown = girl.skill_e_cooldown
-
-        clip_l, clip_b, clip_w, clip_h = 0, 0, 32, 32
-
-        if current_time < girl.buff_end_time:
-            skill_e_icon.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
-            remaining_buff_time = girl.buff_end_time - current_time
-            font.draw(icon_x - 5, icon_y - 40, f'{remaining_buff_time:.1f}', (255, 255, 255))
-
-        elif elapsed_time < cooldown:
-            skill_e_icon_bw.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
-            remaining_time = cooldown - elapsed_time
-            font.draw(icon_x - 5, icon_y - 40, f'{remaining_time:.1f}', (255, 255, 255))
-
-        else:
-            skill_e_icon.clip_draw(clip_l, clip_b, clip_w, clip_h, icon_x, icon_y, icon_w, icon_h)
+    if is_clearing and announcement_font:
+        announcement_font.draw(announcement_x, 500, announcement_text, (255, 0, 0))
 
     if inventory_active:
         inventory_ui.draw(800, 300, 392, 404)
@@ -466,6 +514,7 @@ def draw():
 def finish():
     global skill_q_icon, skill_q_icon_bw, skill_e_icon, skill_e_icon_bw, inventory_font
     global hp_bar_bg, hp_bar_fill
+    global bgm, announcement_bg_image
     game_world.clear()
     skill_q_icon = None
     skill_q_icon_bw = None
@@ -474,6 +523,8 @@ def finish():
     inventory_font = None
     hp_bar_bg = None
     hp_bar_fill = None
+    bgm = None
+    announcement_bg_image = None
 
 def pause(): pass
 def resume(): pass
