@@ -120,17 +120,26 @@ class Idle:
 
 class Protection:
     image = None
+    protection_sound = None
     sizes = [2, 128, 253, 381]
     def __init__(self, girl):
         self.girl = girl
         if Protection.image == None:
             Protection.image = load_image('./주인공/Protection.png')
+
+        if Protection.protection_sound == None:
+            Protection.protection_sound = load_wav('./음악/방어.mp3')
+            Protection.protection_sound.set_volume(20)
+
         self.shield_object = None
 
     def enter(self, e):
         self.girl.dir = 0
         game_world.scroll_speed = 0.0
         self.girl.frame = 0
+
+        if Protection.protection_sound:
+            Protection.protection_sound.play()
 
         self.girl.buff_end_time = get_time() + 5.0 + self.girl.e_duration_bonus
 
@@ -234,11 +243,16 @@ class Walk:
 
 class Run:
     image = None
+    run_sound = None
     sizes = [(0, 47), (93, 50), (188, 59), (291, 51), (389, 38), (487, 38)]
     def __init__(self, girl):
         self.girl = girl
         if Run.image == None:
             Run.image = load_image('./주인공/Run.png')
+
+        if Run.run_sound == None:
+            Run.run_sound = load_wav('./음악/주인공-뛰기.wav')
+            Run.run_sound.set_volume(15)  # 볼륨 조절
 
     def enter(self, e):
         self.girl.frame = 0
@@ -268,7 +282,14 @@ class Run:
             self.girl.x += self.girl.dir * DASH_SPEED_PPS * speed_mult * game_framework.frame_time
             self.girl.x = clamp(25, self.girl.x, 1600 - 25)
 
+        frame_before = int(self.girl.frame)
         self.girl.frame = (self.girl.frame + animation_speed * ACTION_PER_TIME * game_framework.frame_time) % 6
+        frame_after = int(self.girl.frame)
+
+        if frame_before != frame_after:
+            if frame_after == 0 or frame_after == 3:
+                if Run.run_sound:
+                    Run.run_sound.play()
 
     def draw(self):
         left, width = Run.sizes[int(self.girl.frame)]
@@ -284,14 +305,23 @@ class Run:
 
 class Attack:
     image = None
+    attack_sound = None
     sizes = [(7, 40), (131, 43), (253, 51), (378, 59), (503, 61), (645, 62), (776, 73), (905, 37)]
     def __init__(self, girl):
         self.girl = girl
         if Attack.image == None:
             Attack.image = load_image('./주인공/Attack.png')
 
+        if Attack.attack_sound == None:
+            Attack.attack_sound = load_wav('./음악/책.mp3')
+            Attack.attack_sound.set_volume(15)
+
     def enter(self, e):
         self.girl.throw_book()
+
+        if Attack.attack_sound:
+            Attack.attack_sound.play()
+
         self.girl.frame = 0.0
         self.girl.dir = 0
         game_world.scroll_speed = 0.0
@@ -424,6 +454,7 @@ class Dead:
 
 class Skill:
     image = None
+    skill_sound = None
     sizes = [0, 91, 181, 269]
 
     def __init__(self, girl):
@@ -431,12 +462,19 @@ class Skill:
         if Skill.image == None:
             Skill.image = load_image('./주인공/Skill.png')
 
+        if Skill.skill_sound == None:
+            Skill.skill_sound = load_wav('./음악/번개.wav')
+            Skill.skill_sound.set_volume(20)
+
     def enter(self, e):
         self.girl.last_skill_time = get_time()
         self.girl.frame = 0.0
         game_world.scroll_speed = 0.0
         base_y = 230
         min_distance = 20
+
+        if Skill.skill_sound:
+            Skill.skill_sound.play()
 
         level_bonus_damage = self.girl.level * 1.5
 
