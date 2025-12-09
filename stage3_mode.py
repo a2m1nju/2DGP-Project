@@ -56,12 +56,12 @@ def init():
     server.girl.bg_scrolling = True
 
     girl = server.girl
-    girl.x = 100  # 시작 위치 조정
+    girl.x =800
     girl.ground_y = 150
     girl.y = girl.ground_y
 
     game_world.add_object(server.girl, 4)
-    # 기존 충돌 체크 유지
+
     game_world.add_collision_pair('girl:enemy', girl, None)
     game_world.add_collision_pair('fire:girl', None, girl)
     game_world.add_collision_pair('girl:coin', girl, None)

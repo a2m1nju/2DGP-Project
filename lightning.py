@@ -54,7 +54,8 @@ class Lightning:
 
     def apply_damage_to_enemies_in_range(self):
         for o in game_world.all_objects():
-            if ('Enemy' in o.__class__.__name__ or 'Zombie' in o.__class__.__name__) and o not in self.hit_enemies:
+            if (('Enemy' in o.__class__.__name__ or 'Zombie' in o.__class__.__name__ or 'Boss' in o.__class__.__name__)
+                    and o not in self.hit_enemies):
                 if game_world.collide(self, o):
                     if o.state_machine.cur_state == o.DEAD:
                         continue

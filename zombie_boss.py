@@ -9,7 +9,6 @@ from coin import Coin
 from food import Food
 from poison import Poison
 
-# 보스 이동 속도 및 설정
 PIXEL_PER_METER = (10.0 / 0.3)
 RUN_SPEED_KMPH = 10.0
 RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
@@ -168,13 +167,6 @@ class BossAttack:
         else:
             return l - 20, b, r - 20, t
 
-
-# zombie_boss.py 상단에 import 추가
-from poison import Poison
-
-
-# ... (기존 코드 생략) ...
-
 class BossSkill:
     def __init__(self, boss):
         self.boss = boss
@@ -191,7 +183,6 @@ class BossSkill:
     def do(self):
         self.boss.frame = (self.boss.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time)
 
-        # 애니메이션 중간쯤(예: 프레임 3)에 독 생성
         if int(self.boss.frame) == 3 and not self.has_spawned:
             self.spawn_poison()
             self.has_spawned = True

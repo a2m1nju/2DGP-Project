@@ -35,7 +35,7 @@ BOSS_ANIMATION_DATA = {
              (591, 0, 57, 111), (700, 0, 57, 111)],
     'Walk': [(0, 0, 70, 114), (122, 0, 70, 114), (242, 0, 70, 114), (363, 0, 70, 114), (477, 0, 70, 114),
              (597, 0, 70, 114), (707, 0, 70, 114), (831, 0, 70, 114)],
-    'Attack': [(0, 0, 100, 110), (122, 0, 100, 110),(241, 0, 100, 110),(357, 0, 100, 110)],
+    'Attack': [(0, 0, 100, 110), (120, 0, 100, 110),(240, 0, 100, 110),(357, 0, 100, 110)],
     'Hurt': [(0, 0, 74, 106), (114, 0, 74, 106), (236, 0, 74, 106)],
     'Dead': [(0, 0, 53, 102), (124, 0, 51, 102), (239, 0, 69, 102), (361, 0, 113, 102), (495, 0, 123, 102)],
     'Action': [(0, 0, 43, 109), (125, 0, 46, 109), (242, 0, 110, 109), (376, 0, 126, 109), (519, 0, 145, 109),
@@ -58,9 +58,9 @@ class BossIdle:
             self.frames)
         dist_to_player = abs(self.boss.x - self.boss.girl.x)
 
-        if dist_to_player < 200:
+        if dist_to_player < 100:
             self.boss.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
-        elif dist_to_player < 1000:
+        elif dist_to_player < 800:
             self.boss.state_machine.handle_state_event(('PLAYER_IN_SIGHT_RANGE', None))
 
     def exit(self, e):
@@ -92,7 +92,8 @@ class BossWalk:
 
     def draw(self): self.boss.draw_image(self.image, self.frames)
 
-    def get_bb(self): return self.boss.get_bb_rect()
+    def get_bb(self):
+        return self.boss.x - 25, self.boss.y - 140, self.boss.x + 65, self.boss.y + 80
 
 
 class BossAttack:
@@ -117,8 +118,7 @@ class BossAttack:
         self.boss.draw_image(self.image, self.frames)
 
     def get_bb(self):
-        l, b, r, t = self.boss.get_bb_rect()
-        return l - 50, b, r + 50, t  # 공격 범위 확장
+        return self.boss.x - 100, self.boss.y - 140, self.boss.x + 100, self.boss.y + 80
 
 
 class BossHurt:
@@ -142,7 +142,7 @@ class BossHurt:
         self.boss.draw_image(self.image, self.frames)
 
     def get_bb(self):
-        return self.boss.get_bb_rect()
+        return self.boss.x - 50, self.boss.y - 140, self.boss.x + 50, self.boss.y + 80
 
 
 class BossDead:
@@ -230,7 +230,7 @@ class FinalBoss:
             self.dir = 0
 
         dist_abs = abs(dist)
-        if dist_abs < 200:
+        if dist_abs < 100:
             self.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
         elif dist_abs > 1200:
             self.state_machine.handle_state_event(('PLAYER_OUT_OF_RANGE', None))
