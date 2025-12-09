@@ -38,8 +38,10 @@ class MagicBall:
         else:
             self.image.clip_composite_draw(left, bottom, width, height, 0, '', self.x, self.y, width* 1.5, height* 1.5)
 
+        draw_rectangle(*self.get_bb())
+
     def get_bb(self):
-        return self.x - 20, self.y - 20, self.x + 20, self.y + 20
+        return self.x - 25, self.y - 25, self.x + 25, self.y + 25
 
     def handle_collision(self, group, other):
         if group == 'fire:girl':
