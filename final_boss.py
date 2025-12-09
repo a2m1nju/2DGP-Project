@@ -237,6 +237,7 @@ class BossAction:
         game_world.add_collision_pair('girl:enemy', None, minion)
         game_world.add_collision_pair('book:enemy', None, minion)
 
+
     def exit(self, e):
         pass
 

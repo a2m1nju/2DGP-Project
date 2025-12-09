@@ -163,13 +163,22 @@ class MonsterDead:
 
 
 class Monster:
+    hp_bar_bg = None
+    hp_bar_fill = None
+
     def __init__(self, x, y, target):
         self.x, self.y = x, y
         self.target = target
         self.frame = 0
         self.dir = 0
         self.face_dir = -1
-        self.hp = 5
+        self.max_hp = 5
+        self.hp = self.max_hp
+
+        if Monster.hp_bar_bg is None:
+            Monster.hp_bar_bg = load_image('./UI/체력바.png')
+        if Monster.hp_bar_fill is None:
+            Monster.hp_bar_fill = load_image('./UI/체력줄.png')
 
         self.IDLE = MonsterIdle(self)
         self.WALK = MonsterWalk(self)
@@ -195,6 +204,37 @@ class Monster:
     def draw(self):
         self.state_machine.draw()
         draw_rectangle(*self.get_bb())
+
+        if self.state_machine.cur_state != self.DEAD:
+            if Monster.hp_bar_bg and Monster.hp_bar_fill:
+                bar_x = self.x
+                bar_y = self.y + 100
+
+                TARGET_WIDTH = 100
+                TARGET_HEIGHT = 20
+                HORIZONTAL_PADDING = 8
+                VERTICAL_PADDING = 10
+                FILL_DRAW_WIDTH = TARGET_WIDTH - HORIZONTAL_PADDING
+                FILL_DRAW_HEIGHT = TARGET_HEIGHT - VERTICAL_PADDING
+
+                hp_ratio = self.hp / self.max_hp
+                if hp_ratio < 0: hp_ratio = 0
+                if hp_ratio > 1: hp_ratio = 1
+
+                FILL_ORIGINAL_WIDTH = Monster.hp_bar_fill.w
+                current_clip_width = int(FILL_ORIGINAL_WIDTH * hp_ratio)
+                current_draw_width = int(FILL_DRAW_WIDTH * hp_ratio)
+
+                fill_left_edge_x = bar_x - (TARGET_WIDTH / 2) + (HORIZONTAL_PADDING / 2)
+                draw_x = fill_left_edge_x + (current_draw_width / 2)
+
+                Monster.hp_bar_bg.draw(bar_x, bar_y, TARGET_WIDTH, TARGET_HEIGHT)
+
+                if current_draw_width > 0:
+                    Monster.hp_bar_fill.clip_draw(
+                        0, 0, current_clip_width, Monster.hp_bar_fill.h,
+                        draw_x, bar_y, current_draw_width, FILL_DRAW_HEIGHT
+                    )
 
     def draw_image(self, image, frames):
         idx = int(self.frame)
