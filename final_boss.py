@@ -126,14 +126,23 @@ class BossWalk:
 
 
 class BossAttack:
+    attack_sound = None
+
     def __init__(self, boss):
         self.boss = boss
         self.image = load_image('./적/보스/보스/Attack.png')
         self.frames = BOSS_ANIMATION_DATA['Attack']
 
+        if BossAttack.attack_sound is None:
+            BossAttack.attack_sound = load_wav('./음악/펀치.mp3')
+            BossAttack.attack_sound.set_volume(20)
+
     def enter(self, e):
         self.boss.dir = 0
         self.boss.frame = 0.0
+
+        if BossAttack.attack_sound:
+            BossAttack.attack_sound.play()
 
     def do(self):
         self.boss.frame = (self.boss.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time)
@@ -206,15 +215,24 @@ class BossDead:
 
 
 class BossAction:
+    action_sound = None
+
     def __init__(self, boss):
         self.boss = boss
         self.image = load_image('./적/보스/보스/Action.png')
         self.frames = BOSS_ANIMATION_DATA['Action']
 
+        if BossAction.action_sound is None:
+            BossAction.action_sound = load_wav('./음악/소환.wav')
+            BossAction.action_sound.set_volume(20)
+
     def enter(self, e):
         self.boss.dir = 0
         self.boss.frame = 0.0
         self.spawned = False
+
+        if BossAction.action_sound:
+            BossAction.action_sound.play()
 
     def do(self):
         self.boss.frame = (self.boss.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time * 0.3)
@@ -249,16 +267,28 @@ class BossAction:
 
 
 class BossMagic:
+    magic_sound = None
+
     def __init__(self, boss):
         self.boss = boss
         self.image = load_image('./적/보스/보스/Magic.png')
         self.frames = BOSS_ANIMATION_DATA['Magic']
         self.magicked = False
 
+        if BossMagic.magic_sound is None:
+            BossMagic.magic_sound = load_wav('./음악/마법.mp3')
+            BossMagic.magic_sound.set_volume(20)
+
+            if BossMagic.magic_sound:
+                BossMagic.magic_sound.play()
+
     def enter(self, e):
         self.boss.dir = 0
         self.boss.frame = 0.0
         self.magicked = False
+
+        if BossMagic.magic_sound:
+            BossMagic.magic_sound.play()
 
     def do(self):
         self.boss.frame = (self.boss.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time)

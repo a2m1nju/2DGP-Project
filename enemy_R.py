@@ -1,4 +1,4 @@
-from pico2d import load_image, get_time, load_font, draw_rectangle
+from pico2d import*
 
 import game_world
 import game_framework
@@ -141,17 +141,26 @@ class Walk:
 
 class Attack:
     image = None
+    attack_sound = None
     sizes = [0, 257, 518, 773, 1029, 1286, 1541, 1797, 2053, 2309]
+
     def __init__(self, enemy):
         self.enemy = enemy
         if Attack.image == None:
             Attack.image = load_image('./적/남자2(원)/Special_Blow_1.png')
+
+        if Attack.attack_sound == None:
+            Attack.attack_sound = load_wav('./음악/화염.mp3')
+            Attack.attack_sound.set_volume(20)
 
     def enter(self, e):
         self.enemy.dir = 0
         self.enemy.frame = 0.0
         self.enemy.throw_fire()
         self.enemy.last_attack_time = get_time()
+
+        if Attack.attack_sound:
+            Attack.attack_sound.play()
 
     def exit(self, e):
         pass

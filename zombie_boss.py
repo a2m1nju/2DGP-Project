@@ -139,14 +139,23 @@ class BossRun:
 
 
 class BossAttack:
+    attack_sound = None
+
     def __init__(self, boss):
         self.boss = boss
         self.image = load_image('./적/좀비중간보스/Attack.png')
         self.frames = BOSS_ANIMATION_DATA['Attack']
 
+        if BossAttack.attack_sound is None:
+            BossAttack.attack_sound = load_wav('./음악/펀치.mp3')
+            BossAttack.attack_sound.set_volume(20)
+
     def enter(self, e):
         self.boss.dir = 0
         self.boss.frame = 0.0
+
+        if BossAttack.attack_sound:
+            BossAttack.attack_sound.play()
 
     def do(self):
         self.boss.frame = (self.boss.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time)
@@ -168,17 +177,26 @@ class BossAttack:
             return l - 20, b, r - 20, t
 
 class BossSkill:
+    skill_sound = None
+
     def __init__(self, boss):
         self.boss = boss
         self.image = load_image('./적/좀비중간보스/Poison.png')
         self.frames = BOSS_ANIMATION_DATA['Poison']
         self.has_spawned = False
 
+        if BossSkill.skill_sound is None:
+            BossSkill.skill_sound = load_wav('./음악/독.mp3')
+            BossSkill.skill_sound.set_volume(20)
+
     def enter(self, e):
         self.boss.dir = 0
         self.boss.frame = 0.0
         self.boss.last_skill_time = get_time()
         self.has_spawned = False
+
+        if BossSkill.skill_sound:
+            BossSkill.skill_sound.play()
 
     def do(self):
         self.boss.frame = (self.boss.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time)

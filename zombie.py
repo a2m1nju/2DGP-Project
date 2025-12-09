@@ -246,6 +246,8 @@ class ZombieWalk:
 
 
 class ZombieAttack:
+    attack_sound = None
+
     def __init__(self, zombie):
         self.zombie = zombie
         filename = 'Attack.png'
@@ -257,9 +259,16 @@ class ZombieAttack:
         self.image = load_image(f'./적/좀비{zombie.type}(근)/{filename}')
         self.frames = ZOMBIE_ANIMATION_DATA[zombie.type]['Attack']
 
+        if ZombieAttack.attack_sound is None:
+            ZombieAttack.attack_sound = load_wav('./음악/펀치.mp3')
+            ZombieAttack.attack_sound.set_volume(20)
+
     def enter(self, e):
         self.zombie.dir = 0
         self.zombie.frame = 0.0
+
+        if ZombieAttack.attack_sound:
+            ZombieAttack.attack_sound.play()
 
     def do(self):
         animation_speed = 7.0

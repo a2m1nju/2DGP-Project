@@ -97,13 +97,22 @@ class MonsterWalk:
 
 
 class MonsterAttack:
+    attack_sound = None
+
     def __init__(self, monster):
         self.monster = monster
         self.image = load_image('./적/보스/몬스터/Attack.png')
         self.frames = MONSTER_ANIMATION_DATA['Attack']
 
+        if MonsterAttack.attack_sound is None:
+            MonsterAttack.attack_sound = load_wav('./음악/펀치.mp3')
+            MonsterAttack.attack_sound.set_volume(20)
+
     def enter(self, e):
         self.monster.frame = 0
+
+        if MonsterAttack.attack_sound:
+            MonsterAttack.attack_sound.play()
 
     def do(self):
         self.monster.frame = (self.monster.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time)
