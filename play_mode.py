@@ -30,7 +30,7 @@ item_info_font = None
 
 spawn_timer = 0.0
 spawn_cooldown = 5.0
-max_spawn_count = 5
+max_spawn_count = 12
 max_enemies_on_screen = 3
 coin_count = 0
 
@@ -38,6 +38,8 @@ last_click_time = 0.0
 last_clicked_index = -1
 
 inventory_font = None
+background = None
+current_bg_index = 1
 
 def init():
     global girl, font, spawn_timer, coin_count
@@ -45,6 +47,7 @@ def init():
     global inventory_ui, inventory_active, inventory_font
     global hp_bar_bg, hp_bar_fill
     global description_ui, hovered_item_info, item_info_font
+    global background, current_bg_index
 
     server.stage_level = 1
 
@@ -78,7 +81,8 @@ def init():
     if hp_bar_fill is None:
         hp_bar_fill = load_image('./UI/체력줄.png')
 
-    Subway('./배경/내부2.png', 800, 300, 1600, 600, 0, is_looping=True)
+    background = Subway('./배경/스테이지1/1.png', 800, 300, 1600, 600, 0, is_looping=True)
+    current_bg_index = 1
 
     for i in range(0,1):
         if random.choice([True, False]):
@@ -277,12 +281,21 @@ def check_inventory_hover(mx, my):
 def update():
     global spawn_timer, spawn_cooldown, spawn_count, max_spawn_count
     global max_enemies_on_screen
+    global current_bg_index
 
     if inventory_active:
         return
 
     game_world.update()
     game_world.handle_collisions()
+
+    new_bg_index = (server.enemies_killed_count // 2) + 1
+    if new_bg_index > 6:
+        new_bg_index = 6
+
+    if new_bg_index > current_bg_index:
+        current_bg_index = new_bg_index
+        background.image = load_image(f'./배경/스테이지1/{current_bg_index}.png')
 
     if server.enemies_killed_count >= max_spawn_count:
         import platform_mode

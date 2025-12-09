@@ -281,7 +281,7 @@ class Enemy_R:
         self.dir = 0
         self.girl = girl
 
-        self.max_hp = 5
+        self.max_hp = 10
         self.hp = self.max_hp
 
         self.last_attack_time = 0.0
