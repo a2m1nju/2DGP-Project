@@ -48,7 +48,7 @@ announcement_font = None
 announcement_x = 0
 announcement_text = "이번역은 고통역입니다. 내리실 문은 오른쪽입니다."
 announcement_bg_image = None
-
+glitch_sound = None
 bgm = None
 
 def init():
@@ -59,7 +59,7 @@ def init():
     global description_ui, hovered_item_info, item_info_font
     global background, current_bg_index
     global is_clearing, clearing_timer, announcement_sound, announcement_font, announcement_x, announcement_bg_image
-    global bgm
+    global bgm, glitch_sound
 
     server.stage_level = 1
 
@@ -110,10 +110,17 @@ def init():
 
     try:
         announcement_sound = load_wav('./음악/고통역.wav')
-        announcement_sound.set_volume(65)
+        announcement_sound.set_volume(70)
     except:
         print("안내 방송 파일을 찾을 수 없습니다.")
         announcement_sound = None
+
+    try:
+        glitch_sound = load_wav('./음악/글리치.wav')
+        glitch_sound.set_volume(50)
+    except:
+        print("글리치 사운드 파일을 찾을 수 없습니다.")
+        glitch_sound = None
 
     bgm = load_music('./음악/스테이지1.wav')
     bgm.set_volume(50)
@@ -334,6 +341,9 @@ def update():
         current_bg_index = new_bg_index
         background.image = load_image(f'./배경/스테이지1/{current_bg_index}.png')
 
+        if glitch_sound:
+            glitch_sound.play()
+
     if server.enemies_killed_count >= max_spawn_count:
         if not is_clearing:
             is_clearing = True
@@ -514,7 +524,7 @@ def draw():
 def finish():
     global skill_q_icon, skill_q_icon_bw, skill_e_icon, skill_e_icon_bw, inventory_font
     global hp_bar_bg, hp_bar_fill
-    global bgm, announcement_bg_image
+    global bgm, announcement_bg_image, glitch_sound
     game_world.clear()
     skill_q_icon = None
     skill_q_icon_bw = None
@@ -525,6 +535,7 @@ def finish():
     hp_bar_fill = None
     bgm = None
     announcement_bg_image = None
+    glitch_sound = None
 
 def pause(): pass
 def resume(): pass
