@@ -220,7 +220,6 @@ def handle_inventory_click(mx, my):
 
 
 def use_inventory_item(index):
-    # (기존 코드와 동일)
     global hovered_item_info
     if index < 0 or index >= len(server.girl.inventory): return
     item = server.girl.inventory[index]
@@ -268,7 +267,6 @@ def use_inventory_item(index):
 
 
 def check_inventory_hover(mx, my):
-    # (기존 코드와 동일)
     global inventory_active, hovered_item_info
     if not inventory_active: return
     inv_start_x = 665
@@ -449,6 +447,4 @@ def finish():
 
 
 def pause(): pass
-
-
 def resume(): pass

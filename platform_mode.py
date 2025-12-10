@@ -22,6 +22,7 @@ hovered_item_info = None
 item_info_font = None
 
 bgm = None
+use_sound = None
 
 item_database = {
     'hp': [],
@@ -205,7 +206,7 @@ def init():
     global font, shop_ui, shop_active, item_database, item_slots, coin_count
     global inventory_ui, inventory_active, inventory_font
     global description_ui, hovered_item_info , item_info_font
-    global bgm
+    global bgm, use_sound
 
     hovered_item_info = None
 
@@ -228,8 +229,12 @@ def init():
         font = load_font('ENCR10B.TTF', 20)
 
     bgm = load_music('./음악/플랫폼.wav')
-    bgm.set_volume(50)
+    bgm.set_volume(30)
     bgm.repeat_play()
+
+    if use_sound is None:
+        use_sound = load_wav('./음악/선택.mp3')
+        use_sound.set_volume(20)
 
     if server.girl:
         server.girl.state_machine.cur_state = server.girl.IDLE
@@ -680,6 +685,9 @@ def buy_item(index):
     if server.coin_count >= item['price']:
         server.coin_count -= item['price']
         server.girl.inventory.append(item)
+
+        if use_sound:
+            use_sound.play()
 
         if 'stat_type' in item and 'value' in item:
             if item['stat_type'] == 'max_hp':
