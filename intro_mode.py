@@ -94,12 +94,12 @@ def update():
     total_time += dt
 
     if phase == 1:
-        if frame_timer >= INTRO1_DELAY:
+        while frame_timer >= INTRO1_DELAY:
             frame_timer -= INTRO1_DELAY
             current_frame = (current_frame + 1) % len(images1)
 
         text_timer += dt
-        if text_timer >= TEXT_SPEED:
+        while text_timer >= TEXT_SPEED:
             text_timer -= TEXT_SPEED
             text_visible_count += 1
 
@@ -111,18 +111,19 @@ def update():
             text2_visible_count = 0
 
 
-    elif phase == 2:
 
-        if frame_timer >= intro2_delay:
+    elif phase == 2:
+        while frame_timer >= intro2_delay:
             frame_timer -= intro2_delay
             current_frame = (current_frame + 1) % len(images2)
 
         text2_timer += dt
-        if text2_timer >= TEXT_SPEED2:
-            text2_timer -= TEXT_SPEED2
 
+        while text2_timer >= TEXT_SPEED2:
+            text2_timer -= TEXT_SPEED2
             text2_visible_count += 1
         if total_time >= BGM_DURATION:
+
             game_framework.change_mode(play_mode)
 
 
