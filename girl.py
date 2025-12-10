@@ -624,7 +624,7 @@ class Girl:
         self.level = 1
         self.exp = 0
         self.max_exp = 100
-        self.max_hp = 1000
+        self.max_hp = 100
         self.hp = self.max_hp
         self.damage = 1
         self.attack_range = 450.0

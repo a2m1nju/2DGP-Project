@@ -61,10 +61,10 @@ POWER_ITEM_INFO = {
 }
 
 POTION_ITEM_INFO = {
-    '포션1': {'type': 'regen', 'value': 2, 'duration': 10.0},      # 치유: 10초간 초당 2 회복 (총 20)
+    '포션1': {'type': 'regen', 'value': 5, 'duration': 10.0},      # 치유: 10초간 초당 5 회복
     '포션2': {'type': 'q_buff', 'value': 5, 'duration': 15.0},     # 번개: 15초간 Q 데미지 +5
     '포션3': {'type': 'freeze', 'value': 0, 'duration': 5.0},      # 서리: 5초간 적 정지
-    '포션4': {'type': 'regen', 'value': 5, 'duration': 10.0},      # 치유LV2: 10초간 초당 5 회복 (총 50)
+    '포션4': {'type': 'regen', 'value': 10, 'duration': 10.0},      # 치유LV2: 10초간 초당 10 회복
     '포션5': {'type': 'speed', 'value': 1.5, 'duration': 10.0},    # 신속: 10초간 이속 1.5배
     '포션6': {'type': 'q_buff', 'value': 10, 'duration': 15.0},    # 번개LV2
     '포션7': {'type': 'speed', 'value': 2.0, 'duration': 10.0},    # 신속LV2
@@ -177,7 +177,7 @@ def get_item_description(filename, m_type):
     elif m_type == 'potion':
         if '포션1' == name:
             desc = ("[치유의 포션]\n"
-                    "10초간 초당 2 회복")
+                    "10초간 초당 5 회복")
         elif '포션2' == name:
             desc = ("[번개의 포션]\n"
                     "15초간 Q 데미지 +5")
@@ -186,7 +186,7 @@ def get_item_description(filename, m_type):
                     "5초간 적 정지")
         elif '포션4' == name:
             desc = ("[치유의 포션 LV.2]\n"
-                    "10초간 초당 5 회복")
+                    "10초간 초당 10 회복")
         elif '포션5' == name:
             desc = ("[신속의 포션]\n"
                     "10초간 이속 1.5배")
@@ -285,9 +285,9 @@ def init():
                         if item_value == 0: item_value = 10
 
                     if m_type == 'hp':
-                        price = item_value//2 + random.randint(5, 15)
+                        price = item_value//2 + random.randint(5, 20)
                     else:
-                        price = random.randint(10, 30)
+                        price = random.randint(20, 50)
 
                     if m_type == 'power':
                         item_value = 5
@@ -302,7 +302,7 @@ def init():
                         if item_stat_type == 'damage':
                             price = item_value * 20 + random.randint(10, 50)
                         elif item_stat_type == 'range':
-                            price = int(item_value * 0.5) + random.randint(50, 200)
+                            price = int(item_value * 0.5) + random.randint(50, 100)
                         else:
                             price = item_value + random.randint(50, 150)
 
@@ -317,10 +317,14 @@ def init():
                             item_value = info['value']
                             item_duration = info['duration']
 
+                        LV2_POTIONS = ['포션4', '포션6', '포션7', '포션11']
+
                         if 'perm' in item_stat_type:
-                            price = 300 + random.randint(50, 200)
+                            price = 300 + random.randint(50, 100)
+                        elif name in LV2_POTIONS:
+                            price = 150 + random.randint(50, 150)
                         else:
-                            price = 100 + random.randint(20, 100)
+                            price = 50 + random.randint(20, 100)
 
 
 

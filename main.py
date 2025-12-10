@@ -10,5 +10,5 @@ import intro_mode
 
 
 open_canvas(1600, 600)
-game_framework.run(play_mode)
+game_framework.run(start_mode)
 close_canvas()
