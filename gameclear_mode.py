@@ -24,7 +24,7 @@ def handle_events():
             if event.key == SDLK_ESCAPE:
                 game_framework.quit()
             else:
-                game_framework.change_mode(platform_mode)
+                game_framework.change_mode(play_mode)
 
 def update():
     pass

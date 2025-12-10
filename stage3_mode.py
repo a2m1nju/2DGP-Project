@@ -6,6 +6,7 @@ import game_world
 import server
 import platform_mode
 import gameclear_mode
+import clearanim_mode
 
 from girl import Girl
 from subway import Subway
@@ -315,7 +316,7 @@ def update():
         announcement_x -= 400 * game_framework.frame_time
 
         if get_time() - clearing_timer > AUDIO_DURATION:
-            game_framework.change_mode(gameclear_mode)
+            game_framework.change_mode(clearanim_mode)
         return
 
 def draw():
