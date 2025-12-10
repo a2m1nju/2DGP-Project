@@ -30,6 +30,8 @@ class Merchant:
     }
 
     def __init__(self, x, y, item_type):
+        global info_font
+
         self.x, self.y = x, y
         self.item_type = item_type
         self.font = load_font('ENCR10B.TTF', 16)
@@ -42,6 +44,9 @@ class Merchant:
 
         if Merchant.speech_bubble is None:
             Merchant.speech_bubble = load_image('./UI/말풍선.png')
+
+
+        self.info_font = load_font('ChangwonDangamRound.ttf', 15)
 
         self.sizes = info['sizes']
         self.height = info['height']
@@ -60,6 +65,16 @@ class Merchant:
 
         if Merchant.speech_bubble:
             Merchant.speech_bubble.draw(bubble_x, bubble_y, 60, 50)
+
+            text_to_draw = ""
+            if self.item_type == 'hp':
+                text_to_draw = "HP"
+            elif self.item_type == 'power':
+                text_to_draw = "장비"
+            elif self.item_type == 'potion':
+                text_to_draw = "포션"
+            if text_to_draw:
+                self.info_font.draw(self.x + 15, self.y + 85, text_to_draw, (0, 0, 0))
 
 
     def get_bb(self):
