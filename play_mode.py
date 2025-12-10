@@ -30,7 +30,7 @@ item_info_font = None
 
 spawn_timer = 0.0
 spawn_cooldown = 4.0
-max_spawn_count = 12
+max_spawn_count = 1
 max_enemies_on_screen = 2
 coin_count = 0
 
@@ -422,7 +422,7 @@ def draw():
         font.draw(50, 430, f'MAX HP: {girl.max_hp}', (255, 255, 255))
         font.draw(50, 400, f'ATK: {girl.damage}', (255, 255, 255))
 
-        info_font.draw(50, 370, f'<< 컨트롤 >>', (100, 100, 100))
+        info_font.draw(50, 370, f'<< 컨트롤 >>', (255, 255, 255))
         info_font.draw(50, 340, f'이동: A / D', (255, 255, 255))
         info_font.draw(50, 310, f'점프: W', (255, 255, 255))
         info_font.draw(50, 280, f'달리기: Shift + 이동', (255, 255, 255))

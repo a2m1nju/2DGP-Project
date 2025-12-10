@@ -8,6 +8,7 @@ import stage2_mode
 import stage3_mode
 import intro_mode
 
+
 open_canvas(1600, 600)
-game_framework.run(stage2_mode)
+game_framework.run(play_mode)
 close_canvas()
