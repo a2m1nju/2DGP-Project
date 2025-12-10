@@ -176,7 +176,8 @@ def get_item_description(filename, m_type):
 
     elif m_type == 'potion':
         if '포션1' == name:
-            desc = "치유의 포션" # 일정시간동안 체력회복
+            desc = ("[치유의 포션]\n"
+                    "10초간 초당 2 회복") # 일정시간동안 체력회복
         elif '포션2' == name:
             desc = "번개의 포션" # 일정시간동안 q 스킬 공격력 증가
         elif '포션3' == name:

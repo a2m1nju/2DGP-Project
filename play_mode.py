@@ -59,7 +59,7 @@ def init():
     global description_ui, hovered_item_info, item_info_font
     global background, current_bg_index
     global is_clearing, clearing_timer, announcement_sound, announcement_font, announcement_x, announcement_bg_image
-    global bgm, glitch_sound
+    global bgm, glitch_sound, info_font
 
     server.stage_level = 1
 
@@ -100,6 +100,7 @@ def init():
     clearing_timer = 0.0
     announcement_x = 1600
     announcement_font = load_font('ChangwonDangamRound.ttf', 40)
+    info_font = load_font('ChangwonDangamRound.ttf', 16)
 
     if announcement_bg_image is None:
         try:
@@ -414,12 +415,23 @@ def draw():
                 hp_bar_fill.clip_draw(0, 0, current_clip_width, hp_bar_fill.h, draw_x, bar_y,
                                       current_draw_width, FILL_DRAW_HEIGHT)
 
-        font.draw(50, 550, f'KILLS: {server.enemies_killed_count}', (255, 255, 255))
+        font.draw(50, 550, f'KILLS: {server.enemies_killed_count} / 12', (255, 255, 255))
         font.draw(50, 520, f'COINS: {server.coin_count}', (255, 255, 255))
         font.draw(50, 490, f'Lv: {girl.level}', (255, 255, 255))
         font.draw(50, 460, f'EXP: {int(girl.exp)} / {int(girl.max_exp)}', (255, 255, 255))
         font.draw(50, 430, f'MAX HP: {girl.max_hp}', (255, 255, 255))
         font.draw(50, 400, f'ATK: {girl.damage}', (255, 255, 255))
+
+        info_font.draw(50, 370, f'<< 컨트롤 >>', (100, 100, 100))
+        info_font.draw(50, 340, f'이동: A / D', (255, 255, 255))
+        info_font.draw(50, 310, f'점프: W', (255, 255, 255))
+        info_font.draw(50, 280, f'달리기: Shift + 이동', (255, 255, 255))
+        info_font.draw(50, 250, f'공격: Space', (255, 255, 255))
+        info_font.draw(50, 220, f'번개: Q', (255, 255, 255))
+        info_font.draw(50, 190, f'방어막: E', (255, 255, 255))
+        info_font.draw(50, 160, f'인벤토리: T', (255, 255, 255))
+        info_font.draw(50, 130, f'상점: V', (255, 255, 255))
+
 
         if skill_q_icon and skill_q_icon_bw:
             icon_x, icon_y = 250, 475

@@ -21,10 +21,10 @@ def handle_events():
         if event.type == SDL_QUIT:
             game_framework.quit()
         elif event.type == SDL_KEYDOWN:
-            if event.key == SDLK_ESCAPE:
-                game_framework.quit()
-            else:
-                game_framework.change_mode(play_mode)
+            global clearanim_music
+            if clearanim_music:
+                clearanim_music.stop()
+            game_framework.quit()
 
 def update():
     pass
