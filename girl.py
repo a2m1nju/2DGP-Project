@@ -239,7 +239,7 @@ class Walk:
             Walk.image.clip_composite_draw(left, bottom, width, height, 0, '', self.girl.x, self.girl.y, 70, 180)
 
     def get_bb(self):
-        return self.girl.x - 40, self.girl.y - 90, self.girl.x + 40, self.girl.y + 90
+        return self.girl.x - 30, self.girl.y - 90, self.girl.x + 35, self.girl.y + 90
 
 class Run:
     image = None
@@ -624,9 +624,9 @@ class Girl:
         self.level = 1
         self.exp = 0
         self.max_exp = 100
-        self.max_hp = 100
+        self.max_hp = 1000
         self.hp = self.max_hp
-        self.damage = 100
+        self.damage = 1
         self.attack_range = 450.0
 
         self.last_attack_time = 0.0
@@ -809,7 +809,7 @@ class Girl:
 
     def draw(self):
         self.state_machine.draw()
-        draw_rectangle(*self.get_bb())
+        #draw_rectangle(*self.get_bb())
 
         if get_time() < self.level_up_end_time:
             self.level_up_image.draw(self.x, self.y + 140, 96, 17)

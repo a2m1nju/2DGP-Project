@@ -57,7 +57,7 @@ class Coin:
             self.image_20.draw(self.x, self.y, 24, 24)
         else:
             self.image_10.draw(self.x, self.y, 24, 24)
-        draw_rectangle(*self.get_bb())
+        #draw_rectangle(*self.get_bb())
 
     def get_bb(self):
         return self.x - 12, self.y - 12, self.x + 12, self.y + 12

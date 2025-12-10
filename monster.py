@@ -213,7 +213,7 @@ class Monster:
 
     def draw(self):
         self.state_machine.draw()
-        draw_rectangle(*self.get_bb())
+        #draw_rectangle(*self.get_bb())
 
         if self.state_machine.cur_state != self.DEAD:
             if Monster.hp_bar_bg and Monster.hp_bar_fill:

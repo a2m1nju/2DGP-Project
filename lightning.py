@@ -47,7 +47,7 @@ class Lightning:
         height = 170
 
         Lightning.image.clip_draw(left, bottom, width, height, self.x, self.y, 60, 360)
-        draw_rectangle(*self.get_bb())
+        #draw_rectangle(*self.get_bb())
 
     def get_bb(self):
         return self.x - 15, self.y - 180, self.x + 15, self.y + 180

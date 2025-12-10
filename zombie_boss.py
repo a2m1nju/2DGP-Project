@@ -65,7 +65,7 @@ class BossIdle:
 
         dist_to_player = abs(self.boss.x - self.boss.girl.x)
 
-        if dist_to_player < 150:
+        if dist_to_player < 100:
             self.boss.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
         elif dist_to_player < 800:
             current_time = get_time()
@@ -172,9 +172,9 @@ class BossAttack:
     def get_bb(self):
         l, b, r, t = self.boss.get_bb_rect()
         if self.boss.face_dir == 1:
-            return l + 20, b, r + 20, t
+            return l, b, r , t
         else:
-            return l - 20, b, r - 20, t
+            return l, b, r , t
 
 class BossSkill:
     skill_sound = None
@@ -229,7 +229,7 @@ class BossSkill:
         while count < 2 and max_attempts > 0:
             max_attempts -= 1
 
-            offset = random.randint(-200, 200)
+            offset = random.randint(-300, 300)
             spawn_x = target_x + offset
 
             spawn_x = clamp(50, spawn_x, 1550)
@@ -321,7 +321,7 @@ class ZombieBoss:
         self.face_dir = -1
         self.dir = 0
 
-        self.max_hp = 500
+        self.max_hp = 400
         self.hp = self.max_hp
         self.damage = 30
 
@@ -375,7 +375,7 @@ class ZombieBoss:
             self.dir = 0
 
         dist_abs = abs(dist)
-        if dist_abs < 150:
+        if dist_abs < 100:
             self.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
         elif dist_abs > 800:
             self.state_machine.handle_state_event(('PLAYER_OUT_OF_RANGE', None))
@@ -384,7 +384,7 @@ class ZombieBoss:
 
     def draw(self):
         self.state_machine.draw()
-        draw_rectangle(*self.get_bb())
+        #draw_rectangle(*self.get_bb())
         if self.state_machine.cur_state != self.DEAD:
             self.draw_hp_bar()
 

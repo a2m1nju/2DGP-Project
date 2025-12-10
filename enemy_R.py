@@ -351,7 +351,7 @@ class Enemy_R:
 
     def draw(self):
         self.state_machine.draw()
-        draw_rectangle(*self.get_bb())
+        #draw_rectangle(*self.get_bb())
 
         if self.state_machine.cur_state != self.DEAD:
             # Enemy_R.font.draw(self.x - 30, self.y + 110, f'HP: {self.hp}', (255, 0, 0))

@@ -41,7 +41,7 @@ class Food:
 
     def draw(self):
         self.image.draw(self.x, self.y, 30, 30)
-        draw_rectangle(*self.get_bb())
+        #draw_rectangle(*self.get_bb())
 
     def get_bb(self):
         return self.x - 15, self.y - 15, self.x + 15, self.y + 15

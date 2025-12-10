@@ -36,7 +36,7 @@ class Poison:
 
         Poison.image.clip_draw(left, bottom, width, height, self.x, self.y)
 
-        draw_rectangle(*self.get_bb())
+        #draw_rectangle(*self.get_bb())
 
     def get_bb(self):
         return self.x - 100, self.y - 60, self.x + 100, self.y + 60

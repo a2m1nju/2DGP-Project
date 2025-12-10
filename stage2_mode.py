@@ -32,7 +32,7 @@ item_info_font = None
 
 spawn_timer = 0.0
 spawn_cooldown = 2.0
-max_spawn_count = 20
+max_spawn_count = 2
 max_enemies_on_screen = 5
 
 coin_count = 0

@@ -330,7 +330,7 @@ class FinalBoss:
         self.face_dir = -1
         self.dir = 0
 
-        self.max_hp = 500
+        self.max_hp = 600
         self.hp = self.max_hp
 
         self.scale = 2.0
@@ -391,7 +391,7 @@ class FinalBoss:
 
     def draw(self):
         self.state_machine.draw()
-        draw_rectangle(*self.get_bb())
+        #draw_rectangle(*self.get_bb())
         if self.state_machine.cur_state != self.DEAD:
             self.draw_hp_bar()
 

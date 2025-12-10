@@ -103,7 +103,7 @@ class ZombieIdle:
             self.frames)
         dist_to_player = abs(self.zombie.x - self.zombie.girl.x)
 
-        if dist_to_player < 110:
+        if dist_to_player < 100:
             self.zombie.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
         elif dist_to_player < 900:
             self.zombie.state_machine.handle_state_event(('PLAYER_IN_SIGHT_RANGE', None))
@@ -160,7 +160,7 @@ class ZombieRun:
             self.zombie.dir = 0
 
         dist_abs = abs(dist_to_player)
-        if dist_abs < 110:
+        if dist_abs < 100:
             self.zombie.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
         elif dist_abs > 900:
             self.zombie.state_machine.handle_state_event(('PLAYER_OUT_OF_RANGE', None))
@@ -213,7 +213,7 @@ class ZombieWalk:
             self.zombie.dir = 0
 
         dist_abs = abs(dist_to_player)
-        if dist_abs < 110:
+        if dist_abs < 100:
             self.zombie.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
         elif dist_abs > 900:
             self.zombie.state_machine.handle_state_event(('PLAYER_OUT_OF_RANGE', None))
@@ -485,7 +485,7 @@ class Zombie:
 
     def draw(self):
         self.state_machine.draw()
-        draw_rectangle(*self.get_bb())
+        #draw_rectangle(*self.get_bb())
 
         if self.state_machine.cur_state != self.DEAD:
             if Zombie.hp_bar_bg and Zombie.hp_bar_fill:

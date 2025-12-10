@@ -29,7 +29,7 @@ class Fire:
         bottom = 0
         height = 20
         Fire.image.clip_draw(left, bottom, width, height, self.x, self.y, 40, 40)
-        draw_rectangle(*self.get_bb())
+        #draw_rectangle(*self.get_bb())
 
     def update(self):
         self.frame = (self.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % len(self.sizes)
