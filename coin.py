@@ -15,6 +15,7 @@ class Coin:
     image_10 = None
     image_20 = None
     image_30 = None
+    coin_collect_sound = None
 
     def __init__(self, x, y, value = 10):
         if Coin.image_10 is None:
@@ -25,6 +26,14 @@ class Coin:
 
         if Coin.image_30 is None:
             Coin.image_30 = load_image('./아이템/코인/코인3.png')
+
+        if Coin.coin_collect_sound is None:
+            try:
+                Coin.coin_collect_sound = load_wav('./음악/코인.mp3')
+                Coin.coin_collect_sound.set_volume(5)
+            except Exception as e:
+                print(f"코인 효과음 로드 실패: ./음악/coin_collect.wav, {e}")
+                Coin.coin_collect_sound = None
 
         self.x, self.y = x, y
         self.yv = FALL_SPEED_PPS
@@ -55,4 +64,6 @@ class Coin:
 
     def handle_collision(self, group, other):
         if group == 'girl:coin':
+            if Coin.coin_collect_sound:
+                Coin.coin_collect_sound.play()
             game_world.remove_object(self)
