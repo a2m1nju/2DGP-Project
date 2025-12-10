@@ -289,11 +289,11 @@ def init():
                                 break
 
                         if item_stat_type == 'damage':
-                            price = item_value * 10 + random.randint(10, 30)
+                            price = item_value * 20 + random.randint(10, 50)
                         elif item_stat_type == 'range':
-                            price = int(item_value * 0.5) + random.randint(20, 40)
+                            price = int(item_value * 0.5) + random.randint(50, 200)
                         else:
-                            price = item_value + random.randint(20, 40)
+                            price = item_value + random.randint(50, 150)
 
                     if m_type == 'potion':
                         item_value = 0
@@ -307,9 +307,9 @@ def init():
                             item_duration = info['duration']
 
                         if 'perm' in item_stat_type:
-                            price = 150 + random.randint(0, 50)
+                            price = 300 + random.randint(50, 200)
                         else:
-                            price = 30 + random.randint(0, 20)
+                            price = 100 + random.randint(20, 100)
 
 
 

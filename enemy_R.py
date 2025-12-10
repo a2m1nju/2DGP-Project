@@ -292,6 +292,7 @@ class Enemy_R:
 
         self.max_hp = 10
         self.hp = self.max_hp
+        self.damage = 8
 
         self.last_attack_time = 0.0
         self.attack_cooldown = 2.0

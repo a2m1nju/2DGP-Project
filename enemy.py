@@ -294,7 +294,7 @@ class Enemy:
     hp_bar_fill = None
 
     def __init__(self, girl):
-        self.x, self.y = 1000, 150
+        self.x, self.y = 1300, 150
         self.frame = 0.0
         self.face_dir = 1
         self.dir = 0
@@ -302,6 +302,8 @@ class Enemy:
 
         self.max_hp = 10
         self.hp = self.max_hp
+        self.damage = 10
+
 
         if Enemy.font is None:
             Enemy.font = load_font('ENCR10B.TTF', 16)

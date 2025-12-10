@@ -181,8 +181,9 @@ class Monster:
         self.frame = 0
         self.dir = 0
         self.face_dir = -1
-        self.max_hp = 100
+        self.max_hp = 150
         self.hp = self.max_hp
+        self.damage = 15
 
         if Monster.hp_bar_bg is None:
             Monster.hp_bar_bg = load_image('./UI/체력바.png')

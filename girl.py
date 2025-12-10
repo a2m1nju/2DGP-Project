@@ -870,7 +870,8 @@ class Girl:
             if get_time() < self.buffs['defense']['timer']:
                 dmg_multiplier = self.buffs['defense']['value']
 
-            damage = 10 * dmg_multiplier
+            base_damage = getattr(other, 'damage', 10)
+            damage = base_damage * dmg_multiplier
             self.hp -= damage
 
             self.last_hit_time = current_time

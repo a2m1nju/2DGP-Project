@@ -336,7 +336,7 @@ class FinalBoss:
         self.scale = 2.0
 
         self.skill_timer = get_time()
-        self.skill_cooldown = random.uniform(5.0, 10.0)
+        self.skill_cooldown = random.uniform(2.0, 5.0)
 
         if FinalBoss.font is None: FinalBoss.font = load_font('ENCR10B.TTF', 16)
         if FinalBoss.hp_bar_bg is None: FinalBoss.hp_bar_bg = load_image('./UI/체력바.png')

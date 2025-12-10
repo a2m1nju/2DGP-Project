@@ -246,7 +246,7 @@ class BossSkill:
             spawned_positions.append(spawn_x)
 
             spawn_y = 120
-            poison = Poison(spawn_x, spawn_y)
+            poison = Poison(spawn_x, spawn_y, damage = 5)
             game_world.add_object(poison, 4)
             game_world.add_collision_pair('girl:poison', None, poison)
 
@@ -321,10 +321,11 @@ class ZombieBoss:
         self.face_dir = -1
         self.dir = 0
 
-        self.max_hp = 100
+        self.max_hp = 500
         self.hp = self.max_hp
+        self.damage = 30
 
-        self.skill_cooldown = 8.0
+        self.skill_cooldown = 3.0
         self.last_skill_time = get_time() - 5.0
 
         self.scale = 2.5

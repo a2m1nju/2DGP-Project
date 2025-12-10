@@ -28,8 +28,6 @@ attack_finished = time_out
 hurt_finished = time_out
 dead_finished = time_out
 
-
-
 ZOMBIE_ANIMATION_DATA = {
     1: {  # 좀비 1
         'Idle': [(0, 0, 34, 68), (92, 0, 34, 68), (187, 0, 34, 68), (284, 0, 34, 68), (382, 0, 34, 68),
@@ -107,7 +105,7 @@ class ZombieIdle:
 
         if dist_to_player < 110:
             self.zombie.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
-        elif dist_to_player < 600:
+        elif dist_to_player < 900:
             self.zombie.state_machine.handle_state_event(('PLAYER_IN_SIGHT_RANGE', None))
         elif get_time() - self.zombie.wait_time > 3:
             self.zombie.state_machine.handle_state_event(('TIMEOUT', None))
@@ -164,7 +162,7 @@ class ZombieRun:
         dist_abs = abs(dist_to_player)
         if dist_abs < 110:
             self.zombie.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
-        elif dist_abs > 600:
+        elif dist_abs > 900:
             self.zombie.state_machine.handle_state_event(('PLAYER_OUT_OF_RANGE', None))
 
         self.zombie.frame = (self.zombie.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % len(
@@ -217,7 +215,7 @@ class ZombieWalk:
         dist_abs = abs(dist_to_player)
         if dist_abs < 110:
             self.zombie.state_machine.handle_state_event(('PLAYER_IN_ATTACK_RANGE', None))
-        elif dist_abs > 600:
+        elif dist_abs > 900:
             self.zombie.state_machine.handle_state_event(('PLAYER_OUT_OF_RANGE', None))
 
         self.zombie.frame = (self.zombie.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % len(
@@ -407,9 +405,19 @@ class Zombie:
         self.girl = girl
         self.type = type
 
-        self.max_hp = 30
+        if self.type == 1:
+            self.max_hp = 30
+            self.damage = 15
+        elif self.type == 2:
+            self.max_hp = 30
+            self.damage = 15
+        else:
+            self.max_hp = 50
+            self.damage = 20
+
         self.hp = self.max_hp
         self.wait_time = 0.0
+
 
         if Zombie.font is None:
             Zombie.font = load_font('ENCR10B.TTF', 16)
@@ -460,7 +468,7 @@ class Zombie:
         current_speed = RUN_SPEED_PPS
         if self.type in [1, 2]:
             if self.state_machine.cur_state == self.RUN:
-                current_speed = RUN_SPEED_PPS * 1.5
+                current_speed = RUN_SPEED_PPS * 1.8
 
         self.x += self.dir * current_speed * game_framework.frame_time
 

@@ -31,9 +31,9 @@ hovered_item_info = None
 item_info_font = None
 
 spawn_timer = 0.0
-spawn_cooldown = 3.0
-max_spawn_count = 25
-max_enemies_on_screen = 3
+spawn_cooldown = 2.0
+max_spawn_count = 20
+max_enemies_on_screen = 5
 
 coin_count = 0
 
@@ -344,6 +344,8 @@ def update():
         announcement_x -= 500 * game_framework.frame_time
 
         if announcement_x + 800 < 0:
+            if server.girl:
+                server.girl.hp = server.girl.max_hp
             import platform_mode
             game_framework.change_mode(platform_mode)
         return

@@ -8,7 +8,7 @@ class Poison:
     sizes = [(0,65), (163,74), (330,86), (484,120),(671,136),
              (866,154),(1058,169),(1275,171),(1488,180),(1706,193)]
 
-    def __init__(self, x, y, duration=3.0, damage=5):
+    def __init__(self, x, y, duration=3.0, damage=10):
         self.x, self.y = x, y
         self.duration = duration
         self.damage = damage
